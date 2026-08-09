@@ -1867,249 +1867,101 @@
 
     /* ---- NUMBERS BAND ---- */
 
-    /* ---- DEPOIMENTOS: UM POR VEZ ----
-       Um depoimento de cada vez, com o numeral gigante atrás mudando junto. Os
-       seis slides ficam empilhados na MESMA célula de grade: assim a altura da
-       caixa é a do maior deles e a troca não faz a página pular. Se cada slide
-       fosse posicionado por absolute, essa altura teria que ser um número fixo
-       no CSS, e todo texto novo passaria a estourar ou sobrar. */
-    .dep {
-      position: relative;
-      overflow: hidden;
-      padding: var(--ritmo) 0 0;
-      /* Mais sóbria que a seção azul de cima. O roxo ficou só no brilho de
-         ambiente: como cor de base ele viraria a única peça roxa de um site
-         que é azul e branco. */
-      background:
-        radial-gradient(90% 60% at 50% 0%, rgba(88, 62, 168, 0.16) 0%, transparent 70%),
-        linear-gradient(180deg, #050b1e 0%, #04091a 55%, #050c20 100%);
-    }
+    /* ---- DEPOIMENTOS EM MURO ----
+       Colunas que rolam sozinhas na vertical, alternando o sentido. O
+       movimento em sentidos opostos é o que faz o bloco parecer vivo parado:
+       se todas subissem juntas, o olho leria como uma lista deslizando.
 
-    .dep-palco {
+       Cada coluna leva a lista DUAS vezes e anda -50%. Quando a primeira cópia
+       termina de sair, a segunda está onde a primeira começou, e o laço
+       reinicia sem salto.
+
+       NÚMERO DE COLUNAS: hoje são 2, e isso é limite de conteúdo, não de
+       código. Cada coluna precisa de 2 falas exclusivas para a mesma citação
+       não aparecer em duas colunas ao mesmo tempo. Com 4 depoimentos dá
+       para 2. Chegando a 6, vira 3 colunas mudando só o repeat() abaixo. */
+    .muro {
+      position: relative;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-      align-items: center;
-      position: relative;
-    }
-
-    /* ---- barra de tempo ----
-       No celular ela deita embaixo do texto. A primeira versão escondia esse
-       bloco com `display: none` abaixo de 900px, e elemento nessa condição não
-       anima: o `animationend` nunca chegava e o carrossel ficava travado no
-       primeiro depoimento a visita inteira. Deitada, ela ainda ganha uma
-       função que não tinha no desktop, que é mostrar quanto falta pra trocar. */
-    /* No celular ela vem ANTES do depoimento, junto do rótulo da seção. O
-       rótulo em pé só existe no desktop, então sem isso o celular caía direto
-       num crachá e uma frase solta, sem nada dizendo que ali começa a parte de
-       depoimentos. Em cima, o par rótulo + barra funciona como cabeçalho. */
-    .dep-lado { order: 0; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
-    .dep-vitrine { order: 1; }
-    .dep-setas { order: 2; }
-    .dep-rotulo {
-      font-size: 0.6rem;
-      font-weight: 600;
-      letter-spacing: 0.42em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .dep-trilho {
-      width: 100%;
-      height: 2px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.10);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+      height: clamp(520px, 62vh, 680px);
       overflow: hidden;
-    }
-    /* A barra É o cronômetro: quando a animação dela termina, o script troca de
-       slide. Um setTimeout em paralelo daria duas fontes de verdade, e na
-       primeira pausa com o mouse as duas sairiam de sincronia. */
-    .dep-trilho i {
-      display: block;
-      width: 100%;
-      height: 100%;
-      transform: scaleX(0);
-      transform-origin: left;
-      background: linear-gradient(90deg, var(--accent-hover), var(--accent));
-    }
-    .dep-trilho i.correndo { animation: dep-enche-deitada 7.5s linear forwards; }
-    @keyframes dep-enche-deitada { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
-    @media (min-width: 900px) {
-      .dep-palco { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 2.5rem; }
-      .dep-lado {
-        order: 0; grid-column: 1;
-        flex-direction: column;
-        gap: 1.75rem;
-        align-self: stretch;
-        padding: 0.5rem 0;
-        margin-bottom: 0;
-      }
-      .dep-vitrine { order: 0; grid-column: 2; }
-      .dep-setas { order: 0; grid-column: 3; }
-      .dep-rotulo {
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-      }
-      .dep-trilho { flex: 1; width: 2px; height: auto; min-height: 90px; }
-      .dep-trilho i {
-        transform: scaleY(0);
-        transform-origin: top;
-        background: linear-gradient(180deg, var(--accent-hover), var(--accent));
-      }
-      .dep-trilho i.correndo { animation-name: dep-enche-empe; }
-      @keyframes dep-enche-empe { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+      margin-top: 3rem;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
     }
 
-    /* parar com o mouse em cima é o que permite ler até o fim; parar fora da
-       tela evita o carrossel girar sozinho a visita inteira e a pessoa voltar
-       pra uma seção que já passou por todos */
-    .dep:hover .dep-trilho i,
-    .dep.parada .dep-trilho i { animation-play-state: paused; }
-
-    /* ---- vitrine ---- */
-    .dep-vitrine { display: grid; min-width: 0; }
-    .dep-slide {
-      grid-area: 1 / 1;
-      min-width: 0;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(18px);
-      transition: opacity var(--mov-bloco) var(--curva),
-                  transform var(--mov-bloco) var(--curva),
-                  visibility 0s linear var(--mov-bloco);
-    }
-    .dep-slide.ativo {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      transition-delay: 0s;
+    .muro-pista {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: muro-sobe 46s linear infinite;
+      will-change: transform;
     }
 
-    /* numeral gigante atrás, trocando junto com o slide */
-    .dep-num {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 0;
-      font-size: clamp(11rem, 26vw, 22rem);
-      font-weight: 800;
-      line-height: 0.8;
-      letter-spacing: -0.06em;
-      color: rgba(255, 255, 255, 0.065);
-      pointer-events: none;
-      user-select: none;
+    /* colunas pares descem em vez de subir, e um pouco mais devagar */
+    .muro-col:nth-child(even) .muro-pista {
+      animation-name: muro-desce;
+      animation-duration: 58s;
     }
-    @media (min-width: 900px) { .dep-num { left: 12%; } }
 
-    .dep-cracha {
-      position: relative;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.4rem 1rem 0.4rem 0.4rem;
+    /* Atraso NEGATIVO: começa a animação já adiantada. Sem isso as colunas
+       partem do mesmo ponto da lista e o bloco abre alinhado demais. */
+    .muro-col:nth-child(2) .muro-pista { animation-delay: -13s; }
+    .muro-col:nth-child(3) .muro-pista { animation-delay: -27s; }
+
+    @keyframes muro-sobe  { from { transform: translateY(0);    } to { transform: translateY(-50%); } }
+    @keyframes muro-desce { from { transform: translateY(-50%); } to { transform: translateY(0);    } }
+
+    /* A pausa é por COLUNA, não pelo muro inteiro: congelar a tela toda para
+       ler um card só faz o bloco parecer travado. */
+    .muro-col:hover .muro-pista { animation-play-state: paused; }
+
+    .muro-card {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.035);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: rgba(255, 255, 255, 0.82);
+      border-radius: 1.25rem;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      transition: border-color 0.3s;
     }
-    .dep-cracha .dep-selo { width: 26px; height: 26px; border-radius: 8px; }
-    .dep-cracha .dep-selo img { padding: 2px; }
-    .dep-cracha.sem-selo { padding-left: 1rem; }
+    .muro-card:hover { border-color: rgba(255,255,255,0.14); }
 
-    /* ---- selo do logo ----
-       Duas versões de fundo porque os logos vêm em cores opostas: uns são tinta
-       escura sobre claro, outros já nascem claros. Recolorir pra caber num
-       fundo só resolveria o layout e estragaria a marca do cliente. */
-    .dep-selo {
+    .muro-estrelas { display: flex; gap: 3px; }
+    .muro-estrelas .star { width: 12px; height: 12px; fill: var(--accent); }
+
+    .muro-fala { font-size: 0.92rem; line-height: 1.65; color: var(--text-muted); }
+
+    .muro-pessoa { display: flex; align-items: center; gap: 0.7rem; }
+
+    /* Círculo do autor: leva o selo da marca quando existe arquivo, e as
+       iniciais quando não existe. Nenhum cliente tem foto liberada, e é isso
+       que permite manter no muro depoimento de quem não mandou logo. */
+    .muro-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
       flex-shrink: 0;
       display: grid;
       place-items: center;
-      overflow: hidden;
-      background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-    }
-    .dep-selo img { width: 100%; height: 100%; object-fit: contain; }
-    .dep-selo-escuro { background: #0a1330; border-color: rgba(255, 255, 255, 0.10); }
-
-    .dep-fala {
-      position: relative;
-      z-index: 1;
-      margin: 1.75rem 0 0;
-      font-size: clamp(1.2rem, 2.15vw, 2rem);
-      font-weight: 500;
-      line-height: 1.42;
-      letter-spacing: -0.025em;
-      color: var(--text);
-      max-width: 26ch;
-    }
-    @media (min-width: 760px)  { .dep-fala { max-width: 34ch; } }
-    @media (min-width: 1100px) { .dep-fala { max-width: 44ch; } }
-
-    .dep-pessoa {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: clamp(1.75rem, 3vw, 2.75rem);
-    }
-    .dep-pessoa > i { width: 38px; height: 1px; flex-shrink: 0; background: rgba(255, 255, 255, 0.35); }
-    .dep-pessoa b { display: block; font-size: 0.94rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
-    .dep-pessoa span { display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
-
-    /* ---- setas ---- */
-    .dep-setas { display: flex; gap: 0.75rem; }
-    @media (min-width: 900px) { .dep-setas { flex-direction: column; } }
-
-    .dep-seta {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: background var(--mov-base) var(--curva),
-                  border-color var(--mov-base) var(--curva),
-                  color var(--mov-base) var(--curva),
-                  transform var(--mov-base) var(--curva);
-    }
-    .dep-seta:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-    /* depois do :hover: pressionar acontece sempre com o mouse em cima e as
-       duas regras têm a mesma especificidade, então quem vem por último vence */
-    .dep-seta:active { transform: scale(0.9); transition-duration: var(--mov-toque); }
-    .dep-seta:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 3px; }
-
-    /* ---- fita de nomes ---- */
-    .dep-fita {
-      margin-top: clamp(3rem, 6vw, 5rem);
-      padding-bottom: clamp(2.5rem, 5vw, 4rem);
       overflow: hidden;
-      -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-              mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-    }
-    .dep-fita .marcas-linha { gap: 0; }
-    .dep-fita span {
-      padding: 0 1.5rem;
-      font-size: clamp(1.6rem, 4vw, 3rem);
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: -0.035em;
-      color: rgba(255, 255, 255, 0.055);
-      white-space: nowrap;
+      color: var(--text-muted);
     }
-    .dep-fita i {
-      font-style: normal;
-      font-size: clamp(1.6rem, 4vw, 3rem);
-      color: rgba(255, 255, 255, 0.055);
+    .muro-avatar img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+
+    .muro-nome { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+    .muro-papel { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* No celular várias colunas dariam cards de ~100px. Vira coluna única. */
+    @media (max-width: 900px) {
+      .muro { grid-template-columns: minmax(0, 1fr); height: clamp(420px, 58vh, 520px); }
+      .muro-col:nth-child(n + 2) { display: none; }
     }
 
     /* ---- CTA ---- */
@@ -3716,70 +3568,290 @@
   </section>
 
   <!-- DEPOIMENTOS -->
-  <!-- DEPOIMENTOS -->
-  <section class="dep" id="depoimentos" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">
+  <section class="section" id="depoimentos">
     <div class="container">
-      <div class="dep-palco">
-
-        <div class="dep-lado" aria-hidden="true">
-          <span class="dep-rotulo">Depoimentos</span>
-          <div class="dep-trilho"><i id="depBarra"></i></div>
-        </div>
-
-        <div class="dep-vitrine" id="depVitrine" aria-live="polite">
-
-          <article class="dep-slide ativo">
-            <span class="dep-num" aria-hidden="true">01</span>
-            <span class="dep-cracha"><span class="dep-selo dep-selo-escuro"><img src="selo-midia-comunica.png" alt="" aria-hidden="true" width="366" height="366" loading="lazy" decoding="async"></span>M&iacute;dia Comunica</span>
-            <blockquote class="dep-fala">Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.</blockquote>
-            <div class="dep-pessoa"><i></i><div><b>A M&iacute;dia Comunica</b><span>Comunica&ccedil;&atilde;o &amp; Workshops</span></div></div>
-          </article>
-
-          <article class="dep-slide">
-            <span class="dep-num" aria-hidden="true">02</span>
-            <span class="dep-cracha"><span class="dep-selo"><img src="selo-graficon.png" alt="" aria-hidden="true" width="393" height="393" loading="lazy" decoding="async"></span>Graficon</span>
-            <blockquote class="dep-fala">Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.</blockquote>
-            <div class="dep-pessoa"><i></i><div><b>Graficon</b><span>Revestimento industrial</span></div></div>
-          </article>
-
-          <article class="dep-slide">
-            <span class="dep-num" aria-hidden="true">03</span>
-            <span class="dep-cracha"><span class="dep-selo dep-selo-escuro"><img src="marca-camarote-do-corte.png" alt="" aria-hidden="true" width="117" height="128" loading="lazy" decoding="async"></span>Camarote do Corte</span>
-            <blockquote class="dep-fala">A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.</blockquote>
-            <div class="dep-pessoa"><i></i><div><b>Camarote do Corte</b><span>Barbearia</span></div></div>
-          </article>
-
-          <article class="dep-slide">
-            <span class="dep-num" aria-hidden="true">04</span>
-            <span class="dep-cracha"><span class="dep-selo dep-selo-escuro"><img src="marca-bahia-boutique-monograma.png" alt="" aria-hidden="true" width="99" height="128" loading="lazy" decoding="async"></span>Bah&iacute;a Boutique</span>
-            <blockquote class="dep-fala">Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.</blockquote>
-            <div class="dep-pessoa"><i></i><div><b>Lene</b><span>Bah&iacute;a Boutique</span></div></div>
-          </article>
-
-          <!-- ROA Advocacia e Fada Cosméticos saíram daqui. Eram os dois
-               únicos depoimentos sem logo do cliente, e o crachá deles entrava
-               como texto puro ao lado de quatro com selo. Se os logos
-               aparecerem, os depoimentos estão guardados no histórico do git. -->
-
-        </div>
-
-        <div class="dep-setas">
-          <button type="button" class="dep-seta" id="depAnt" aria-label="Depoimento anterior">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button type="button" class="dep-seta" id="depProx" aria-label="Pr&oacute;ximo depoimento">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-
+      <div class="topo-centro">
+        <h2 class="heading reveal">N&atilde;o confie apenas na nossa palavra</h2>
+        <p class="pricing-lede reveal">
+          Veja o que os nossos clientes satisfeitos t&ecirc;m a dizer.
+        </p>
       </div>
     </div>
 
-    <!-- fita de nomes: a lista se repete pelo script até cobrir a tela e depois
-         é espelhada, porque a animação anda -50% -->
-    <div class="dep-fita" aria-hidden="true">
-      <div class="marcas-linha marcas-esq">
-        <span>M&iacute;dia Comunica</span><i>&middot;</i><span>Graficon</span><i>&middot;</i><span>Camarote do Corte</span><i>&middot;</i><span>Bah&iacute;a Boutique</span><i>&middot;</i><span>AMC Insider</span><i>&middot;</i><span>Click&amp;Connect</span><i>&middot;</i><span>Jackson Oliveira</span><i>&middot;</i>
+    <div class="container">
+      <div class="muro" aria-label="Depoimentos de clientes">
+        <div class="muro-col">
+          <div class="muro-pista">
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">A M&iacute;dia Comunica</div>
+                  <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;A gente precisava de um site que representasse o espa&ccedil;o de verdade. Veio muito al&eacute;m do que eu esperava, e passa exatamente a imagem que a gente quer.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-camarote-do-corte.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Camarote do Corte</div>
+                  <div class="muro-papel">Barbearia</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="muro-col">
+          <div class="muro-pista">
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Graficon</div>
+                  <div class="muro-papel">Revestimento industrial</div>
+                </div>
+              </div>
+            </div>
+            <div class="muro-card">
+              <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+              <p class="muro-fala">&ldquo;Minha loja dependia demais de indica&ccedil;&atilde;o. Desde que comecei com a Conect+, chega cliente novo todo m&ecirc;s e o faturamento ficou muito mais previs&iacute;vel.&rdquo;</p>
+              <div class="muro-pessoa">
+                <span class="muro-avatar" aria-hidden="true"><img src="marca-bahia-boutique-monograma.png" alt="" loading="lazy" decoding="async"></span>
+                <div>
+                  <div class="muro-nome">Lene</div>
+                  <div class="muro-papel">Bah&iacute;a Boutique</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -5049,51 +5121,10 @@ Já investe em anúncio: ${v.investe}`;
       passo();
     })();
 
-    // --- DEPOIMENTOS: UM POR VEZ ---
-    // Não existe cronômetro em JavaScript aqui. Quem conta o tempo é a animação
-    // da barra, e a troca de slide acontece no `animationend` dela.
-    //
-    // Com um setTimeout em paralelo haveria duas fontes de verdade: na primeira
-    // pausa com o mouse a barra congelaria e o relógio continuaria correndo, e o
-    // slide trocaria com a barra pela metade. Deixando a animação mandar, o
-    // `animation-play-state: paused` do CSS pausa as duas coisas de uma vez,
-    // porque são a mesma coisa.
-    (function () {
-      const vitrine = document.getElementById('depVitrine');
-      const barra = document.getElementById('depBarra');
-      if (!vitrine || !barra) return;
-
-      const secao = vitrine.closest('.dep');
-      const slides = Array.from(vitrine.querySelectorAll('.dep-slide'));
-      if (slides.length < 2) return;
-      let atual = 0;
-
-      function correr() {
-        barra.classList.remove('correndo');
-        // leitura forçada: sem ela o navegador junta o remove e o add num
-        // recálculo só e a animação nunca reinicia
-        void barra.offsetWidth;
-        barra.classList.add('correndo');
-      }
-
-      function mostrar(i) {
-        atual = (i + slides.length) % slides.length;
-        slides.forEach((s, k) => s.classList.toggle('ativo', k === atual));
-        correr();
-      }
-
-      barra.addEventListener('animationend', () => mostrar(atual + 1));
-      document.getElementById('depProx').addEventListener('click', () => mostrar(atual + 1));
-      document.getElementById('depAnt').addEventListener('click', () => mostrar(atual - 1));
-
-      // Fora da tela a barra para, senão o carrossel gira sozinho a visita
-      // inteira e a pessoa volta pra uma seção que já passou por todos.
-      new IntersectionObserver(([e]) => {
-        secao.classList.toggle('parada', !e.isIntersecting);
-      }, { threshold: 0.15 }).observe(secao);
-
-      correr();
-    })();
+    // Os depoimentos são um muro de colunas que andam por animação de CSS, então
+    // não sobrou JavaScript para eles. Aqui morava o controlador do carrossel de
+    // um-por-vez (barra lateral marcando o tempo, setas, IntersectionObserver
+    // pausando fora da tela). Está no histórico do git se o formato voltar.
 
     // Aqui viviam o "scroll morph" e o "spotlight" dos .work-item. A grade
     // antiga de Trabalhos virou os painéis cinematográficos e esses blocos

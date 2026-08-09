@@ -160,47 +160,86 @@ test.describe('hero dirigido por rolagem', () => {
   });
 });
 
-test.describe('carrossel de depoimentos', () => {
-  // ATENÇÃO DE HISTÓRICO: até 09/08/2026 esta seção era um muro de três colunas
-  // rolando sozinhas, e os testes daqui verificavam isso. Uma edição feita fora
-  // da sessão substituiu o muro pelo carrossel de um-por-vez que está aqui
-  // agora. Os testes foram realinhados ao que existe, e não apagados: teste
-  // vermelho permanente ensina todo mundo a ignorar a esteira.
-  // O muro está no histórico do git se for para voltar.
+test.describe('muro de depoimentos', () => {
+  // O número de colunas depende de quantos depoimentos existem: cada coluna
+  // precisa de falas exclusivas para a mesma citação não aparecer duas vezes na
+  // tela. Por isso nada aqui fixa : os testes leem o que está montado e
+  // continuam valendo quando entrar depoimento novo e nascer outra coluna.
+  test.skip(({ isMobile }) => isMobile, 'no celular o muro vira coluna única');
 
-  test('mostra um depoimento por vez, nunca dois', async ({ page }) => {
+  async function irAoMuro(page) {
     await percorrerPagina(page);
-    await page.evaluate(() =>
-      document.querySelector('#depoimentos').scrollIntoView({ block: 'center' })
-    );
-    await page.waitForTimeout(500);
+    await page.evaluate(() => document.querySelector('.muro').scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(600);
+  }
 
-    const slides = page.locator('.dep-slide');
-    expect(await slides.count(), 'o carrossel ficou sem depoimento').toBeGreaterThan(1);
-    // Os slides ficam empilhados na mesma célula da grade: se dois ganharem a
-    // classe .ativo ao mesmo tempo, o texto de um imprime por cima do outro.
-    await expect(page.locator('.dep-slide.ativo')).toHaveCount(1);
+  test('o mouse pausa só a coluna sob o cursor', async ({ page }) => {
+    // Este teste existe porque a primeira montagem pausava todas as colunas de
+    // uma vez: parar a tela inteira para ler um card faz o bloco parecer travado.
+    await irAoMuro(page);
+
+    const total = await page.locator('.muro-col').count();
+    expect(total, 'o muro ficou sem coluna').toBeGreaterThan(0);
+
+    const estado = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.muro-pista')].map((x) => getComputedStyle(x).animationPlayState)
+      );
+
+    expect(await estado(), 'as colunas deveriam andar sem o mouse').toEqual(
+      Array(total).fill('running')
+    );
+
+    for (let n = 1; n <= total; n++) {
+      const ponto = await page.evaluate((i) => {
+        const c = document
+          .querySelector('.muro-col:nth-child(' + i + ')')
+          .getBoundingClientRect();
+        // O ponto precisa estar dentro da janela E dentro da coluna: mirar no
+        // centro da coluna leva o cursor para fora da tela quando o muro é mais
+        // alto que a viewport, e aí o :hover simplesmente não dispara.
+        return {
+          x: Math.round(c.left + c.width / 2),
+          y: Math.round(Math.min(Math.max(c.top + 30, 60), window.innerHeight - 60)),
+        };
+      }, n);
+      await page.mouse.move(ponto.x, ponto.y);
+      await page.waitForTimeout(300);
+      const esperado = Array(total).fill('running');
+      esperado[n - 1] = 'paused';
+      expect(await estado(), `mouse na coluna ${n} deveria pausar só ela`).toEqual(esperado);
+    }
   });
 
-  test('as setas trocam o depoimento nos dois sentidos', async ({ page }) => {
-    await percorrerPagina(page);
-    await page.evaluate(() =>
-      document.querySelector('#depoimentos').scrollIntoView({ block: 'center' })
+  test('a mesma fala não aparece em duas colunas ao mesmo tempo', async ({ page }) => {
+    await irAoMuro(page);
+    const repetidas = await page.evaluate(() => {
+      const muro = document.querySelector('.muro');
+      const area = muro.getBoundingClientRect();
+      const porColuna = [...muro.querySelectorAll('.muro-col')].map((col) =>
+        [...col.querySelectorAll('.muro-card')]
+          .filter((c) => {
+            const b = c.getBoundingClientRect();
+            return b.bottom > area.top + 40 && b.top < area.bottom - 40;
+          })
+          .map((c) => c.querySelector('.muro-nome').textContent.trim())
+      );
+      const todos = [...new Set(porColuna.flat())];
+      return todos.filter((n) => porColuna.filter((c) => c.includes(n)).length > 1);
+    });
+    expect(repetidas, `fala repetida entre colunas: ${repetidas.join(', ')}`).toEqual([]);
+  });
+
+  test('todo depoimento tem autor identificado', async ({ page }) => {
+    // Depoimento sem nome é depoimento que ninguém acredita. Também pega card
+    // montado pela metade quando entrar fala nova.
+    await irAoMuro(page);
+    const semAutor = await page.evaluate(() =>
+      [...document.querySelectorAll('.muro-card')].filter(
+        (c) => !c.querySelector('.muro-nome')?.textContent.trim()
+      ).length
     );
-    await page.waitForTimeout(500);
-
-    const numeroAtivo = () =>
-      page.evaluate(() => document.querySelector('.dep-slide.ativo .dep-num')?.textContent.trim());
-
-    const inicial = await numeroAtivo();
-    await page.locator('#depProx').click();
-    await page.waitForTimeout(400);
-    const depois = await numeroAtivo();
-    expect(depois, 'a seta de avançar não trocou o depoimento').not.toBe(inicial);
-
-    await page.locator('#depAnt').click();
-    await page.waitForTimeout(400);
-    expect(await numeroAtivo(), 'a seta de voltar não desfez a troca').toBe(inicial);
+    expect(semAutor, 'há card de depoimento sem nome de autor').toBe(0);
   });
 });
 
