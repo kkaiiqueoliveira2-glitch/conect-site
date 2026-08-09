@@ -160,70 +160,47 @@ test.describe('hero dirigido por rolagem', () => {
   });
 });
 
-test.describe('muro de depoimentos', () => {
-  test.skip(({ isMobile }) => isMobile, 'no celular o muro vira coluna única');
+test.describe('carrossel de depoimentos', () => {
+  // ATENÇÃO DE HISTÓRICO: até 09/08/2026 esta seção era um muro de três colunas
+  // rolando sozinhas, e os testes daqui verificavam isso. Uma edição feita fora
+  // da sessão substituiu o muro pelo carrossel de um-por-vez que está aqui
+  // agora. Os testes foram realinhados ao que existe, e não apagados: teste
+  // vermelho permanente ensina todo mundo a ignorar a esteira.
+  // O muro está no histórico do git se for para voltar.
 
-  test('tem três colunas e o mouse pausa só a coluna de baixo do cursor', async ({ page }) => {
-    // Este teste existe porque a primeira versão pausava as três colunas de uma
-    // vez: parar a tela inteira pra ler um card faz o bloco parecer travado.
+  test('mostra um depoimento por vez, nunca dois', async ({ page }) => {
     await percorrerPagina(page);
     await page.evaluate(() =>
-      document.querySelector('.muro').scrollIntoView({ block: 'center' })
+      document.querySelector('#depoimentos').scrollIntoView({ block: 'center' })
     );
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(500);
 
-    const colunas = page.locator('.muro-col');
-    await expect(colunas).toHaveCount(3);
-
-    const estado = () =>
-      page.evaluate(() =>
-        [...document.querySelectorAll('.muro-pista')].map(
-          (x) => getComputedStyle(x).animationPlayState
-        )
-      );
-
-    expect(await estado()).toEqual(['running', 'running', 'running']);
-
-    for (const n of [1, 2, 3]) {
-      const ponto = await page.evaluate((i) => {
-        const c = document
-          .querySelector(`.muro-col:nth-child(${i})`)
-          .getBoundingClientRect();
-        return {
-          x: Math.round(c.left + c.width / 2),
-          y: Math.round(Math.min(Math.max(c.top + 30, 60), window.innerHeight - 60)),
-        };
-      }, n);
-      await page.mouse.move(ponto.x, ponto.y);
-      await page.waitForTimeout(300);
-      const esperado = ['running', 'running', 'running'];
-      esperado[n - 1] = 'paused';
-      expect(await estado(), `mouse na coluna ${n} deveria pausar só ela`).toEqual(esperado);
-    }
+    const slides = page.locator('.dep-slide');
+    expect(await slides.count(), 'o carrossel ficou sem depoimento').toBeGreaterThan(1);
+    // Os slides ficam empilhados na mesma célula da grade: se dois ganharem a
+    // classe .ativo ao mesmo tempo, o texto de um imprime por cima do outro.
+    await expect(page.locator('.dep-slide.ativo')).toHaveCount(1);
   });
 
-  test('a mesma fala não aparece em duas colunas ao mesmo tempo', async ({ page }) => {
+  test('as setas trocam o depoimento nos dois sentidos', async ({ page }) => {
     await percorrerPagina(page);
     await page.evaluate(() =>
-      document.querySelector('.muro').scrollIntoView({ block: 'center' })
+      document.querySelector('#depoimentos').scrollIntoView({ block: 'center' })
     );
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(500);
 
-    const repetidas = await page.evaluate(() => {
-      const muro = document.querySelector('.muro');
-      const área = muro.getBoundingClientRect();
-      const porColuna = [...muro.querySelectorAll('.muro-col')].map((col) =>
-        [...col.querySelectorAll('.muro-card')]
-          .filter((c) => {
-            const b = c.getBoundingClientRect();
-            return b.bottom > área.top + 40 && b.top < área.bottom - 40;
-          })
-          .map((c) => c.querySelector('.muro-nome').textContent.trim())
-      );
-      const todos = [...new Set(porColuna.flat())];
-      return todos.filter((n) => porColuna.filter((c) => c.includes(n)).length > 1);
-    });
-    expect(repetidas, `fala repetida entre colunas: ${repetidas.join(', ')}`).toEqual([]);
+    const numeroAtivo = () =>
+      page.evaluate(() => document.querySelector('.dep-slide.ativo .dep-num')?.textContent.trim());
+
+    const inicial = await numeroAtivo();
+    await page.locator('#depProx').click();
+    await page.waitForTimeout(400);
+    const depois = await numeroAtivo();
+    expect(depois, 'a seta de avançar não trocou o depoimento').not.toBe(inicial);
+
+    await page.locator('#depAnt').click();
+    await page.waitForTimeout(400);
+    expect(await numeroAtivo(), 'a seta de voltar não desfez a troca').toBe(inicial);
   });
 });
 
