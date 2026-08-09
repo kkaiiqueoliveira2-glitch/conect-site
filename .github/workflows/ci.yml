@@ -1,0 +1,75 @@
+# Esteira de qualidade do site da Conect+.
+#
+# Roda em todo pull request para a main e em todo push para a main. Enquanto a
+# proteção de branch não estiver ligada no GitHub, isto AVISA mas não impede o
+# merge. Para virar barreira de verdade, ver QUALIDADE.md.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Push novo no mesmo PR cancela a execução anterior: não adianta gastar minuto
+# testando um commit que já foi substituído.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Segredos, peso e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # A varredura de segredo vem PRIMEIRO e sem depender de instalar nada.
+      # Se vazou chave, o resto da esteira não importa: é para falhar rápido e
+      # alto, antes que o log fique cheio de saída de teste.
+      - name: Varredura de segredos
+        run: node scripts/varredura-segredos.js
+
+      - name: Orçamento de peso
+        run: node scripts/budget.js
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Instalar navegador do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes de fumaça
+        run: npm test
+
+      - name: Guardar relatório quando falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # A função de lead é o único código de servidor do projeto. Ela não tem teste
+  # ainda, mas pelo menos precisa ser JavaScript válido: um erro de sintaxe aqui
+  # derruba o formulário inteiro em produção, e o site é estático demais para
+  # alguém perceber sozinho.
+  funcao-de-lead:
+    name: Função de lead compila
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Conferir sintaxe de api/lead.js
+        run: node --input-type=module --eval "await import('./api/lead.js'); console.log('api/lead.js importa sem erro')"

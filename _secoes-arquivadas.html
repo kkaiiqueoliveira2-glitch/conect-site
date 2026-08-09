@@ -1,0 +1,504 @@
+<!-- SEÇÕES ARQUIVADAS DO index.html
+     Retiradas em 09/08/2026, quando a página passou a ser dedicada só a
+     criação de sites. NÃO foram apagadas: é para voltarem quando a Conect+
+     voltar a vender tráfego, social e sistemas nesta mesma página.
+
+     Para repor: colar a seção de volta no index.html, na ordem original
+     (#services -> #sites -> #pricing -> #comparar -> #sistemas -> #relatorios
+     -> #about), e devolver o link "Planos" da nav para #pricing.
+
+     O CSS delas continua no index.html e não foi removido, porque a seção
+     #sites que ficou usa as mesmas classes (.pricing-topo, .pricing-lede,
+     .pricing-card, .pricing-currency). Só o JS do comparador Básico x Premium
+     ficou órfão e foi retirado; ele está no fim deste arquivo. -->
+
+
+<!-- ============ #pricing ============ -->
+<!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <!-- topo centralizado: o texto ocupava só a metade esquerda e o resto da
+           linha ficava vazio. A ponte no fim amarra o título aos três cards,
+           que antes apareciam sem ninguém apresentar. -->
+      <div class="pricing-topo">
+        <div class="section-tag">Tr&aacute;fego pago</div>
+        <h2 class="heading reveal">Expanda a sua <span style="color:var(--accent)">empresa</span> no Google e no Meta.<br>N&atilde;o s&oacute; o seu alcance</h2>
+        <p class="pricing-lede reveal">
+          <strong>Conte&uacute;do org&acirc;nico constr&oacute;i lembran&ccedil;a. An&uacute;ncio constr&oacute;i fila.</strong>
+          O post depende do algoritmo escolher voc&ecirc; e do seu seguidor estar online.
+          O an&uacute;ncio n&atilde;o pede licen&ccedil;a: voc&ecirc; decide quem v&ecirc;, quando v&ecirc; e quanto
+          investe. E cada canal faz um trabalho diferente. <strong>O Meta alcan&ccedil;a quem
+          ainda n&atilde;o sabe que precisa de voc&ecirc;. O Google atende quem j&aacute; est&aacute;
+          procurando, com o cart&atilde;o na m&atilde;o.</strong> Rodar s&oacute; um dos dois deixa metade
+          da demanda para o concorrente.
+        </p>
+
+        <div class="pricing-ponte reveal">
+          <span>Tr&ecirc;s formas de come&ccedil;ar, sem fidelidade em nenhuma. Escolha pela fase da sua empresa.</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </div>
+      </div>
+      <div class="pricing-grid tres reveal-group">
+
+        <!-- BÁSICO -->
+        <div class="pricing-card">
+          <div>
+            <div class="pricing-tag">Tráfego Básico</div>
+            <div class="pricing-name">Meta Ads</div>
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-currency">R$</span>
+            <span class="pricing-value">879</span>
+            <span class="pricing-period">,90/mês</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <ul class="pricing-features">
+            <li>Campanhas no Facebook e Instagram</li>
+            <li>2 copies para anúncios por mês</li>
+            <li>Segmentação e criação de públicos</li>
+            <li>Otimização periódica das campanhas</li>
+            <li>Suporte via WhatsApp</li>
+            <li>Relatório quinzenal de resultados</li>
+          </ul>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20Tráfego%20Básico!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+        </div>
+
+        <!-- PREMIUM -->
+        <div class="pricing-card featured">
+          <div>
+            <div class="pricing-tag">Tráfego Premium</div>
+            <div class="pricing-name">Meta + Google Ads</div>
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-currency">R$</span>
+            <span class="pricing-value">1.497</span>
+            <span class="pricing-period">/mês</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <ul class="pricing-features">
+            <li>Meta Ads + Google Ads completos</li>
+            <li>Copies + 2 criativos por mês</li>
+            <li>Landing page de alta conversão</li>
+            <li>Funil de vendas para WhatsApp</li>
+            <li>Automação de comentários (DM automático)</li>
+            <li>Acompanhamento semanal</li>
+            <li>Dashboard personalizado com métricas</li>
+            <li>Suporte prioritário via WhatsApp</li>
+          </ul>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20Tráfego%20Premium!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+        </div>
+
+        <!-- SOCIAL MEDIA -->
+        <div class="pricing-card">
+          <div>
+            <div class="pricing-tag">Social Media</div>
+            <div class="pricing-name">Gestão de Redes</div>
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-currency">R$</span>
+            <span class="pricing-value">1.387</span>
+            <span class="pricing-period">/mês</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <ul class="pricing-features">
+            <li>Gestão completa do Instagram e Facebook</li>
+            <li>Conteúdo estratégico e personalizado</li>
+            <li>Criação de artes e legendas (copies)</li>
+            <li>Calendário editorial mensal</li>
+            <li>Crescimento orgânico de seguidores</li>
+            <li>Relatório quinzenal de desempenho</li>
+          </ul>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20Social%20Media!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+<!-- ============ #comparar ============ -->
+<!-- COMPARADOR BÁSICO x PREMIUM -->
+  <section class="section" id="comparar">
+    <div class="container">
+      <div class="section-tag">B&aacute;sico ou Premium</div>
+      <div class="comp-head">
+        <div>
+          <h2 class="heading reveal" style="max-width:16ch">A diferen&ccedil;a entre <span style="color:var(--accent)">ser achado</span> e ser procurado</h2>
+          <p class="reveal" style="margin-top:1.25rem;max-width:56ch;color:var(--text-muted);font-size:0.98rem;line-height:1.7">
+            O Meta mostra seu an&uacute;ncio para quem ainda n&atilde;o pensou em comprar.
+            O Google atende quem j&aacute; est&aacute; procurando agora, com o cart&atilde;o na m&atilde;o.
+            Quem roda s&oacute; um dos dois deixa metade da demanda na mesa.
+          </p>
+        </div>
+        <div class="comp-toggle reveal" role="group" aria-label="Filtrar comparação">
+          <button type="button" data-vista="diff" aria-pressed="true">S&oacute; o que muda</button>
+          <button type="button" data-vista="tudo" aria-pressed="false">Compara&ccedil;&atilde;o completa</button>
+        </div>
+      </div>
+
+      <div class="comp-wrap reveal">
+        <table class="comp">
+          <thead>
+            <tr>
+              <th scope="col">O que est&aacute; incluso</th>
+              <th scope="col">Tr&aacute;fego B&aacute;sico<b>R$ 879,90</b></th>
+              <th scope="col" class="is-prem">Tr&aacute;fego Premium<b>R$ 1.497</b></th>
+            </tr>
+          </thead>
+          <tbody id="compBody">
+            <tr data-comum="1"><th scope="row">Campanhas no Meta (Facebook e Instagram)</th><td><span class="tick">&#10003;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Campanhas no Google Ads (busca)</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Landing page de alta convers&atilde;o</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Funil de vendas para WhatsApp</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Automa&ccedil;&atilde;o de coment&aacute;rios com DM autom&aacute;tico</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Dashboard personalizado com m&eacute;tricas</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr class="only-prem"><th scope="row">Criativos produzidos por m&ecirc;s</th><td><span class="dash">&mdash;</span></td><td><span class="comp-strong">2 por m&ecirc;s</span></td></tr>
+            <tr class="only-prem"><th scope="row">Frequ&ecirc;ncia de acompanhamento</th><td>Peri&oacute;dico</td><td><span class="comp-strong">Semanal</span></td></tr>
+            <tr class="only-prem"><th scope="row">Prioridade no suporte</th><td><span class="dash">&mdash;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr data-comum="1"><th scope="row">Copies para an&uacute;ncios</th><td>2 por m&ecirc;s</td><td><span class="comp-strong">Copies + criativos</span></td></tr>
+            <tr data-comum="1"><th scope="row">Segmenta&ccedil;&atilde;o e cria&ccedil;&atilde;o de p&uacute;blicos</th><td><span class="tick">&#10003;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr data-comum="1"><th scope="row">Suporte via WhatsApp</th><td><span class="tick">&#10003;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr data-comum="1"><th scope="row">Relat&oacute;rio quinzenal</th><td><span class="tick">&#10003;</span></td><td><span class="tick">&#10003;</span></td></tr>
+            <tr data-comum="1"><th scope="row">Contrato sem fidelidade</th><td><span class="tick">&#10003;</span></td><td><span class="tick">&#10003;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="comp-close reveal">
+        <p>
+          S&atilde;o <strong>8 entregas a mais</strong> por R$ 617,10 de diferen&ccedil;a.
+          Se <strong>uma &uacute;nica venda a mais</strong> fechar no m&ecirc;s, a conta j&aacute; virou.
+          &Eacute; essa a pergunta que vale, n&atilde;o qual dos dois &eacute; mais barato.
+        </p>
+        <div class="comp-side">
+          <span class="comp-delta">+ R$ 617,10/m&ecirc;s</span>
+          <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20o%20plano%20Meta%20%2B%20Google%20Ads%20de%20R%241.497." target="_blank" rel="noopener" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+            Quero o Meta + Google
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+<!-- ============ #sistemas ============ -->
+<!-- SISTEMAS / SAAS -->
+  <section class="section" id="sistemas">
+    <div class="container">
+      <div class="fluxo-trilho" id="fluxoTrilho">
+        <div class="fluxo-palco">
+
+          <div class="topo-centro">
+            <div class="section-tag">Sistemas sob medida</div>
+            <h2 class="heading reveal" style="max-width:23ch;margin-inline:auto">O an&uacute;ncio traz o lead. O <span style="color:var(--accent)">sistema</span> &eacute; quem n&atilde;o deixa ele se perder</h2>
+            <p class="pricing-lede reveal">
+              Todo neg&oacute;cio chega num ponto em que caderno e WhatsApp bagun&ccedil;ado come&ccedil;am a
+              custar caro: o lead que ningu&eacute;m respondeu, o hor&aacute;rio que ningu&eacute;m confirmou,
+              o cliente que sumiu e ningu&eacute;m percebeu. A Conect+ desenvolve o sistema que
+              <strong>fecha esses buracos</strong>, montado para o jeito que o seu neg&oacute;cio
+              funciona. N&atilde;o &eacute; um programa gen&eacute;rico que voc&ecirc; aluga e tenta encaixar.
+              &Eacute; o contr&aacute;rio.
+            </p>
+          </div>
+
+          <div class="fluxo" id="fluxo">
+          <div class="etapa">
+            <b>1</b>
+            <h3>O clique n&atilde;o morre no WhatsApp</h3>
+            <p>A pessoa sai do an&uacute;ncio e cai numa p&aacute;gina com uma fun&ccedil;&atilde;o s&oacute;: marcar hor&aacute;rio. Sem &quot;oi, boa tarde&quot;, sem fila de espera.</p>
+          </div>
+          <div class="etapa">
+            <b>2</b>
+            <h3>Ela marca sozinha, &agrave;s 23h</h3>
+            <p>Escolhe dia e hora sem falar com ningu&eacute;m. Voc&ecirc; para de perder cliente por ter demorado a responder.</p>
+          </div>
+          <div class="etapa">
+            <b>3</b>
+            <h3>Nenhum contato fica solto</h3>
+            <p>O lead nasce dentro do sistema, no est&aacute;gio certo, com origem e hist&oacute;rico. Caderno e print param de perder gente.</p>
+          </div>
+          <div class="etapa">
+            <b>4</b>
+            <h3>O lembrete vai sem voc&ecirc; lembrar</h3>
+            <p>Confirma&ccedil;&atilde;o na hora e aviso um dia antes, autom&aacute;tico. &Eacute; aqui que a maior parte das faltas some.</p>
+          </div>
+          <div class="etapa">
+            <b>5</b>
+            <h3>No fim do m&ecirc;s o n&uacute;mero existe</h3>
+            <p>Quantos marcaram, quantos apareceram e quantos fecharam. N&atilde;o &eacute; sensa&ccedil;&atilde;o, &eacute; a tela.</p>
+          </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="promessas tres reveal-group">
+        <div class="promessa">
+          <h3>Montado para o seu nicho</h3>
+          <p>O mesmo motor j&aacute; roda para advocacia, odontologia e imobili&aacute;ria. Os nomes das etapas, o funil e o tom das mensagens mudam conforme o neg&oacute;cio.</p>
+        </div>
+        <div class="promessa">
+          <h3>Dados no Brasil</h3>
+          <p>Banco na regi&atilde;o de S&atilde;o Paulo, consentimento registrado e cada conta isolada da outra. LGPD desde a arquitetura, n&atilde;o como remendo depois.</p>
+        </div>
+        <div class="promessa">
+          <h3>Com a sua marca</h3>
+          <p>Roda no seu dom&iacute;nio, com a sua identidade. Para o seu cliente, o sistema &eacute; da sua empresa, e n&atilde;o de uma ag&ecirc;ncia.</p>
+        </div>
+      </div>
+
+      <div class="sistema-fecho">
+        <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20entender%20o%20sistema%20sob%20medida%20da%20Conect%2B%20para%20a%20minha%20empresa." target="_blank" rel="noopener" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+          Quero ver o sistema funcionando
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+<!-- ============ #relatorios ============ -->
+<!-- RELATÓRIOS -->
+  <section class="section" id="relatorios">
+    <div class="container">
+
+      <div class="topo-centro">
+        <div class="section-tag">Relat&oacute;rios</div>
+        <h2 class="heading reveal" style="max-width:17ch;margin-inline:auto">Alcance n&atilde;o paga conta. <span style="color:var(--accent)">Retorno</span> paga</h2>
+        <p class="rel-lede reveal">
+          A maioria dos relat&oacute;rios de ag&ecirc;ncia &eacute; um PDF cheio de impress&atilde;o, alcance,
+          CTR e frequ&ecirc;ncia. Voc&ecirc; l&ecirc; tudo, fecha o arquivo e continua sem saber se valeu.
+          O nosso come&ccedil;a pelo fim: <strong>quanto voc&ecirc; colocou, quanto voltou e quanto
+          custou cada lead</strong>. O resto fica embaixo, para quando voc&ecirc; quiser abrir.
+        </p>
+      </div>
+
+      <!-- Painel montado em CSS e SVG. Números de exemplo, mas fechando entre
+           si: 1.200 dividido por 38 dá 31,58, a linha termina em 38 e as
+           quatro origens somam 38. Número que não fecha, cliente confere. -->
+      <div class="painel reveal">
+
+        <aside class="painel-barra" aria-hidden="true">
+          <div class="painel-marca">
+            <i><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18L10 11l4 4 6-8"/></svg></i>
+            Painel Conect+
+          </div>
+
+          <div class="painel-menu">
+            <span class="atual"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Vis&atilde;o geral</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="3.4"/><path d="M22 20v-2a4 4 0 00-3-3.87"/></svg>Leads</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>Campanhas</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.2"/><circle cx="8.5" cy="9.5" r="1.7"/><path d="M21 16l-5-5-9 9"/></svg>Criativos</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Relat&oacute;rios</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h10M17 7h4M3 17h4M11 17h10"/><circle cx="15" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></svg>Configura&ccedil;&otilde;es</span>
+          </div>
+
+          <div class="painel-usuario">
+            <i>SE</i>
+            <div>
+              <b>Sua empresa</b>
+              <span>Meta + Google Ads</span>
+            </div>
+          </div>
+        </aside>
+
+        <div class="painel-corpo">
+
+          <div class="painel-topo">
+            <div class="painel-titulo">
+              Vis&atilde;o geral
+              <span>Agosto at&eacute; aqui, atualizado hoje</span>
+            </div>
+            <div class="painel-acoes">
+              <div class="painel-busca">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.8"/><path d="M20.5 20.5l-5-5"/></svg>
+                Buscar
+              </div>
+              <div class="painel-sino">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="painel-kpis">
+            <div class="kpi kpi-destaque">
+              <span>Retorno</span>
+              <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8.5 8.5-4-4L2 19"/><path d="M16 7h6v6"/></svg></i>
+              <b>4,2x</b>
+              <em>+0,6x sobre julho</em>
+            </div>
+            <div class="kpi">
+              <span>Investido</span>
+              <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.4"/><path d="M2.5 10h19"/></svg></i>
+              <b>R$ 1.200</b>
+              <em class="neutro">mesmo de julho</em>
+            </div>
+            <div class="kpi">
+              <span>Leads</span>
+              <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="3.4"/><path d="M22 20v-2a4 4 0 00-3-3.87"/></svg></i>
+              <b>38</b>
+              <em>+15% sobre julho</em>
+            </div>
+            <div class="kpi">
+              <span>Custo por lead</span>
+              <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-7-7A2 2 0 013 12.2V5a2 2 0 012-2h7.2a2 2 0 011.4.6l7 7a2 2 0 010 2.8z"/><path d="M7.5 7.5h.01"/></svg></i>
+              <b>R$ 31,58</b>
+              <em>13% mais barato</em>
+            </div>
+          </div>
+
+          <div class="painel-duplo">
+
+            <div class="quadro">
+              <div class="quadro-topo">
+                <h4>Leads por m&ecirc;s</h4>
+                <span>&Uacute;ltimos 6 meses</span>
+              </div>
+              <div class="grafico">
+                <div class="grafico-escala"><span>40</span><span>30</span><span>20</span><span>10</span><span>0</span></div>
+                <svg viewBox="0 0 320 120" preserveAspectRatio="none" role="img" aria-label="Leads por m&ecirc;s: 18, 22, 21, 27, 33 e 38">
+                  <defs>
+                    <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#1E5FE0" stop-opacity="0.42"/>
+                      <stop offset="100%" stop-color="#1E5FE0" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <g stroke="rgba(255,255,255,0.07)" stroke-width="1" vector-effect="non-scaling-stroke">
+                    <line x1="0" y1="16"  x2="320" y2="16"/>
+                    <line x1="0" y1="40"  x2="320" y2="40"/>
+                    <line x1="0" y1="64"  x2="320" y2="64"/>
+                    <line x1="0" y1="88"  x2="320" y2="88"/>
+                    <line x1="0" y1="112" x2="320" y2="112"/>
+                  </g>
+                  <path d="M10 68.8 L70 59.2 L130 61.6 L190 47.2 L250 32.8 L310 20.8 L310 112 L10 112 Z" fill="url(#gradLeads)"/>
+                  <polyline points="10,68.8 70,59.2 130,61.6 190,47.2 250,32.8 310,20.8"
+                            fill="none" stroke="#4C86F5" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+                  <g fill="#4C86F5" stroke="#0f2057" stroke-width="2" vector-effect="non-scaling-stroke">
+                    <circle cx="10"  cy="68.8" r="3"/>
+                    <circle cx="70"  cy="59.2" r="3"/>
+                    <circle cx="130" cy="61.6" r="3"/>
+                    <circle cx="190" cy="47.2" r="3"/>
+                    <circle cx="250" cy="32.8" r="3"/>
+                    <circle cx="310" cy="20.8" r="4"/>
+                  </g>
+                </svg>
+                <div class="grafico-meses"><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span><span>Jul</span><span>Ago</span></div>
+              </div>
+            </div>
+
+            <div class="quadro">
+              <div class="quadro-topo">
+                <h4>De onde vieram</h4>
+                <span>38 no m&ecirc;s</span>
+              </div>
+              <div class="rosca">
+                <svg viewBox="0 0 120 120" role="img" aria-label="Origem dos leads: Meta Ads 18, Google Pesquisa 11, Google Maps 6 e remarketing 3">
+                  <g transform="rotate(-90 60 60)" fill="none" stroke-width="15">
+                    <circle cx="60" cy="60" r="44" stroke="#1E5FE0" stroke-dasharray="130.96 145.50" stroke-dashoffset="0"/>
+                    <circle cx="60" cy="60" r="44" stroke="#4C86F5" stroke-dasharray="80.03 196.43" stroke-dashoffset="-130.96"/>
+                    <circle cx="60" cy="60" r="44" stroke="#7BA6F8" stroke-dasharray="43.65 232.81" stroke-dashoffset="-210.99"/>
+                    <circle cx="60" cy="60" r="44" stroke="rgba(255,255,255,0.2)" stroke-dasharray="21.83 254.63" stroke-dashoffset="-254.64"/>
+                  </g>
+                  <text x="60" y="57" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="800" letter-spacing="-0.5">38</text>
+                  <text x="60" y="71" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8.5" letter-spacing="0.5">LEADS</text>
+                </svg>
+                <div class="rosca-legenda">
+                  <div><i style="background:#1E5FE0"></i><span>Meta Ads</span><b>18</b></div>
+                  <div><i style="background:#4C86F5"></i><span>Google Pesquisa</span><b>11</b></div>
+                  <div><i style="background:#7BA6F8"></i><span>Google Maps</span><b>6</b></div>
+                  <div><i style="background:rgba(255,255,255,0.2)"></i><span>Remarketing</span><b>3</b></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="painel-duplo igual">
+
+            <div class="quadro">
+              <div class="quadro-topo">
+                <h4>Leads recentes</h4>
+                <span>Ver todos</span>
+              </div>
+              <div class="lista-painel">
+                <div>
+                  <i>AP</i>
+                  <div><b>Ana P.</b><span>Formul&aacute;rio do site &middot; h&aacute; 2h</span></div>
+                  <span class="selo selo-quente">Agendou</span>
+                </div>
+                <div>
+                  <i>CM</i>
+                  <div><b>Carlos M.</b><span>WhatsApp do an&uacute;ncio &middot; h&aacute; 5h</span></div>
+                  <span class="selo selo-morno">Em contato</span>
+                </div>
+                <div>
+                  <i>JR</i>
+                  <div><b>Juliana R.</b><span>Google Pesquisa &middot; ontem</span></div>
+                  <span class="selo selo-frio">Novo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quadro">
+              <div class="quadro-topo">
+                <h4>O que a Conect+ fez</h4>
+                <span>Esta semana</span>
+              </div>
+              <div class="lista-painel">
+                <div>
+                  <i class="tarefa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>
+                  <div><b>3 criativos novos no ar</b><span>Campanha de convers&atilde;o &middot; h&aacute; 1 dia</span></div>
+                  <span></span>
+                </div>
+                <div>
+                  <i class="tarefa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>
+                  <div><b>Or&ccedil;amento remanejado</b><span>Sa&iacute;u do p&uacute;blico frio, foi pro Google &middot; h&aacute; 3 dias</span></div>
+                  <span></span>
+                </div>
+                <div>
+                  <i class="tarefa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>
+                  <div><b>Relat&oacute;rio quinzenal enviado</b><span>Com o que muda no pr&oacute;ximo per&iacute;odo &middot; h&aacute; 4 dias</span></div>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <p class="painel-nota">
+        Estrutura do painel, com n&uacute;meros de exemplo. No seu, os n&uacute;meros s&atilde;o os da sua conta.
+      </p>
+
+      <ul class="rel-lista reveal-group">
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          <span><b>A primeira linha &eacute; o retorno.</b> N&atilde;o &eacute; alcance nem curtida. &Eacute; quanto entrou e quanto voltou, antes de qualquer outra coisa.</span>
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          <span><b>Montado para a sua empresa.</b> Cl&iacute;nica n&atilde;o mede o mesmo que escrit&oacute;rio de advocacia. Entram as m&eacute;tricas que decidem alguma coisa, e s&oacute; elas.</span>
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          <span><b>Voc&ecirc; recebe antes de fechar.</b> No diagn&oacute;stico o painel j&aacute; vai montado com a leitura da sua conta. Se decidir n&atilde;o seguir, ele continua sendo seu.</span>
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          <span><b>Sem dicion&aacute;rio de m&eacute;trica.</b> CPM, CTR e frequ&ecirc;ncia s&atilde;o problema nosso. Voc&ecirc; olha quatro n&uacute;meros e sabe se continua, se aumenta ou se muda.</span>
+        </li>
+      </ul>
+
+      <div class="rel-fecho">
+        <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20ver%20o%20painel%20de%20resultados%20da%20minha%20empresa." target="_blank" rel="noopener" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+          Quero ver o painel da minha empresa
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>

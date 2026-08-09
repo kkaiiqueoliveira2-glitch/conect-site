@@ -1,0 +1,10 @@
+.vercel
+node_modules/
+test-results/
+playwright-report/
+.playwright/
+
+# Documentos internos da agencia. O repositorio e PUBLICO: o que entra aqui
+# fica visivel pra qualquer um e continua no historico mesmo depois de apagado.
+REFERENCIAS.md
+QUALIDADE.md

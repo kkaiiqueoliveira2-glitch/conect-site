@@ -1,0 +1,26 @@
+# Documento interno de estratégia e referências — não vai pro ar
+REFERENCIAS.md
+
+# Servidor local de preview (node preview.js)
+preview.js
+
+# Rascunho antigo, ficaria acessível em /index_updated.html
+index_updated.html
+
+# Vídeo não usado pelo site (15 MB)
+interior_design.mp4
+
+# Molde da imagem de compartilhamento. Fica no repositório pra regerar a
+# og-image.jpg quando a copy mudar, mas não precisa estar no ar.
+# Regerar: com o `vercel dev` ligado, abrir /_og.html e capturar em 1200x630.
+_og.html
+
+# Esteira de qualidade — nao vai pro ar
+QUALIDADE.md
+tests/
+scripts/
+playwright.config.js
+package.json
+package-lock.json
+node_modules
+.github

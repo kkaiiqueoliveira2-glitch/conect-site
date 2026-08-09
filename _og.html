@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      font-family: 'Outfit', Arial, sans-serif;
+      background: #060e28;
+      position: relative;
+    }
+
+    /* a mesma teia do hero, escurecida pra o texto ganhar contraste */
+    .teia {
+      position: absolute;
+      inset: 0;
+      background: url('teia-poster.jpg') center/cover no-repeat;
+      opacity: 0.55;
+    }
+    .veu {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(120% 90% at 15% 40%, rgba(6,14,40,0.86) 0%, rgba(6,14,40,0.70) 45%, rgba(6,14,40,0.92) 100%),
+        linear-gradient(90deg, rgba(6,14,40,0.95) 0%, rgba(6,14,40,0.35) 100%);
+    }
+
+    /* margem generosa: WhatsApp e LinkedIn cortam as bordas de forma diferente */
+    .quadro {
+      position: relative;
+      height: 100%;
+      padding: 64px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* align-self é obrigatório: como item de flex em coluna, o stretch padrão
+       ignora o width:auto e estica o logo na largura toda do quadro. */
+    .logo { height: 58px; width: auto; align-self: flex-start; }
+
+    .chapeu {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #4d86f7;
+      margin-bottom: 22px;
+    }
+
+    .linha1 {
+      font-size: 50px;
+      font-weight: 600;
+      color: #c3d0ea;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .linha2 {
+      font-size: 104px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.045em;
+      line-height: 1.02;
+      margin-top: 6px;
+      text-shadow: 0 4px 40px rgba(0,0,0,0.55);
+    }
+    .linha2 em {
+      font-style: italic;
+      font-weight: 700;
+      color: #9fb4dc;
+    }
+
+    .rodape {
+      display: flex;
+      align-items: center;
+      gap: 44px;
+      padding-top: 26px;
+      border-top: 1px solid rgba(120,150,220,0.28);
+    }
+    .dado { display: flex; flex-direction: column; gap: 2px; }
+    .dado b {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .dado span {
+      font-size: 17px;
+      font-weight: 500;
+      color: #9aabcd;
+    }
+    .site {
+      margin-left: auto;
+      font-size: 36px;
+      font-weight: 800;
+      color: #4d86f7;
+      letter-spacing: -0.015em;
+    }
+  </style>
+</head>
+<body>
+  <div class="teia"></div>
+  <div class="veu"></div>
+
+  <div class="quadro">
+    <img class="logo" src="logo-nome.png" alt="Conect+">
+
+    <div>
+      <div class="chapeu">Criação de sites e performance</div>
+      <div class="linha1">Sua empresa não está sem cliente.</div>
+      <div class="linha2">Está <em>invisível</em>.</div>
+    </div>
+
+    <div class="rodape">
+      <div class="dado"><b>15</b><span>clientes ativos</span></div>
+      <div class="dado"><b>R$80k+</b><span>investidos em mídia</span></div>
+      <div class="dado"><b>4.8x</b><span>ROAS médio</span></div>
+      <div class="site">conectpluss.com</div>
+    </div>
+  </div>
+</body>
+</html>

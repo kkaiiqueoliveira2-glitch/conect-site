@@ -1,0 +1,20 @@
+{
+  "name": "conect-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site da Conect+ — pagina estatica unica + funcao serverless de lead",
+  "scripts": {
+    "dev": "node preview.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "budget": "node scripts/budget.js",
+    "segredos": "node scripts/varredura-segredos.js",
+    "verificar": "npm run segredos && npm run budget && npm run test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
