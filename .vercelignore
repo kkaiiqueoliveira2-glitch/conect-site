@@ -20,6 +20,7 @@ QUALIDADE.md
 tests/
 scripts/
 playwright.config.js
+playwright.headers.config.js
 package.json
 package-lock.json
 node_modules
