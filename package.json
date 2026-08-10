@@ -7,6 +7,7 @@
     "dev": "node preview.js",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
+    "test:headers": "playwright test --config playwright.headers.config.js tests/headers.spec.js",
     "budget": "node scripts/budget.js",
     "segredos": "node scripts/varredura-segredos.js",
     "verificar": "npm run segredos && npm run budget && npm run test"
