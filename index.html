@@ -2310,17 +2310,22 @@
        =================================================================== */
     @media (prefers-reduced-motion: reduce) {
 
-      /* --- laços decorativos: fora --- */
-      .marcas-esq,
-      .marcas-dir,
-      .muro-pista,
+      /* --- laços puramente decorativos: fora --- */
       .rodape-aurora,
       .scroll-hint-line,
       .cine-caixa.carregando::before { animation: none !important; }
 
-      /* a esteira parada precisa começar mostrando conteúdo, não o vão que a
-         animação preencheria */
-      .marcas-esq, .marcas-dir, .muro-pista { transform: none !important; }
+      /* --- laços que carregam CONTEÚDO: desaceleram, não param ---
+         A esteira de marcas e o muro de depoimentos não são enfeite: são a
+         lista de clientes e as falas deles. Parar os dois não deixa a página
+         mais calma, deixa a prova social escondida — só ficam visíveis os
+         primeiros itens, e não existe outro caminho pra chegar no resto.
+         Já aconteceu antes, no AMC Insider, e foi lido como site quebrado.
+         Aqui a velocidade cai pra um quinto: o deslocamento fica lento a
+         ponto de não disputar atenção com a leitura, e o conteúdo continua
+         passando inteiro pra quem esperar. */
+      .marcas-esq, .marcas-dir { animation-duration: 210s !important; }
+      .muro-pista { animation-duration: 230s !important; }
 
       /* a aurora sem a respiração continua sendo o brilho de fundo, só que
          num tamanho só */
@@ -4245,11 +4250,15 @@
     // No celular o scrubbing do vídeo trava e não pinta frame nenhum. No modo
     // leve o vídeo toca sozinho em loop, numa versão 720p.
     //
-    // `semMovimento` entra na mesma conta porque o desfecho é o mesmo: desenhar
-    // um quadro e parar. A malha já sabia fazer isso pelo celular; aqui ela só
-    // passa a fazer por mais um motivo.
-    const modoLeve = window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches
-                     || semMovimento;
+    // `semMovimento` NÃO entra nesta conta, e isso já foi tentado uma vez.
+    // Dobrar as duas coisas parecia econômico — as duas terminam em "desenhar
+    // um quadro e parar" — mas o efeito era trocar o site inteiro pela versão
+    // de celular no desktop: hero estático, vídeo 720p, sem malha. Movimento
+    // reduzido quer dizer menos deslocamento, não menos site. Quem liga essa
+    // preferência continua recebendo o hero de desktop, a troca dos dois
+    // títulos e a malha; o que sai é o percurso, não o conteúdo. O tratamento
+    // fica em `semMovimento` nos pontos certos, logo abaixo.
+    const modoLeve = window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches;
 
     // ROLAGEM NATIVA.
     //
@@ -4645,7 +4654,18 @@
     // Escrever estilo é o que custa caro aqui, não a conta. A maior parte das
     // letras fica parada em 0 ou em 1 durante quase toda a rolagem, então só
     // vai pro DOM quem realmente mudou de posição.
+    // Com movimento reduzido a letra deixa de percorrer os 46px e passa a
+    // acender no lugar. A escada continua: a 1ª letra ainda acende antes da
+    // última, os dois títulos ainda trocam de lugar na rolagem, as duas curvas
+    // ainda valem. O que sai é o deslocamento — que é exatamente o que a
+    // preferência pede — e não o efeito.
+    const percurso = semMovimento ? 0 : 1;
+
+    // Escrever estilo é o que custa caro aqui, não a conta. A maior parte das
+    // letras fica parada em 0 ou em 1 durante quase toda a rolagem, então só
+    // vai pro DOM quem realmente mudou de posição.
     const pintar = (c, op, y) => {
+      y *= percurso;
       const chave = (op * 1000 | 0) * 4096 + (y * 10 | 0);
       if (c._ult === chave) return;
       c._ult = chave;

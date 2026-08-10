@@ -288,20 +288,47 @@ test.describe('movimento', () => {
     expect(noMuro, 'o muro não voltou a andar ao entrar na tela').toContain('muro-sobe');
   });
 
-  test('com "reduzir movimento" nada fica em laço infinito', async ({ browser }) => {
+  // Este teste já nasceu errado uma vez e vale registrar por quê: a primeira
+  // versão exigia ZERO animação com movimento reduzido, e passou. O site que
+  // ele aprovava era um site morto — sem hero, sem malha, com a lista de
+  // clientes congelada. "Reduzir movimento" virou "remover o site". A regra
+  // certa é outra, e é ela que está medida aqui: o que é enfeite sai, o que é
+  // conteúdo desacelera, e o que dá sentido à página continua existindo.
+  test('com "reduzir movimento" o site perde o percurso, não o conteúdo', async ({ browser }) => {
     const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
     const pg = await ctx.newPage();
     await pg.route('**/*.mp4', (r) => r.abort());
     await pg.goto('/index.html');
-    await pg.waitForTimeout(2000);
+    await pg.waitForTimeout(2500);
 
+    // 1. o enfeite sai
     const laços = await pg.evaluate(contarLacos);
-    expect(laços, `ainda em laço com movimento reduzido: ${laços.join(', ')}`).toEqual([]);
+    expect(laços, 'a aurora do rodapé é decoração e deveria estar parada').not.toContain('rodape-respira');
+    expect(laços, 'a linha da dica de rolagem deveria estar parada').not.toContain('scroll-line');
 
-    // O hero dirigido por rolagem também sai: sem isso as ~47 letras continuam
-    // caindo uma a uma para quem pediu justamente que nada se mexesse.
+    // 2. o hero continua de pé. Ele é a página inteira: sem as letras não
+    //    existe título 1, título 2, nem a troca entre os dois.
     const letras = await pg.evaluate(() => document.querySelectorAll('.hero-intro-title .char').length);
-    expect(letras, 'a escada de letras do hero ainda é montada com movimento reduzido').toBe(0);
+    expect(letras, 'o hero de desktop sumiu com movimento reduzido').toBeGreaterThan(20);
+
+    // 3. ...mas acendendo no lugar, sem percorrer os 46px
+    const deslocamento = await pg.evaluate(() => {
+      const c = document.querySelector('.hero-intro-title .char');
+      const m = new DOMMatrixReadOnly(getComputedStyle(c).transform);
+      return Math.abs(m.m42);
+    });
+    expect(deslocamento, 'as letras ainda percorrem distância com movimento reduzido').toBeLessThan(1);
+
+    // 4. a prova social continua passando. Congelar a esteira não acalma a
+    //    página, esconde a lista de clientes — já foi lido como site quebrado.
+    const velocidades = await pg.evaluate(() =>
+      [...document.querySelectorAll('.marcas-linha, .muro-pista')].map((el) => {
+        const cs = getComputedStyle(el);
+        return cs.animationName === 'none' ? 0 : parseFloat(cs.animationDuration);
+      })
+    );
+    expect(velocidades.every((v) => v > 0), 'esteira/muro congelados escondem conteúdo').toBe(true);
+    expect(Math.min(...velocidades), 'a esteira deveria estar bem mais lenta').toBeGreaterThan(150);
 
     await ctx.close();
   });
