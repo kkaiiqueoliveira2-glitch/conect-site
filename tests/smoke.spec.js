@@ -243,6 +243,70 @@ test.describe('muro de depoimentos', () => {
   });
 });
 
+// A auditoria de movimento de 09/08 mediu 11 laços infinitos rodando no topo
+// da página, incluindo o muro de depoimentos e o rodapé, que ficam milhares de
+// pixels abaixo. Mediu também que "reduzir movimento" não desligava nada além
+// da confirmação do formulário. Os dois testes abaixo travam as duas medições.
+test.describe('movimento', () => {
+  // Só desktop: no celular o `modoLeve` já desliga o hero dirigido por rolagem,
+  // então a medição aqui não diria nada sobre a correção.
+  test.skip(({ isMobile }) => isMobile, 'medido no desktop');
+
+  // `animationPlayState` devolve "running" mesmo quando não existe animação
+  // nenhuma, então ele sozinho mente. O nome da animação vai junto sempre.
+  const contarLacos = () =>
+    [...document.querySelectorAll('*')].filter((el) => {
+      const cs = getComputedStyle(el);
+      return (
+        cs.animationName !== 'none' &&
+        cs.animationIterationCount.includes('infinite') &&
+        cs.animationPlayState === 'running'
+      );
+    }).map((el) => getComputedStyle(el).animationName);
+
+  test('laço infinito fora da tela fica parado', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.waitForTimeout(2000);
+
+    // No topo, a única coisa que pode estar girando é a dica de rolagem, que
+    // está na tela e serve pra apontar pra baixo. Todo o resto — as três
+    // esteiras de marcas, as colunas do muro, a aurora do rodapé — está longe.
+    const noTopo = await page.evaluate(contarLacos);
+    expect(
+      noTopo,
+      `laços rodando no topo sem estar na tela: ${noTopo.join(', ')}`
+    ).not.toContain('muro-sobe');
+    expect(noTopo).not.toContain('muro-desce');
+    expect(noTopo).not.toContain('rodape-respira');
+    expect(noTopo).not.toContain('marcas-anda');
+
+    // E o contrário também: quem entra na tela precisa voltar a andar. Sem
+    // esta metade, "pausar tudo pra sempre" passaria no teste.
+    await page.evaluate(() => document.querySelector('.muro-pista')?.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(900);
+    const noMuro = await page.evaluate(contarLacos);
+    expect(noMuro, 'o muro não voltou a andar ao entrar na tela').toContain('muro-sobe');
+  });
+
+  test('com "reduzir movimento" nada fica em laço infinito', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
+    const pg = await ctx.newPage();
+    await pg.route('**/*.mp4', (r) => r.abort());
+    await pg.goto('/index.html');
+    await pg.waitForTimeout(2000);
+
+    const laços = await pg.evaluate(contarLacos);
+    expect(laços, `ainda em laço com movimento reduzido: ${laços.join(', ')}`).toEqual([]);
+
+    // O hero dirigido por rolagem também sai: sem isso as ~47 letras continuam
+    // caindo uma a uma para quem pediu justamente que nada se mexesse.
+    const letras = await pg.evaluate(() => document.querySelectorAll('.hero-intro-title .char').length);
+    expect(letras, 'a escada de letras do hero ainda é montada com movimento reduzido').toBe(0);
+
+    await ctx.close();
+  });
+});
+
 test('o formulário de lead tem os campos que a API exige', async ({ page }) => {
   // A API rejeita com 400 se faltar campo. Se o form e a função saírem de
   // sincronia, todo envio vira erro e o lead se perde.

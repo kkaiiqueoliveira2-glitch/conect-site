@@ -241,7 +241,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background 0.5s, border-color 0.5s, padding 0.4s;
+      /* `padding` saiu daqui. Era a única animação da página que obrigava o
+         navegador a refazer o layout a cada quadro, e ela disparava toda vez
+         que a rolagem cruzava o limiar, junto com o canvas do hero e o
+         parallax do rodapé — o pior momento possível.
+
+         O encolhimento continua existindo, só que como degrau instantâneo.
+         Ninguém percebe a falta: a barra ganha fundo e borda no mesmo
+         instante, e é isso que o olho lê como "a nav mudou", não os 8px de
+         padding se fechando ao longo de 400ms. */
+      transition: background 0.5s, border-color 0.5s;
     }
 
     #nav.scrolled {
@@ -260,13 +269,21 @@
     }
 
     /* Troca de logo no scroll: símbolo no topo, wordmark depois que a nav
-       encolhe. Os dois ficam empilhados no mesmo ponto e fazem cross-fade;
-       o container anima a largura pra nav não dar solavanco. */
+       encolhe. Os dois ficam empilhados no mesmo ponto e fazem cross-fade.
+
+       A caixa tem a largura do MAIOR dos dois e não muda nunca. Antes ela
+       animava de 40px pra 120px, e o comentário original dizia que era "pra
+       nav não dar solavanco" — a intenção estava certa, a ferramenta é que
+       cobrava caro: `width` é propriedade de layout, então os 500ms de
+       transição eram 500ms de recálculo da linha inteira da nav.
+
+       Reservando o espaço desde o começo, o solavanco deixa de ser possível
+       em vez de ser compensado. O símbolo fica alinhado à esquerda dentro da
+       caixa, então a sobra à direita não desloca nada. */
     .nav-logo-imgs {
       position: relative;
-      width: 40px;   /* símbolo a 38px de altura */
+      width: 120px;   /* largura do wordmark, que é o mais largo dos dois */
       height: 38px;
-      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .nav-logo-symbol,
@@ -287,7 +304,6 @@
 
     #nav.scrolled .nav-logo-symbol { opacity: 0; transform: translateY(-8px) scale(0.96); }
     #nav.scrolled .nav-logo-word   { opacity: 1; transform: translateY(0) scale(1); }
-    #nav.scrolled .nav-logo-imgs   { width: 120px; }  /* wordmark a 38px de altura */
 
     .nav-links {
       display: flex;
@@ -544,12 +560,30 @@
       border-radius: 50%;
       background: var(--green);
       box-shadow: 0 0 6px rgba(74,222,128,0.6);
-      animation: blink 2.4s ease-in-out infinite;
+      animation: ponto-entra 260ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+    /* ---- PONTOS DE STATUS ----
+       Aqui piscavam dois pontos, com o mesmo keyframe, em lugares diferentes
+       da página. Mais quatro coisas pulsavam junto: o badge do hero flutuando,
+       a seta dos cases subindo e descendo, o coração do rodapé batendo e a
+       linha da dica de rolagem.
+
+       Atenção não soma, divide. Um ponto piscando funciona porque é o único;
+       seis coisas pulsando ao mesmo tempo viram ruído de fundo e nenhuma
+       consegue mais apontar pra nada. E um ponto verde que pisca pra sempre
+       não informa nada: não muda de estado, não é novidade, não tem pra onde
+       olhar depois.
+
+       Agora ele entra uma vez e para. Aparecer já é o evento.
+
+       O único laço que sobreviveu é a linha da dica de rolagem, que tem
+       trabalho de verdade: dizer que a página continua abaixo, num hero que
+       ocupa a tela toda e não mostra borda de conteúdo nenhuma. E ela some
+       sozinha quando a pessoa rola, ou seja, para quando o recado foi dado. */
+    @keyframes ponto-entra {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
     }
 
     /* Sombra em todos os textos do hero para legibilidade */
@@ -644,17 +678,13 @@
       align-items: center;
       gap: 0.75rem;
       z-index: 10;
-      animation: float 5s ease-in-out infinite;
-      /* SEM backdrop-filter aqui. O `background: var(--surface)` é #0b1840
-         opaco, então o blur ficava atrás de uma parede e não aparecia em
-         pixel nenhum. Só que o elemento flutua sem parar, e blur de fundo em
-         elemento que se move é reamostrado a cada quadro: era custo puro,
-         rodando a sessão inteira, por nada. */
-    }
+      /* O `float` que balançava esse cartão pra sempre saiu. Ele não indicava
+         nada: era um retângulo de dado real subindo e descendo 10px em laço,
+         concorrendo por atenção com o próprio número que ele mostra.
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+         SEM backdrop-filter aqui. O `background: var(--surface)` é #0b1840
+         opaco, então o blur ficava atrás de uma parede e não aparecia em
+         pixel nenhum. Esse motivo continua valendo mesmo com o cartão parado. */
     }
 
     .badge-dot {
@@ -663,7 +693,7 @@
       background: var(--green);
       box-shadow: 0 0 10px rgba(74,222,128,0.5);
       flex-shrink: 0;
-      animation: blink 2.4s ease-in-out infinite;
+      animation: ponto-entra 260ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     }
 
     .badge-text { font-size: 0.8rem; font-weight: 600; color: var(--text); }
@@ -1565,11 +1595,6 @@
     }
     .pricing-ponte svg {
       color: var(--accent);
-      animation: ponte-desce 2.4s ease-in-out infinite;
-    }
-    @keyframes ponte-desce {
-      0%, 100% { transform: translateY(0); opacity: 0.75; }
-      50%      { transform: translateY(5px); opacity: 1; }
     }
 
     /* ---- PALCO DOS PLANOS ----
@@ -1918,6 +1943,12 @@
        ler um card só faz o bloco parecer travado. */
     .muro-col:hover .muro-pista { animation-play-state: paused; }
 
+    /* Mesma classe `parada` da esteira de marcas, aplicada pelo mesmo
+       observador. O muro fica milhares de pixels abaixo do topo: sem isso as
+       três colunas rodam desde o primeiro quadro, compondo camada e queimando
+       bateria pra mover conteúdo que ninguém está vendo. */
+    .muro-pista.parada { animation-play-state: paused; }
+
     .muro-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -2181,6 +2212,14 @@
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.32);
       border-top-color: #fff;
+    }
+    /* O giro fica escondido por `opacity: 0`, não por `display: none`, então
+       ele continua no layout: declarar a animação no `.giro` a fazia rodar a
+       sessão inteira, invisível, desde o carregamento. Ela agora só existe
+       enquanto o botão está de fato enviando — que é o único momento em que
+       alguém pode vê-la. É também por isso que ela é a única animação que o
+       bloco de movimento reduzido deixa passar: nunca roda sem motivo. */
+    #btnEnviar[aria-busy="true"] .giro {
       animation: giro-volta 620ms linear infinite;
     }
     @keyframes giro-volta { to { transform: rotate(360deg); } }
@@ -2244,6 +2283,84 @@
     .form-ok p { font-size: 0.92rem; color: var(--text-muted); max-width: 42ch; }
 
     [hidden] { display: none !important; }
+
+    /* ===================================================================
+       MOVIMENTO REDUZIDO
+       ===================================================================
+       Regra da casa: a preferência do sistema NÃO desliga a interface, ela
+       desliga o percurso. Quem ativa "reduzir movimento" está pedindo pra não
+       enjoar, não pra receber uma página quebrada.
+
+       A separação é por TIPO, não por tamanho:
+
+       DECORATIVO E VESTIBULAR — sai por completo.
+       Parallax, zoom conduzido por rolagem, esteiras infinitas, aurora
+       respirando, malha reagindo ao mouse. São os três gatilhos vestibulares
+       conhecidos (zoom, giro, parallax) e aqui eles rodam em tela cheia.
+
+       FUNCIONAL — fica, sem deslocamento.
+       Entrada de bloco, troca de estado, feedback de toque. Se isso sumisse,
+       a pessoa perderia a informação de que algo mudou — que é justamente o
+       que a animação está ali pra contar. Vira opacidade pura.
+
+       O que NÃO entra aqui é o giro do botão de envio: ele é a única coisa da
+       página que prova que o envio ainda está andando. Tirar o giro deixaria
+       um botão apagado e silencioso, que é pior que um giro. Ele é pequeno,
+       localizado e dura o tempo de uma requisição.
+       =================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+
+      /* --- laços decorativos: fora --- */
+      .marcas-esq,
+      .marcas-dir,
+      .muro-pista,
+      .rodape-aurora,
+      .scroll-hint-line,
+      .cine-caixa.carregando::before { animation: none !important; }
+
+      /* a esteira parada precisa começar mostrando conteúdo, não o vão que a
+         animação preencheria */
+      .marcas-esq, .marcas-dir, .muro-pista { transform: none !important; }
+
+      /* a aurora sem a respiração continua sendo o brilho de fundo, só que
+         num tamanho só */
+      .rodape-aurora { opacity: 0.8; }
+
+      /* a linha da dica de rolagem para de correr mas continua visível: ela
+         ainda tem que apontar pra baixo */
+      .scroll-hint-line { transform: scaleY(1); opacity: 1; }
+
+      /* --- entradas: viram opacidade pura --- */
+      .reveal,
+      .reveal-titulo,
+      .reveal-apoio,
+      .reveal-group > * {
+        transform: none !important;
+        filter: none !important;
+      }
+      .reveal-apoio { transition-delay: 0s; }
+
+      /* --- feedback de toque e hover: sem percurso --- */
+      .btn:active,
+      .pricing-cta:active,
+      .opcoes label:active,
+      .dep-seta:active,
+      .cine-caixa:active,
+      .cine-caixa:hover,
+      .cine-caixa:hover img,
+      .service-item:hover,
+      .etapa:hover,
+      .hero-img-main:hover img { transform: none !important; }
+
+      /* --- o que é escrito por JS (parallax, letras, malha) tem guarda no
+             próprio script; o CSS aqui só garante o estado final --- */
+      /* os dois têm origem diferente: o wordmark é ancorado embaixo e o
+         símbolo é centralizado, então o estado final de cada um é outro */
+      .rodape-gigante { transform: translate(-50%, 0) scale(1) !important; opacity: 1 !important; }
+      .rodape-simbolo { transform: translate(-50%, -50%) scale(1) !important; opacity: 1 !important; }
+      .rodape-titulo,
+      .rodape-acoes { transform: none !important; opacity: 1 !important; }
+    }
 
     /* ---- RODAPÉ CINEMATOGRÁFICO ----
        Reconstrução do componente de referência (cortina + aurora + grade +
@@ -2331,6 +2448,12 @@
       z-index: 0;
       animation: rodape-respira 8s ease-in-out infinite alternate;
     }
+
+    /* O rodapé é o fim da página: a aurora respirava desde o primeiro quadro
+       pra quem ainda estava no hero. `will-change` acima já segura uma camada
+       de GPU do tamanho de 80vw por 60vh; deixá-la respirando fora da tela
+       paga o custo dessa camada a viagem inteira. */
+    .rodape-aurora.parada { animation-play-state: paused; }
 
     @keyframes rodape-respira {
       0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.6; }
@@ -2635,15 +2758,9 @@
     .rodape-coracao {
       font-size: 0.875rem;
       color: #f0616d;
-      animation: rodape-batida 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+
     }
     @media (min-width: 768px) { .rodape-coracao { font-size: 1rem; } }
-
-    @keyframes rodape-batida {
-      0%, 100% { transform: scale(1);   filter: drop-shadow(0 0 5px rgba(240, 97, 109, 0.5)); }
-      15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px rgba(240, 97, 109, 0.8)); }
-      30%      { transform: scale(1); }
-    }
 
     .rodape-topo {
       order: 3;
@@ -2712,7 +2829,29 @@
     }
     .cine-caixa:focus-visible { outline-offset: 5px; }
 
-    /* ---- SCROLL ANIMATIONS ---- */
+    /* ---- ENTRADA POR ROLAGEM ----
+       Antes existia UM gesto só, aplicado a 19 elementos: opacidade mais 28px
+       de subida, em 560ms, com a mesma curva. Doze deles eram texto (seis h2 e
+       seis parágrafos).
+
+       Dois efeitos se somavam. O de hierarquia: quando o título da seção e o
+       parágrafo de apoio entram exatamente igual, o gesto para de significar
+       alguma coisa — não existe mais primário e secundário, existe uma
+       fileira. E o de leitura: parágrafo é conteúdo estático, e atrasar a
+       leitura dele em 560ms não compra nada.
+
+       Agora são três níveis, por PAPEL do elemento na página:
+
+         .reveal-titulo   título de seção. Sobe pouco e chega rápido. Ele é a
+                          âncora: quem chega precisa lê-lo já, não vê-lo entrar.
+         .reveal-apoio    texto de apoio. Ganha o blur, que é o que faz o texto
+                          MATERIALIZAR em vez de piscar, e entra depois do
+                          título, porque depende dele pra fazer sentido.
+         .reveal          conteúdo de verdade (cartão, imagem, bloco). Mantém o
+                          percurso maior: aqui o movimento tem o que carregar.
+
+       O blur é a camada que faltava. Borrado→nítido lê como "chegando ao
+       foco"; sem ele, entrada é só um piscar de opacidade. */
     .reveal {
       opacity: 0;
       transform: translateY(28px);
@@ -2721,6 +2860,26 @@
     }
 
     .reveal.in { opacity: 1; transform: translateY(0); }
+
+    /* título: quase sem percurso, e mais rápido que o resto */
+    .reveal-titulo {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity var(--mov-base) var(--curva),
+                  transform var(--mov-base) var(--curva);
+    }
+    .reveal-titulo.in { opacity: 1; transform: none; }
+
+    /* apoio: materializa, e chega depois do título */
+    .reveal-apoio {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(5px);
+      transition: opacity 420ms var(--curva) 90ms,
+                  transform 420ms var(--curva) 90ms,
+                  filter 420ms var(--curva) 90ms;
+    }
+    .reveal-apoio.in { opacity: 1; transform: none; filter: blur(0); }
 
     .reveal-group > * {
       opacity: 0;
@@ -3271,7 +3430,7 @@
              acusação, dado que prova a acusação, sintomas para ele se
              reconhecer em pelo menos um, e só então a Conect+ como saída.
              Os projetos entram no fim, como prova de quem já saiu dessa. -->
-        <h2 class="heading reveal">
+        <h2 class="heading reveal-titulo">
           Invis&iacute;vel na internet,<br>
           sua empresa <span style="color:var(--accent)">n&atilde;o existe</span>
         </h2>
@@ -3279,26 +3438,26 @@
         <!-- os três parágrafos precisam de um pai só: cada um como item
              direto da grade cairia numa fileira diferente da do título -->
         <div class="topo-corpo">
-        <p class="pricing-lede reveal">
+        <p class="pricing-lede reveal-apoio">
           <strong>Quando algu&eacute;m quer resolver alguma coisa, a primeira parada &eacute; o
           Google.</strong> Se a sua empresa n&atilde;o tem onde ser encontrada ali, ela some
           da conta bem antes de o cliente escolher com quem gastar.
         </p>
 
-        <p class="pricing-lede reveal">
+        <p class="pricing-lede reveal-apoio">
           Talvez voc&ecirc; ainda n&atilde;o tenha site. Talvez tenha um que ningu&eacute;m visita, feito
           &agrave;s pressas anos atr&aacute;s e que hoje voc&ecirc; nem manda pros clientes. D&aacute; no mesmo:
           quem procurou hoje encontrou outro e fechou com ele.
         </p>
 
-        <p class="pricing-lede reveal">
+        <p class="pricing-lede reveal-apoio">
           <strong>&Eacute; isso que a gente faz aqui, e s&oacute; isso.</strong> Site sob medida,
           feito do zero pro seu neg&oacute;cio, r&aacute;pido no celular e montado pra ser achado
           no Google. Pre&ccedil;o fechado, sem mensalidade.
         </p>
         </div>
 
-        <div class="pricing-ponte reveal">
+        <div class="pricing-ponte reveal-apoio">
           <span>Quatro sites que a gente fez. Todos no ar agora.</span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
         </div>
@@ -3375,8 +3534,8 @@
     <div class="container">
       <!-- centralizado como as outras seções de grade simétrica -->
       <div class="topo-centro">
-        <h2 class="heading reveal" style="max-width:15ch;margin-inline:auto">Como a gente faz um site</h2>
-        <p class="pricing-lede reveal">
+        <h2 class="heading reveal-titulo" style="max-width:15ch;margin-inline:auto">Como a gente faz um site</h2>
+        <p class="pricing-lede reveal-apoio">
           S&atilde;o quatro etapas, e a ordem importa. A maior parte dos sites que d&atilde;o errado
           pula a primeira e come&ccedil;a escolhendo cor.
         </p>
@@ -3430,14 +3589,14 @@
       <!-- mesmo topo centralizado dos planos mensais, com a ponte no fim
            amarrando o título aos três cards -->
       <div class="pricing-topo">
-        <h2 class="heading reveal">Pre&ccedil;o fechado, <span style="color:var(--accent)">sem mensalidade</span></h2>
-        <p class="pricing-lede reveal">
+        <h2 class="heading reveal-titulo">Pre&ccedil;o fechado, <span style="color:var(--accent)">sem mensalidade</span></h2>
+        <p class="pricing-lede reveal-apoio">
           Os sites que passaram ali em cima est&atilde;o no ar agora, rodando para clientes
           da casa. &Eacute; esse tipo de projeto que sai daqui. Voc&ecirc; paga uma vez, o site
           &eacute; seu, e ningu&eacute;m te cobra aluguel pra ele continuar existindo.
         </p>
 
-        <div class="pricing-ponte reveal">
+        <div class="pricing-ponte reveal-apoio">
           <span>De uma p&aacute;gina ao site completo. Escolha pelo tamanho da opera&ccedil;&atilde;o.</span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
         </div>
@@ -3528,7 +3687,7 @@
     <div class="container">
       <div class="topo-centro">
         <div class="section-tag">Por que a Conect+</div>
-        <h2 class="heading reveal">O combinado que a gente <span style="color:var(--accent)">assume</span></h2>
+        <h2 class="heading reveal-titulo">O combinado que a gente <span style="color:var(--accent)">assume</span></h2>
       </div>
       <div class="promessas reveal-group">
         <div class="promessa">
@@ -3571,8 +3730,8 @@
   <section class="section" id="depoimentos">
     <div class="container">
       <div class="topo-centro">
-        <h2 class="heading reveal">N&atilde;o confie apenas na nossa palavra</h2>
-        <p class="pricing-lede reveal">
+        <h2 class="heading reveal-titulo">N&atilde;o confie apenas na nossa palavra</h2>
+        <p class="pricing-lede reveal-apoio">
           Veja o que os nossos clientes satisfeitos t&ecirc;m a dizer.
         </p>
       </div>
@@ -3889,7 +4048,7 @@
   <section class="cta-section" id="contact">
     <div class="container">
       <div class="cta-tag">Vamos Conversar</div>
-      <h2 class="cta-title reveal">
+      <h2 class="cta-title reveal-titulo">
         Bora tirar o seu site <em>do papel?</em>
       </h2>
       <p class="cta-note" style="max-width:52ch;margin:0 auto">
@@ -4070,10 +4229,27 @@
       ultimoToque = agora;
     }, { passive: false });
 
+    // MOVIMENTO REDUZIDO.
+    //
+    // Metade do movimento desta página é escrita por JavaScript (a malha do
+    // hero, a queda das letras, o parallax da cortina, o zoom da abertura), e
+    // media query de CSS não alcança transform escrito em `style` inline.
+    // Então o guarda precisa existir aqui também, senão o bloco de
+    // `prefers-reduced-motion` lá em cima protege só metade do site.
+    //
+    // Uma leitura só, no carregamento: essa preferência não muda no meio da
+    // visita, e consultar o matchMedia dentro de laço de rolagem seria custo
+    // por quadro pra sempre a mesma resposta.
+    const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     // No celular o scrubbing do vídeo trava e não pinta frame nenhum. No modo
-    // leve o vídeo toca sozinho em loop, numa versão 720p. A animação do
-    // título é a mesma em todo aparelho, de propósito.
-    const modoLeve = window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches;
+    // leve o vídeo toca sozinho em loop, numa versão 720p.
+    //
+    // `semMovimento` entra na mesma conta porque o desfecho é o mesmo: desenhar
+    // um quadro e parar. A malha já sabia fazer isso pelo celular; aqui ela só
+    // passa a fazer por mais um motivo.
+    const modoLeve = window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches
+                     || semMovimento;
 
     // ROLAGEM NATIVA.
     //
@@ -4596,7 +4772,7 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
 
-    document.querySelectorAll('.reveal, .reveal-group').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal, .reveal-titulo, .reveal-apoio, .reveal-group').forEach(el => io.observe(el));
 
     // --- ABERTURA QUE EXPANDE ---
     (function () {
@@ -4707,7 +4883,14 @@
     const obsEsteira = new IntersectionObserver(entradas => {
       entradas.forEach(e => e.target.classList.toggle('parada', !e.isIntersecting));
     });
-    document.querySelectorAll('.marcas-linha').forEach(el => obsEsteira.observe(el));
+    // Um observador só pra todo laço infinito decorativo da página. A regra é
+    // sempre a mesma — saiu da tela, para — e cada alvo tem a sua própria
+    // `.parada` no CSS, então dá pra somar alvo aqui sem tocar no observador.
+    // A pausa do muro por hover é outra coisa e continua valendo junto: as
+    // duas mexem em `animation-play-state`, e qualquer uma das duas basta pra
+    // segurar a animação.
+    document.querySelectorAll('.marcas-linha, .muro-pista, .rodape-aurora')
+      .forEach(el => obsEsteira.observe(el));
 
     // --- VOLTAR AO TOPO (rodapé) ---
     // No mobile o `modoLeve` desliga o Lenis, então lá cai no scroll nativo.
@@ -5061,6 +5244,18 @@ Já investe em anúncio: ${v.investe}`;
       const titulo = document.getElementById('rodapeTitulo');
       const acoes = document.getElementById('rodapeAcoes');
       if (!cortina || !gigante || !titulo || !acoes) return;
+
+      // Este é o parallax de tela cheia — o gatilho vestibular mais forte da
+      // página. Com movimento reduzido ele não roda: o rodapé nasce montado e
+      // nenhum ouvinte de rolagem é registrado.
+      //
+      // Sair ANTES de assinar o `scroll` é o que importa. Deixar o listener
+      // ligado e devolver cedo lá dentro custaria uma chamada por quadro de
+      // rolagem pelo site inteiro, pra não fazer nada.
+      //
+      // O estado final quem garante é o CSS, no bloco de movimento reduzido.
+      // Aqui só não se escreve por cima dele.
+      if (semMovimento) return;
 
       const trava = v => v < 0 ? 0 : v > 1 ? 1 : v;
       const fatia = (p, a, b) => trava((p - a) / (b - a));

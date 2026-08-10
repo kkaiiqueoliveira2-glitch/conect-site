@@ -24,3 +24,6 @@ package.json
 package-lock.json
 node_modules
 .github
+
+# Relatorios de auditoria de movimento
+motion-audits/
