@@ -19,13 +19,13 @@
  *     whatsapp    text not null,
  *     email       text not null,
  *     segmento    text,
- *     investe     text,
+ *     investe     text,  -- legado: o site nao envia mais, coluna aceita null
  *     origem      text,
  *     user_agent  text
  *   );
  */
 
-const CAMPOS = ['nome', 'whatsapp', 'email', 'segmento', 'investe'];
+const CAMPOS = ['nome', 'whatsapp', 'email', 'segmento'];
 
 /* ---------- Limite de requisição por IP ----------
  *
@@ -106,8 +106,7 @@ export default async function handler(req, res) {
     nome: limpa(corpo.nome, 120),
     whatsapp: limpa(corpo.whatsapp, 20).replace(/\D/g, ''),
     email: limpa(corpo.email, 160).toLowerCase(),
-    segmento: limpa(corpo.segmento, 60),
-    investe: limpa(corpo.investe, 60)
+    segmento: limpa(corpo.segmento, 60)
   };
 
   const faltando = CAMPOS.filter((c) => !lead[c]);

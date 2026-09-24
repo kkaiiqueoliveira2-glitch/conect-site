@@ -27,6 +27,11 @@
   <meta name="twitter:image" content="https://conectpluss.com/og-image-v2.jpg">
   <meta name="twitter:image:alt" content="Conect+ · Criação de sites sob medida">
 
+  <!-- Dado estruturado: ajuda o Google a montar rich result e é o que IAs
+       (ChatGPT, Gemini, Perplexity) leem primeiro pra saber quem é a
+       empresa, sem depender de adivinhar pelo texto solto da página. -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Conect+","url":"https://conectpluss.com/","logo":"https://conectpluss.com/logo-nome.png","image":"https://conectpluss.com/og-image-v2.jpg","description":"Agência de marketing digital especializada em criação de sites sob medida, tráfego pago e performance para pequenas e médias empresas.","areaServed":"BR","address":{"@type":"PostalAddress","addressLocality":"São Paulo","addressRegion":"SP","addressCountry":"BR"},"sameAs":["https://www.instagram.com/conect.pluss"],"makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Criação de sites sob medida"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Tráfego pago (Meta Ads e Google Ads)"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Gestão de redes sociais"}}]}</script>
+
   <!-- Favicon: símbolo branco sobre o navy da marca, sem o wordmark.
        Em 16px o logo 3D vira mancha; o símbolo chapado continua legível. -->
   <!-- o ?v=2 existe porque navegador guarda favicon com unhas e dentes: sem
@@ -48,13 +53,16 @@
   <!-- End Google Tag Manager -->
 
   <!-- Meta Pixel Code
-       DOIS pixels no mesmo snippet. O 849630… já estava no site desde antes; o
-       1915598… é o novo. Um `fbq('init')` para cada e UM só `track`: o fbq
-       dispara todo evento para todos os pixels inicializados, então repetir o
-       track mandaria o PageView duas vezes para cada um.
+       Um pixel só: 849630247899562 (Pixel - Conect+, conferido no Business
+       Manager em 23/09/2026). Existia um segundo ID (1915598985779059) que
+       não corresponde a nenhum pixel dessa conta — removido.
 
-       Isso vale para o site inteiro: os `fbq('track','Contact')` espalhados
-       pelos botões passaram a contar nos dois sem nenhuma outra mudança. -->
+       Dois eventos, sinais diferentes: `Lead` é clique que já sai do site pro
+       WhatsApp com intenção de orçamento (pacotes, rodapé, "falar agora" no
+       formulário) — é o que a campanha deve otimizar. `Contact` fica só no
+       CTA da hero, que apenas rola até o formulário: quem clica ali pode
+       ainda desistir antes de virar contato de verdade. O envio do
+       formulário manda `Lead` no sucesso (perto da linha 6000). -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -65,14 +73,10 @@
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '849630247899562');
-  fbq('init', '1915598985779059');
   fbq('track', 'PageView');
   </script>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=849630247899562&ev=PageView&noscript=1"
-  /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1915598985779059&ev=PageView&noscript=1"
   /></noscript>
   <!-- End Meta Pixel Code -->
   <style>
@@ -206,6 +210,14 @@
 
     .btn:active { transform: scale(0.97) !important; }
 
+    /* .btn e .pricing-cta transicionam `transform` em 260ms — bom pro hover
+       comum, ruim pro magnético: o JS escreve um transform novo a cada
+       quadro (até 60x/s) e o CSS tenta animar cada um em 260ms, então o
+       botão nunca alcança o cursor e fica "correndo atrás" dele. Sem
+       transição de transform aqui, o JS (que já interpola sozinho) manda
+       de verdade. */
+    .mag-btn { transition-property: background, border-color, color, box-shadow; }
+
     .btn-primary {
       background: var(--accent);
       color: #ffffff;
@@ -229,6 +241,62 @@
       background: rgba(255,255,255,0.03);
     }
 
+    /* ---- BOTÃO DE INDUÇÃO (WebGL) ----
+       Porte do "Induction Button". O componente de origem é React e entrega o
+       efeito dentro de um <iframe sandbox> com uma página inteira lá dentro —
+       aqui não existe React nem build, e um iframe por botão custaria seis
+       documentos completos. O que interessa é o shader: ele foi trazido
+       inteiro e desenha num <canvas> colocado atrás do rótulo de cada botão.
+
+       Três coisas não dá pra copiar sem ajustar, e as três estão comentadas
+       no JS: o canvas é maior que o botão (o shader desenha a placa com uma
+       folga fixa em volta, que é onde os arcos vivem), o raio do canto vira
+       uniforme (o original é fixo em 18px e os nossos botões são pílula), e o
+       fundo sai transparente (o original pinta preto opaco porque a página
+       dele é preta; aqui embaixo é o azul-noite da casa).
+
+       Enquanto o JS não liga (sem WebGL, ou antes de rodar), o botão continua
+       exatamente o que era: azul da marca, sólido. */
+    .btn-gl-canvas {
+      position: absolute;
+      display: block;
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* o canvas e absoluto: sem isto ele se ancora no ancestral posicionado
+       mais proximo. O .btn ja e relative, mas o .pricing-cta nao era, e o
+       canvas dele ia parar ancorado no card inteiro, longe do botao. */
+    .gl-ativo { position: relative; }
+    /* o rótulo tem que subir acima do canvas. Texto solto não aceita z-index,
+       então o JS embrulha o conteúdo do botão neste span. */
+    .btn-gl-conteudo {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    /* quando o botão já tem só elementos como filhos (o de envio, que empilha
+       dois rótulos numa célula de grade), embrulhar quebraria o layout: ali os
+       próprios filhos é que sobem */
+    .btn-gl-camada { position: relative; z-index: 1; }
+
+    /* o azul sólido sai de cena: quem pinta o botão agora é o shader */
+    .btn.gl-ativo,
+    .btn.gl-ativo:hover,
+    .pricing-cta.gl-ativo,
+    .pricing-cta.gl-ativo:hover,
+    .pricing-card.featured .pricing-cta.gl-ativo,
+    .pricing-card.featured .pricing-cta.gl-ativo:hover {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      color: #eaf1ff;
+      text-shadow: 0 0 12px rgba(30, 95, 224, .65), 0 1px 4px rgba(0, 0, 0, .8);
+    }
+    /* o levantar de 2px do hover continua: é o do próprio componente de origem */
+    .btn.gl-ativo:hover { transform: translateY(-2px); }
+
     /* ---- NAVIGATION ---- */
     /* Escopo no id, não no elemento. Como `nav` solto, essa regra pegava
        qualquer <nav> da página: o menu do painel de relatórios nasceu com
@@ -241,6 +309,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      max-width: 100%;
+      margin-inline: auto;
+      border-radius: 0;
+      /* Diferente do `padding` (comentário original abaixo), estes quatro
+         mudam uma vez só quando a classe `scrolled` liga/desliga — não a
+         cada quadro de rolagem — então animá-los não repete o problema de
+         reflow contínuo. É o que faz a barra "encolher" pra pílula. */
+      transition: background 0.5s, border-color 0.5s,
+                  max-width 0.4s var(--curva), border-radius 0.4s var(--curva),
+                  top 0.4s var(--curva);
       /* `padding` saiu daqui. Era a única animação da página que obrigava o
          navegador a refazer o layout a cada quadro, e ela disparava toda vez
          que a rolagem cruzava o limiar, junto com o canvas do hero e o
@@ -250,14 +328,19 @@
          Ninguém percebe a falta: a barra ganha fundo e borda no mesmo
          instante, e é isso que o olho lê como "a nav mudou", não os 8px de
          padding se fechando ao longo de 400ms. */
-      transition: background 0.5s, border-color 0.5s;
     }
 
     #nav.scrolled {
-      background: rgba(6,14,40,0.90);
+      top: 0.75rem;
+      max-width: min(1040px, calc(100% - 2.5rem));
+      border-radius: 999px;
+      background: rgba(6,14,40,0.72);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
+      /* pílula fechada: borda nos quatro lados, não só embaixo (isso fazia
+         sentido quando a barra ainda era de ponta a ponta) */
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 34px -18px rgba(2, 6, 22, 0.7);
       padding-top: 1rem;
       padding-bottom: 1rem;
     }
@@ -299,11 +382,11 @@
                   transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .nav-logo-symbol { opacity: 1; transform: translateY(0) scale(1); }
-    .nav-logo-word   { opacity: 0; transform: translateY(8px) scale(0.96); }
+    .nav-logo-symbol { opacity: 0; transform: translateY(8px) scale(0.96); }
+    .nav-logo-word   { opacity: 1; transform: translateY(0) scale(1); }
 
-    #nav.scrolled .nav-logo-symbol { opacity: 0; transform: translateY(-8px) scale(0.96); }
-    #nav.scrolled .nav-logo-word   { opacity: 1; transform: translateY(0) scale(1); }
+    #nav.scrolled .nav-logo-symbol { opacity: 1; transform: translateY(0) scale(1); }
+    #nav.scrolled .nav-logo-word   { opacity: 0; transform: translateY(-8px) scale(0.96); }
 
     .nav-links {
       display: flex;
@@ -746,7 +829,13 @@
     #services {
       position: relative;
       isolation: isolate;
+      /* "clip" e nao "hidden": hidden faz da secao um contexto de rolagem, e
+         isso mata o position:sticky do trilho dos passos la dentro. O clip
+         corta igual sem criar contexto nenhum. A linha hidden fica embaixo
+         como reserva pra quem nao conhece clip: la o corte continua valendo,
+         so o trilho e que nao cola. */
       overflow: hidden;
+      overflow: clip;
     }
     #services::before {
       content: '';
@@ -812,6 +901,91 @@
     /* o .reveal-group.in zera o transform dos filhos com especificidade maior
        que um :hover simples: sem esta linha o card não levantava */
     .services-grid.reveal-group.in > .service-item:hover { transform: translateY(-5px); }
+
+    /* ---- PALCO DOS PASSOS ----
+       Porte do componente React de timeline horizontal. Lá o efeito é um
+       useTransform por cartão:
+
+         range    [i/n, (i+1)/n] do progresso de rolagem do container
+         valor    x: innerWidth  ->  -(largura * i) + 64 * i
+
+       ou seja: cada cartão entra pela direita e para empilhado 64px à frente
+       do anterior, e o primeiro nunca sai do lugar.
+
+       Aqui a conta é a mesma, escrita à mão. Três diferenças, e nenhuma por
+       gosto:
+
+       1. O ponto de partida é a borda direita do trilho, não `innerWidth`.
+          No original um cartão de 70% já nasce fora da tela por causa da
+          posição natural dele na fileira, e somar innerWidth por cima manda
+          ele pra muito longe: o começo da faixa vira espera. Partindo da
+          borda o cartão aparece assim que a faixa dele começa.
+
+       2. As faixas não dividem 0..1 em n. Com n cartões o primeiro pedaço
+          (0 -> 1/n) não anima nada, porque o cartão 0 é fixo — no palco isso
+          é um quarto da rolagem sem nada acontecendo. As faixas aqui dividem
+          0,06 -> 0,94 entre os cartões que de fato se movem.
+
+       3. No mobile o cartão é 86% (não 70%) e o degrau cai pra 24px (não
+          64px) — com o valor do desktop numa tela de 390px o cartão tinha
+          273px e os degraus comiam mais 192: o texto de cada etapa não cabia.
+
+       O border-radius não muda — os cartões continuam os mesmos, só passam a
+       andar. */
+    .passos-palco { position: relative; }
+
+    .passos-palco.deck-ligado {
+      /* uma tela por cartão que se move, mais uma de folga pra ler o último */
+      height: 300vh;
+      margin-top: 3rem;
+    }
+    .passos-palco.deck-ligado .passos-fixo {
+      position: sticky;
+      top: 6rem;
+      overflow: hidden;
+    }
+    .passos-palco.deck-ligado .services-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      gap: 0;
+      margin-top: 2rem;
+    }
+    .passos-palco.deck-ligado .service-item {
+      min-width: 70%;
+      max-width: 70%;
+      /* o transform é reescrito a cada quadro pela rolagem: deixá-lo na
+         transição faria o cartão perseguir o dedo com atraso */
+      transition: border-color var(--mov-base) var(--curva),
+                  background var(--mov-base) var(--curva),
+                  box-shadow var(--mov-base) var(--curva);
+    }
+    /* o empilhamento depende de quem pinta por cima: na ordem do documento o
+       cartão seguinte já ganha do anterior, e os dois são position:relative */
+    .passos-palco.deck-ligado .service-item:hover { transform: none; }
+
+    /* CORPO OPACO — na grade os cartões nunca se tocam, então um vidro de 7%
+       de branco sobre o azul da seção resolve. Empilhados, esse mesmo vidro
+       deixa ler o texto do cartão de baixo através do de cima, e as quatro
+       etapas viram um borrão. Aqui entra uma camada opaca ATRÁS do vidro: o
+       brilho e a linha de luz da borda continuam idênticos, só o que estava
+       atravessando é que para. (No componente de origem isso é o
+       `bg-gradient-to-br from-[rgba(15,23,42,0.7)]` mais o backdrop-blur.) */
+    .passos-palco.deck-ligado .service-item,
+    .passos-palco.deck-ligado .service-item:hover {
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.028) 100%),
+        linear-gradient(165deg, #0d2359 0%, #0a1c47 62%, #08173c 100%);
+    }
+
+    /* cartão mais largo no mobile: com 70% (o valor do desktop) o texto não
+       cabia com os degraus de empilhamento (ver nota acima) */
+    @media (max-width: 759px) {
+      .passos-palco.deck-ligado .service-item {
+        min-width: 86%;
+        max-width: 86%;
+      }
+    }
 
     /* numeral como elemento gráfico, não como legenda */
     .service-num {
@@ -1025,14 +1199,18 @@
       font-weight: 600;
       text-decoration: none;
       transition: background var(--mov-base) var(--curva), border-color var(--mov-base) var(--curva), color var(--mov-base) var(--curva), transform var(--mov-base) var(--curva);
-      border: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
+      border: 1px solid var(--accent);
+      color: #fff;
+      /* [MUDOU] nascia transparente e só virava azul no hover — os outros
+         planos pareciam "de menos" ao lado do destaque. Agora todos nascem
+         azul; o plano-âncora continua se diferenciando pelo brilho do
+         shader (.gl-ativo), não por ser o único colorido. */
+      background: var(--accent);
     }
 
     .pricing-cta:hover {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
       color: #fff;
     }
 
@@ -1545,12 +1723,28 @@
        dado, sintomas, saída. Um texto que dependesse de ler na ordem exata
        não podia virar coluna. */
     .topo-largo { text-align: left; }
+
+    /* Abaixo de 760px o funil de 3 colunas cai pra 1 (a grid do
+       .topo-corpo só liga a partir de 760px, ver abaixo) e o `text-align:
+       left` que fazia sentido em coluna vira uma inconsistência: título e
+       frase de apoio ficam centralizados, o corpo fica pregado na esquerda.
+       Sem a razão de existir (ler em paralelo, lado a lado) o texto solto
+       volta a ser um parágrafo comum, então centraliza como o resto. */
+    @media (max-width: 759px) {
+      .topo-largo .pricing-lede {
+        text-align: center;
+        margin-inline: auto;
+        max-width: 42ch;
+      }
+      .topo-largo .pricing-lede + .pricing-lede { margin-top: 1.5rem; }
+    }
+
     /* maior que o .heading padrão: aqui ele é a linha mais larga do bloco e
        precisa alcançar as duas pontas, senão a folga volta em cima */
     .topo-largo .heading { font-size: clamp(2rem, 5.4vw, 5rem); }
     .topo-largo .pricing-lede { margin-left: 0; margin-right: 0; max-width: 58ch; }
     .topo-largo .pricing-lede + .pricing-lede { margin-top: 1.5rem; }
-    .topo-largo .pricing-ponte { margin-top: clamp(2.5rem, 5vw, 4rem); }
+    .topo-largo .pricing-ponte { margin-top: clamp(5rem, 10vw, 8rem); }
 
     @media (min-width: 760px) {
       .topo-corpo {
@@ -1571,9 +1765,6 @@
       /* no tablet só cabem duas colunas legíveis, então o terceiro deita
          embaixo em vez de virar uma tira de 25 caracteres */
       .topo-largo .pricing-lede:nth-child(3) { grid-column: 1 / -1; max-width: 58ch; }
-      /* a ponte anuncia os cases, que são faixas de ponta a ponta: fica no
-         meio da largura, senão aponta pra um canto só */
-      .topo-largo .pricing-ponte { display: flex; width: max-content; margin-inline: auto; }
     }
 
     @media (min-width: 980px) {
@@ -1589,12 +1780,38 @@
       flex-direction: column;
       align-items: center;
       gap: 0.9rem;
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
       color: var(--text);
+      text-align: center;
     }
     .pricing-ponte svg {
       color: var(--accent);
+    }
+
+    /* A ponte anuncia os cases, que são faixas de ponta a ponta: fica no meio
+       da largura, senão aponta pra um canto só. Isso vivia dentro de uma
+       media query de 760px, e no celular o bloco ficava colado na margem
+       esquerda — a seta parecia descentralizada porque o par texto+seta
+       inteiro estava. Sem media query agora: vale em toda largura. */
+    .topo-largo .pricing-ponte { display: flex; width: max-content; max-width: 100%; margin-inline: auto; }
+
+    /* Título de apresentação dos trabalhos: o que vem depois são faixas de
+       tela cheia, e antes elas entravam sem ninguém anunciar. */
+    .trabalhos-topo {
+      text-align: center;
+      margin-top: clamp(3.5rem, 6vw, 5.5rem);
+    }
+    .trabalhos-topo .section-tag { justify-content: center; }
+    .trabalhos-topo h2 { margin: 0 auto; max-width: 22ch; }
+    .trabalhos-topo p {
+      margin: 1.1rem auto 0;
+      max-width: 46ch;
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.65;
     }
 
     /* ---- PALCO DOS PLANOS ----
@@ -1746,25 +1963,100 @@
     .comp-delta { font-size: clamp(1.6rem, 2.6vw, 2.1rem); font-weight: 800; letter-spacing: -0.04em; color: var(--accent); white-space: nowrap; }
     .comp-side { display: flex; flex-direction: column; gap: 1rem; align-items: flex-start; }
 
-    /* ---- GARANTIAS ---- */
-    .promessas {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-top: 3rem;
+    /* ---- DIFERENCIAL: painel claro sobre a página escura ----
+       Referência: cards brancos com mini-widgets flutuando (dashboards,
+       gráficos, chips), estilo agências de produto (ex. 21st.dev/Eagle).
+       Aqui não dá pra virar a página inteira branca (o resto do site é todo
+       navy), então o contraste vira um PAINEL: um bloco branco arredondado,
+       com sombra própria, pousado sobre o fundo escuro — em vez de uma
+       faixa de ponta a ponta, que reabriria o mesmo problema de costura dura
+       que já resolvemos no CTA e na galeria de trabalhos. Dentro dele os
+       cards viram azuis (pedido explícito), com um mini-widget flutuante
+       cada um, ilustrando o argumento em vez de só descrever. */
+    .dif-painel {
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3.5rem);
+      box-shadow: 0 50px 90px -30px rgba(2, 6, 22, 0.65), 0 18px 40px -20px rgba(2, 6, 22, 0.45);
+    }
+    .dif-painel .section-tag { color: var(--accent); }
+    .dif-painel .section-tag::before { background: var(--accent); }
+    .dif-painel .heading { color: #14296B; }
+    .dif-sub {
+      margin-top: 1rem;
+      max-width: 46ch;
+      margin-inline: auto;
+      text-align: center;
+      color: #5A6B92;
+      font-size: 1rem;
+      line-height: 1.6;
     }
 
-    .promessa { background: var(--bg); padding: 1.9rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; transition: background var(--mov-base) var(--curva); }
-    .promessa:hover { background: var(--surface); }
-    .promessa h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; color: var(--text); }
-    .promessa p { font-size: 0.86rem; color: var(--text-muted); line-height: 1.6; }
+    .dif-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+    @media (max-width: 940px) { .dif-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .dif-grid { grid-template-columns: 1fr; } }
 
-    @media (max-width: 940px) { .promessas { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 520px) { .promessas { grid-template-columns: 1fr; } }
+    .dif-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      padding: 1.5rem 1.35rem 1.75rem;
+      background: linear-gradient(160deg, #2A6BEA 0%, #1E5FE0 55%, #123A8C 100%);
+      box-shadow: 0 26px 46px -20px rgba(30, 95, 224, 0.55), 0 10px 20px -12px rgba(18, 58, 140, 0.4);
+      overflow: hidden;
+    }
+    .dif-card h3 { margin-top: 1.35rem; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.015em; color: #fff; }
+    .dif-card p { margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.85); line-height: 1.6; }
+
+    /* palco do mini-widget: altura fixa, os "chips" flutuam dentro dele em
+       posição absoluta pra poder se sobrepor como no componente de
+       referência (cartão principal + selo menor por cima do canto) */
+    .dif-visual { position: relative; height: 108px; }
+    /* o card de nicho ganhou 5 selos (era 3) — mais respiro vertical pra
+       não empilhar em cima um do outro */
+    .dif-visual-alto { height: 142px; }
+
+    .dif-chip {
+      position: absolute;
+      background: #fff;
+      border-radius: 11px;
+      box-shadow: 0 16px 30px -12px rgba(4, 10, 30, 0.45);
+      color: #14296B;
+      animation: dif-boiar 4.5s ease-in-out infinite;
+      animation-delay: var(--atraso, 0s);
+    }
+    .dif-chip-selo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dif-chip-selo svg { width: 12px; height: 12px; color: var(--accent); flex-shrink: 0; }
+    .dif-chip-tela {
+      width: 78%;
+      padding: 0.55rem 0.6rem 0.7rem;
+    }
+    .dif-tela-topo { display: flex; gap: 3px; margin-bottom: 0.5rem; }
+    .dif-tela-topo span { width: 5px; height: 5px; border-radius: 999px; background: #D7E0F2; }
+    .dif-barra { height: 7px; border-radius: 4px; background: linear-gradient(90deg, #9CB8E8, #1E5FE0); }
+    .dif-barra + .dif-barra { margin-top: 5px; }
+
+    @keyframes dif-boiar {
+      0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+      50%      { transform: translateY(-7px) rotate(var(--rot, 0deg)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dif-chip { animation: none; transform: rotate(var(--rot, 0deg)); }
+    }
 
     /* ---- SISTEMAS / SAAS ----
        Fluxo em vez de mais uma grade de cards: a página já tem duas grades e
@@ -1905,6 +2197,23 @@
        código. Cada coluna precisa de 2 falas exclusivas para a mesma citação
        não aparecer em duas colunas ao mesmo tempo. Com 4 depoimentos dá
        para 2. Chegando a 6, vira 3 colunas mudando só o repeat() abaixo. */
+    /* Fundo da seção: brilho azul da casa por trás do muro, pra os cards
+       terem de onde descolar. Sem um fundo com profundidade, sombra e halo
+       não têm contra o que contrastar e o relevo não aparece. */
+    #depoimentos { position: relative; overflow: hidden; }
+    #depoimentos::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(68% 52% at 50% 44%, rgba(30, 95, 224, 0.22) 0%, transparent 70%),
+        radial-gradient(42% 38% at 10% 76%, rgba(34, 211, 238, 0.10) 0%, transparent 72%),
+        radial-gradient(42% 38% at 90% 24%, rgba(109, 93, 246, 0.10) 0%, transparent 72%);
+    }
+    #depoimentos > .container { position: relative; z-index: 1; }
+
     .muro {
       position: relative;
       display: grid;
@@ -1913,6 +2222,10 @@
       height: clamp(520px, 62vh, 680px);
       overflow: hidden;
       margin-top: 3rem;
+      /* respiro lateral pro halo dos cards não ser cortado pelo overflow
+         do muro; a margem negativa devolve a largura original */
+      padding-inline: 34px;
+      margin-inline: -34px;
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
               mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
     }
@@ -1949,6 +2262,9 @@
        bateria pra mover conteúdo que ninguém está vendo. */
     .muro-pista.parada { animation-play-state: paused; }
 
+    /* Mesma receita de flutuação dos cards de garantia: luz branca em
+       degradê por cima e sombra escura deslocada por baixo. As duas juntas
+       é que dão o alto relevo — só o halo leria como brilho chapado. */
     .muro-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -1957,9 +2273,23 @@
       display: flex;
       flex-direction: column;
       gap: 1.15rem;
-      transition: border-color 0.3s;
+      box-shadow:
+        0 -10px 26px -14px rgba(255, 255, 255, 0.38),
+        0 0 40px -14px rgba(255, 255, 255, 0.18),
+        0 26px 48px -20px rgba(0, 0, 0, 0.72);
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
     }
-    .muro-card:hover { border-color: rgba(255,255,255,0.14); }
+    .muro-card:hover {
+      border-color: rgba(255,255,255,0.14);
+      transform: translateY(-3px);
+      box-shadow:
+        0 -12px 30px -13px rgba(255, 255, 255, 0.52),
+        0 0 48px -13px rgba(255, 255, 255, 0.24),
+        0 32px 56px -20px rgba(0, 0, 0, 0.78);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .muro-card:hover { transform: none; }
+    }
 
     .muro-estrelas { display: flex; gap: 3px; }
     .muro-estrelas .star { width: 12px; height: 12px; fill: var(--accent); }
@@ -1995,6 +2325,39 @@
       .muro-col:nth-child(n + 2) { display: none; }
     }
 
+    /* ---- costura depoimentos → CTA ---- */
+    .secao-emenda {
+      position: relative;
+      height: 0;
+      z-index: 1;
+    }
+    .secao-emenda::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -220px;
+      height: 440px;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(11, 33, 84, 0.6) 38%,
+        rgba(11, 33, 84, 0.6) 62%,
+        transparent 100%
+      );
+    }
+
+    /* no celular as duas seções são mais curtas (menos texto/altura de
+       viewport), então a mesma emenda de 440px sobra pra cima e pra baixo
+       e volta a deixar a quebra visível nas pontas dela */
+    @media (max-width: 759px) {
+      .secao-emenda::before {
+        top: -140px;
+        height: 280px;
+      }
+    }
+
     /* ---- CTA ---- */
     .cta-section {
       padding: clamp(4.5rem, 8vw, 7.5rem) 0;
@@ -2002,8 +2365,12 @@
       position: relative;
       /* O ::before é um brilho de 600px centralizado. Em tela de 390px ele
          chegava a 495px e a página inteira rolava na horizontal. O gradiente
-         já é transparente nas pontas, então clipar não muda o visual. */
-      overflow: hidden;
+         já é transparente nas pontas, então clipar não muda o visual.
+         Só corta na horizontal: o .glow-horizonte vaza por cima de propósito
+         (translateY(-50%)) pra iluminar a costura com a seção de depoimentos
+         acima — cortar no vertical também criava uma linha reta ali. */
+      overflow-x: hidden;
+      overflow-y: visible;
     }
 
     .cta-section::before {
@@ -2015,6 +2382,226 @@
       background: radial-gradient(ellipse, rgba(30,95,224,0.10) 0%, transparent 70%);
       pointer-events: none;
     }
+
+    /* ---- PALCO DA MARCA: Torch Reveal (Motiq / 21st.dev, MIT) ----
+       Duas camadas na mesma geometria: a da frente com a marca apagada, a de
+       trás com a marca acesa sobre a malha técnica. Uma tocha segue o cursor
+       e revela a de baixo.
+
+       O recorte é MÁSCARA ALPHA em CSS, não SVG: um radial-gradient cujo
+       centro e raio moram em três custom properties. O script escreve três
+       números por quadro e nunca mexe em layout. (Máscara de luminância em
+       SVG com conteúdo de gradiente é no-op silencioso no Chromium, por isso
+       o componente original também não usa.)
+
+       Por que isso aqui e não outro efeito: o site já tem constelação no
+       hero, blob nos cards e horizonte no CTA. Uma tocha que ACENDE a marca
+       conta a história da agência (a gente ilumina a estrutura de quem
+       contrata) e não repete nada do que já está na página. */
+    .marca-palco {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: #050a1c;
+      /* pan-y mantém a página rolando enquanto o dedo carrega a tocha */
+      touch-action: pan-y;
+      cursor: none;
+      /* posição e raio da tocha, escritos pelo script */
+      --mk-tx: -400;
+      --mk-ty: -400;
+      --mk-tr: 190;
+    }
+
+    .marca-frente { position: relative; z-index: 1; }
+
+    /* softness 0.55 do original vira núcleo sólido até 45% e degradê até a borda */
+    .marca-reveal {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: #071540;
+      -webkit-mask-image: radial-gradient(circle calc(var(--mk-tr) * 1px) at calc(var(--mk-tx) * 1px) calc(var(--mk-ty) * 1px), #000 0 45%, transparent 100%);
+              mask-image: radial-gradient(circle calc(var(--mk-tr) * 1px) at calc(var(--mk-tx) * 1px) calc(var(--mk-ty) * 1px), #000 0 45%, transparent 100%);
+    }
+
+    /* malha técnica só na camada revelada: é o "por baixo da tinta" */
+    .marca-reveal::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(76, 134, 245, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(76, 134, 245, 0.16) 1px, transparent 1px);
+      background-size: 34px 34px;
+    }
+    .marca-reveal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(30, 95, 224, 0.38) 0%, transparent 72%);
+    }
+
+    /* o halo de 420px que cavalga a tocha, em screen sobre o fundo escuro */
+    .marca-halo {
+      position: absolute;
+      left: 0; top: 0;
+      z-index: 3;
+      width: 420px; height: 420px;
+      border-radius: 999px;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      will-change: transform;
+      transform: translate3d(-999px, -999px, 0);
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.16), transparent 62%);
+    }
+
+    /* Duas colunas: a fala de um lado, o símbolo grande do outro. Mesma
+       caixa nas duas camadas, então a tocha acende sem desalinhar nada.
+       A coluna do texto é a que manda na altura. */
+    .marca-conteudo {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: center;
+      gap: clamp(2rem, 5vw, 4.5rem);
+      padding: clamp(3.5rem, 7vw, 5.5rem) clamp(2rem, 5vw, 4.5rem);
+    }
+
+    .marca-dizeres { display: flex; flex-direction: column; align-items: flex-start; gap: 1.4rem; }
+
+    .marca-fala {
+      max-width: 42ch;
+      font-size: clamp(1.05rem, 1.6vw, 1.38rem);
+      line-height: 1.6;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .marca-palco-logo { display: flex; justify-content: center; align-items: center; }
+    .marca-simbolo {
+      height: clamp(190px, 26vw, 360px);
+      width: auto;
+      user-select: none;
+    }
+
+    /* estado apagado (frente): o símbolo quase some, o texto continua
+       perfeitamente legível — ele é o assunto, não o efeito */
+    .marca-frente .marca-simbolo { opacity: 0.16; filter: grayscale(1) brightness(1.6); }
+    .marca-frente .marca-fala { color: rgba(255,255,255,0.62); }
+    .marca-frente .marca-fala strong { color: rgba(255,255,255,0.82); }
+    .marca-frente .section-tag { opacity: 0.5; }
+
+    /* estado aceso (revelado): o símbolo acende e o texto vai a branco
+       pleno com os destaques em azul */
+    .marca-reveal .marca-simbolo { opacity: 0.62; filter: none; }
+    .marca-reveal .marca-fala { color: #FFFFFF; }
+    .marca-reveal .marca-fala strong { color: #7FA9FF; }
+
+    /* Sem movimento: a tocha não roda, então entra o corte 55/45 do próprio
+       componente, com o fio tracejado. Vira um antes/depois parado, que é
+       leitura melhor do que a marca apagada sozinha. */
+    @media (prefers-reduced-motion: reduce) {
+      .marca-palco { cursor: auto; }
+      .marca-reveal {
+        -webkit-mask-image: none;
+                mask-image: none;
+        clip-path: inset(0 0 0 55%);
+        border-left: 1.5px dashed rgba(34, 211, 238, 0.55);
+      }
+      .marca-halo { display: none; }
+    }
+
+    /* no estreito as duas colunas viram uma: símbolo em cima, fala embaixo */
+    @media (max-width: 820px) {
+      .marca-conteudo {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+      .marca-palco-logo { order: -1; }
+      .marca-dizeres { align-items: center; }
+      .marca-simbolo { height: clamp(150px, 34vw, 230px); }
+    }
+
+    @media (max-width: 700px) {
+      .marca-palco { cursor: auto; }
+    }
+
+    /* ---- GLOW HORIZON (21st.dev) ----
+       Quatro elipses empilhadas no topo da seção. A de baixo é branca e
+       fica parada; por cima entram roxo, índigo e preto, cada uma subindo
+       de -40% até 0 com atrasos diferentes. A preta é a chave do desenho:
+       borrada em 51px e por cima de todas, ela come o miolo e deixa só o
+       aro colorido aparecendo — é isso que vira o horizonte aceso.
+
+       O container inteiro sobe -50%, então metade da elipse fica pra fora
+       da seção e só a curva de baixo entra na tela.
+
+       Alturas: no original o pai é 100vh, então o wrapper aqui também é,
+       em vez de 100% de uma seção que tem formulário e passa de 1500px —
+       esticado nela a curva viraria quase uma reta. */
+    .glow-horizonte {
+      --gh-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100vh;
+      isolation: isolate;
+      pointer-events: none;
+      z-index: 0;
+      /* estado de entrada; o .in leva pro estado final */
+      transform: translateY(-100%) scaleY(1.5);
+      opacity: 0;
+      filter: blur(15px);
+    }
+    .glow-horizonte.in { animation: gh-entra 2s var(--gh-ease) forwards; }
+    @keyframes gh-entra {
+      to { transform: translateY(-50%) scaleY(1); opacity: 1; filter: blur(0px); }
+    }
+
+    .gh-arco { position: absolute; inset: 0; border-radius: 100%; }
+
+    /* a branca não anima no original (entra sem posição inicial): é o fio
+       aceso na crista do arco, e vem só do box-shadow */
+    .gh-branca {
+      transform: scale(1.32);
+      background: #FFFFFF;
+      box-shadow: 0px -4px 23px 0px #ffffffb5;
+    }
+    /* no original é roxo #A558FB por fora e índigo #4922E5 por dentro;
+       aqui vira o azul da casa mantendo a mesma relação: o halo mais
+       claro por fora, o tom cheio da marca por dentro */
+    .gh-halo   { transform: translateY(-40%) scale(1.20); background: #4C86F5; filter: blur(31px); }
+    .gh-nucleo { transform: translateY(-40%) scale(1.24); background: #1E5FE0; filter: blur(21px); }
+    .gh-preta  { transform: translateY(-40%) scale(1.20); background: #000;    filter: blur(51px); }
+
+    .glow-horizonte.in .gh-halo   { animation: gh-halo   2s var(--gh-ease) 0.6s forwards; }
+    .glow-horizonte.in .gh-nucleo { animation: gh-nucleo 2s var(--gh-ease)    0s forwards; }
+    .glow-horizonte.in .gh-preta  { animation: gh-preta  2s var(--gh-ease)    0s forwards; }
+
+    @keyframes gh-halo   { to { transform: translateY(0) scale(1.20); } }
+    @keyframes gh-nucleo { to { transform: translateY(0) scale(1.24); } }
+    @keyframes gh-preta  { to { transform: translateY(0) scale(1.20); } }
+
+    /* sem movimento: entra direto no estado final, sem o percurso */
+    @media (prefers-reduced-motion: reduce) {
+      .glow-horizonte {
+        transform: translateY(-50%) scaleY(1);
+        opacity: 1;
+        filter: none;
+        animation: none;
+      }
+      .gh-halo   { transform: translateY(0) scale(1.20); }
+      .gh-nucleo { transform: translateY(0) scale(1.24); }
+      .gh-preta  { transform: translateY(0) scale(1.20); }
+    }
+
+    /* o conteúdo da seção fica acima do brilho */
+    .cta-section > .container { position: relative; z-index: 1; }
 
     .cta-tag {
       display: inline-flex;
@@ -2707,6 +3294,63 @@
     }
     @media (min-width: 768px) { .pilula-fina { font-size: 0.875rem; } }
 
+    /* ---- SELOS HOLOGRÁFICOS ----
+       Porte 1:1 do componente que já existe em clientes/Security-Recovery
+       (`.selo`), que por sua vez é porte de um card de referência do
+       21st.dev — registrado em templates/componentes/ da próxima vez que
+       mexer aqui. Não é aproximação visual: são as mesmas 10 camadas de
+       polígono borrado girando (a "fita" holográfica de verdade, não um
+       gradiente listrado passando por cima), a mesma inclinação 3D pelo
+       ponteiro via matrix3d, e as mesmas duas cores de placa (dourado
+       #f3e3ac, prata #ddd — os valores originais do componente-fonte).
+       Prefixo `-2` pra não colidir com o `.selo` que este site já usa nos
+       cards de plano (selo-quente/morno/frio, outra coisa). */
+    .rodape-selos {
+      display: flex; flex-wrap: wrap; gap: 1.25rem;
+      justify-content: center;
+      position: relative; z-index: 20;
+      padding: 0 clamp(1.5rem, 4vw, 3rem) 1.75rem;
+    }
+    .selo2 { display: block; width: min(220px, 100%); text-decoration: none; perspective: 700px; }
+    .selo2__placa {
+      display: block;
+      transform: perspective(700px) matrix3d(var(--m2, 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+      transform-origin: center center;
+      /* sem transition de propósito — quem suaviza é a interpolação do JS
+         quadro a quadro; as duas juntas dão sensação de borracha */
+      border-radius: 10px;
+      box-shadow: 0 18px 40px -22px rgba(2, 8, 20, .95);
+    }
+    .selo2__placa svg { display: block; width: 100%; height: auto; }
+    .selo2__acima { font-family: inherit; font-size: 9px; font-weight: 700; fill: #666; letter-spacing: .06em; }
+    .selo2__abaixo { font-family: inherit; font-size: 16px; font-weight: 700; fill: #666; }
+    .selo2__ic-cheio { fill: #666; }
+    .selo2__ic-linha { stroke: #666; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .selo2__ic-vazio { fill: none; stroke: #666; stroke-width: 3.4; }
+    .selo2__ic-vaza { stroke: #ddd; stroke-width: 3; fill: none; stroke-linejoin: round; }
+    .selo2__ic-vaza-cheio { fill: #ddd; }
+
+    .selo2__brilho { mix-blend-mode: overlay; }
+    .selo2__cam {
+      transform-box: view-box; transform-origin: center center;
+      transform: rotate(calc(var(--g) + var(--hov2, 40deg)));
+      animation: selo2Brilho 5s infinite;
+      will-change: transform;
+    }
+    @keyframes selo2Brilho { 0%, 100% { rotate: 0deg; } 50% { rotate: 10deg; } }
+    .selo2:hover .selo2__cam, .selo2:focus-visible .selo2__cam { animation: none; }
+    .selo2:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 12px; }
+    @media (prefers-reduced-motion: reduce) { .selo2__cam { animation: none; } }
+
+    /* dourado no que a gente promete mais forte (autoria), prata no resto */
+    .selo2--ouro  { --placa2: #f3e3ac; }
+    .selo2--prata { --placa2: #ddd; }
+    .selo2__fundo { fill: var(--placa2, #ddd); }
+    .selo2__ic-vaza { stroke: var(--placa2, #ddd); }
+    .selo2__ic-vaza-cheio { fill: var(--placa2, #ddd); }
+
+    @media (max-width: 560px) { .rodape-selos { gap: 0.85rem; } }
+
     /* ---- BASE ---- */
     .rodape-base {
       position: relative;
@@ -2902,136 +3546,6 @@
        é melhor que escalonar até não acabar mais. */
     .reveal-group.in > *:nth-child(n+5) { opacity:1; transform:none; transition-delay:0.4s; }
 
-    /* ---- ABERTURA QUE EXPANDE ----
-       A mídia começa como uma janelinha no centro e abre até a tela inteira
-       conforme a rolagem, com a foto dando um zoom de aproximação e o título
-       se partindo em duas metades que saem pelas laterais.
-
-       A janela é feita com clip-path e não mudando largura/altura: assim a
-       foto nunca é reesticada (o desenho não distorce) e o navegador não
-       precisa refazer layout a cada quadro. O que anima é recorte + transform,
-       que são as duas coisas baratas de animar. */
-    .abre {
-      position: relative;
-      /* a altura extra é o curso da rolagem que alimenta a animação */
-      height: 280vh;
-      background: var(--bg);
-    }
-
-    .abre-palco {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow: hidden;
-      /* valores escritos pelo script a cada quadro */
-      --w: 40vw;
-      --h: 30vh;
-      --r: 22px;
-      --zoom: 1.35;
-      --sai: 0px;
-      --fundo: 1.18;
-      --tinta: 1;
-    }
-
-    /* fundo: a mesma foto, borrada e escurecida, dando um zoom lento */
-    .abre-fundo {
-      position: absolute;
-      inset: 0;
-      /* O borrão vem pronto do arquivo. Antes era filter: blur(26px) no
-         navegador, num elemento que muda de escala a cada quadro — e blur em
-         cima de coisa que se move é o item mais caro dessa seção. A imagem
-         sai de 13 KB pra 2,8 KB de quebra, porque borrada não precisa de
-         resolução. */
-      background: url('teia-fundo-abre.jpg') center/cover no-repeat;
-      transform: scale(var(--fundo));
-    }
-
-    .abre-veu {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(6,14,40,0.35) 0%, rgba(6,14,40,0.82) 100%);
-    }
-
-    /* o logo, partido ao meio. Fica ACIMA da mídia: inteiro no começo, como
-       uma cartela, e cada metade sai por um lado conforme a janela abre. */
-    .abre-logo {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      display: grid;
-      place-content: center;
-      pointer-events: none;
-      opacity: var(--tinta);
-    }
-    .abre-logo img {
-      /* as duas cópias ocupam a mesma célula do grid, uma exatamente sobre a
-         outra, então as metades encaixam sem emenda visível */
-      grid-area: 1 / 1;
-      height: clamp(52px, 7.5vw, 118px);
-      width: auto;
-      filter: drop-shadow(0 6px 30px rgba(4, 10, 28, 0.75));
-    }
-    .abre-logo-a {
-      clip-path: inset(0 50% 0 0);
-      transform: translateX(calc(var(--sai) * -1));
-    }
-    .abre-logo-b {
-      clip-path: inset(0 0 0 50%);
-      transform: translateX(var(--sai));
-    }
-
-    .abre-pes {
-      position: absolute;
-      left: 0; right: 0;
-      bottom: clamp(1.5rem, 4vh, 3rem);
-      display: flex;
-      justify-content: space-between;
-      padding: 0 clamp(1.25rem, 3vw, 3rem);
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.6);
-      opacity: var(--tinta);
-    }
-    .abre-pes span:first-child { transform: translateX(calc(var(--sai) * -0.55)); }
-    .abre-pes span:last-child  { transform: translateX(calc(var(--sai) * 0.55)); }
-
-    /* a janela que abre */
-    .abre-janela {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      clip-path: inset(
-        calc((100vh - var(--h)) / 2)
-        calc((100vw - var(--w)) / 2)
-        round var(--r)
-      );
-    }
-
-    .abre-janela video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transform: scale(var(--zoom));
-    }
-
-    /* A classe entra e sai junto com o IntersectionObserver da seção. Deixar
-       will-change fixo obrigaria o navegador a segurar essas camadas na
-       memória a visita inteira, por causa de um efeito que dura três telas. */
-    .abre-palco.ativo .abre-fundo  { will-change: transform; }
-    .abre-palco.ativo .abre-janela { will-change: clip-path; }
-    .abre-palco.ativo .abre-logo-a,
-    .abre-palco.ativo .abre-logo-b { will-change: transform; }
-
-
-    @media (max-width: 700px) {
-      .abre { height: 230vh; }
-      .abre-palco { height: 100svh; }
-      .abre-pes { font-size: 0.62rem; letter-spacing: 0.1em; }
-    }
-
     /* ---- TRABALHOS CINEMATOGRÁFICOS ----
        Tradução direta do componente React de referência. O que produz o efeito
        lá são três classes do Tailwind:
@@ -3041,6 +3555,20 @@
        Cada case gruda no topo e o próximo sobe por cima, cobrindo. O
        ReactLenis do original é só o wrapper React do Lenis, que este site já
        carrega. Nenhuma biblioteca nova precisou entrar. */
+    /* o painel do primeiro card (--painel) é mais claro que o --bg da seção
+       de cima: sem transição isso lia como uma linha reta bem na costura.
+       Não mexe em `position` aqui — .cine-tela já é sticky, e isso serve de
+       containing block pro ::before igual serviria um relative. */
+    .cine-tela:first-of-type::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: clamp(120px, 16vw, 220px);
+      background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
     .cine-tela {
       position: sticky;
       top: 0;
@@ -3273,25 +3801,29 @@
        pela rolagem: vira uma tela só, com o conteúdo já no lugar. Os 320vh de
        curso e o sticky existiam só pra alimentar o scrubbing. */
     @media (max-width: 900px), (hover: none) and (pointer: coarse) {
-      .hero-scroll-wrapper { height: auto; }
-      .hero {
-        position: static;
-        height: auto;
-        min-height: 100svh;
-        padding: 8.5rem 0 4.5rem;
-      }
-      /* o título da constelação existia pra sumir em escada; sem a animação
-         ele só brigaria por espaço com o h1 */
-      .hero-intro-title { display: none; }
+      /* O hero volta a ser dirigido pela rolagem no celular, mas na versão
+         leve: aqui os dois textos animam como BLOCO, não letra por letra.
+         A escada de ~84 spans é justamente o que nunca ficou fluido no
+         celular — são 84 escritas de estilo por quadro. Como bloco são 2,
+         e a sequência que o visitante vê (frase de abertura → ela sai →
+         o h1 entra → subtítulo e botões) é a mesma.
+         Curso menor que os 320vh do desktop: no celular cada tela de
+         rolagem custa mais gesto, e 240vh já dá as quatro fases. */
+      .hero-scroll-wrapper { height: 240vh; }
+      .hero { min-height: 100svh; }
       .video-progress-bar { display: none; }
-      /* o conteúdo do hero nasce visível, sem esperar fase de rolagem */
-      .hero-item { opacity: 1; transform: none; }
-      /* sem o `position: absolute` do desktop ele perdia a centralização */
-      .scroll-hint {
-        position: static;
-        transform: none;
-        margin: 2.5rem auto 0;
-        align-items: center;
+
+      /* No celular o título de abertura não é quebrado em spans, então o
+         tamanho tem que vir dele mesmo — a regra de fonte mora no .char. */
+      .hero-intro-title {
+        display: block;
+        font-size: clamp(2rem, 8.5vw, 3.2rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: #fff;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.75);
+        width: 84%;
+        will-change: opacity, transform;
       }
 
       /* backdrop-filter é recalculado a cada frame, e aqui é um blur de 24px
@@ -3377,7 +3909,7 @@
       <div class="hero-item" data-phase="0.85">
         <div class="hero-actions" style="justify-content:center;">
           <a href="#contact" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
-            Quero um orçamento de site
+            Quero alcançar mais pessoas
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a><!-- Lead agora é exclusivo do envio do formulário; clique é Contact -->
           <a href="#sites" class="btn btn-ghost">Ver pacotes de site</a>
@@ -3435,10 +3967,12 @@
              acusação, dado que prova a acusação, sintomas para ele se
              reconhecer em pelo menos um, e só então a Conect+ como saída.
              Os projetos entram no fim, como prova de quem já saiu dessa. -->
-        <h2 class="heading reveal-titulo">
-          Invis&iacute;vel na internet,<br>
-          sua empresa <span style="color:var(--accent)">n&atilde;o existe</span>
+        <h2 class="heading reveal-titulo" style="text-align:center;margin-inline:auto">
+          Sua empresa ainda n&atilde;o tem<br>
+          <span style="color:var(--accent)">estrutura online</span>?
         </h2>
+
+        <p class="reveal-apoio" style="margin-top:1.35rem;margin-inline:auto;max-width:32ch;text-align:center;font-size:1.3rem;font-weight:600;color:var(--text)">A Conect+ resolve isso para voc&ecirc;.</p>
 
         <!-- os três parágrafos precisam de um pai só: cada um como item
              direto da grade cairia numa fileira diferente da do título -->
@@ -3463,16 +3997,17 @@
         </div>
 
         <div class="pricing-ponte reveal-apoio">
-          <span>Quatro sites que a gente fez. Todos no ar agora.</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <span><span style="color:var(--accent)">Veja alguns de nossos</span> <span style="color:var(--text)">trabalhos</span></span>
         </div>
       </div>
+
     </div>
 
     <article class="cine-tela" style="--painel:linear-gradient(165deg,#0d1c48 0%,#08122f 55%,#060e28 100%)">
       <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://midiacomunica.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://midiacomunica.com/','_blank')">
         <picture>
           <source media="(max-width: 700px)" srcset="workshop-midia-comunica-mobile.jpg">
+          <source srcset="workshop-midia-comunica.webp" type="image/webp">
           <img src="workshop-midia-comunica.png" alt="Workshop Mídia Comunica" loading="lazy" decoding="async">
         </picture>
         <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
@@ -3489,6 +4024,7 @@
       <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://graficonrevestimento.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://graficonrevestimento.com/','_blank')">
         <picture>
           <source media="(max-width: 700px)" srcset="graficon-revestimento-mobile.jpg">
+          <source srcset="graficon-revestimento.webp" type="image/webp">
           <img src="graficon-revestimento.png" alt="Graficon Revestimento e Recuperação de Cilindros Industriais" loading="lazy" decoding="async">
         </picture>
         <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
@@ -3505,6 +4041,7 @@
       <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://www.lojabrmake.com.br/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://www.lojabrmake.com.br/','_blank')">
         <picture>
           <source media="(max-width: 700px)" srcset="brmaker-cosmeticos-mobile.jpg">
+          <source srcset="brmaker-cosmeticos.webp" type="image/webp">
           <img src="brmaker-cosmeticos.png" alt="BRmaker Loja de Cosméticos e Maquiagem" loading="lazy" decoding="async">
         </picture>
         <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
@@ -3521,6 +4058,7 @@
       <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://amcinsider.midiacomunica.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://amcinsider.midiacomunica.com/','_blank')">
         <picture>
           <source media="(max-width: 700px)" srcset="amc-insider-mobile.jpg">
+          <source srcset="amc-insider.webp" type="image/webp">
           <img src="amc-insider.jpg" alt="AMC Insider, ecossistema de mentoria da Mídia Comunica" loading="lazy" decoding="async">
         </picture>
         <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
@@ -3537,9 +4075,24 @@
   <!-- SERVICES -->
   <section class="section" id="services">
     <div class="container">
-      <!-- centralizado como as outras seções de grade simétrica -->
+      <!-- PALCO DOS PASSOS
+           Porte em JS/CSS do componente de timeline horizontal (React +
+           motion): um palco alto, um trilho fixo por cima dele, e os cartoes
+           numa fileira que nao quebra. Cada cartao depois do primeiro entra
+           pela direita e para empilhado 64px a frente do anterior, tudo
+           amarrado a rolagem.
+           O efeito so liga quando o JS diz que pode (`deck-ligado`): sem
+           script, em tela estreita ou com movimento reduzido, isso continua
+           sendo a mesma grade de dois por dois de antes. -->
+      <div class="passos-palco" id="passosPalco">
+      <div class="passos-fixo">
+      <!-- centralizado como as outras seções de grade simétrica.
+           Mora dentro do trilho de propósito: fora dele, o título subia e saía
+           da tela antes de o segundo cartão chegar, e a etapa aparecia sem a
+           pergunta que ela responde. Preso aqui, ele para junto com os cartões
+           e fica de pé durante as quatro etapas. -->
       <div class="topo-centro">
-        <h2 class="heading reveal-titulo" style="max-width:15ch;margin-inline:auto">Como a gente faz um site</h2>
+        <h2 class="heading reveal-titulo" style="max-width:26ch;margin-inline:auto">Passo a passo da constru&ccedil;&atilde;o da sua <span style="color:var(--accent)">estrutura online</span></h2>
         <p class="pricing-lede reveal-apoio">
           S&atilde;o quatro etapas, e a ordem importa. A maior parte dos sites que d&atilde;o errado
           pula a primeira e come&ccedil;a escolhendo cor.
@@ -3585,6 +4138,8 @@
           <p class="service-desc">No ar n&atilde;o &eacute; o fim. Voc&ecirc; recebe o site medido, sabendo de onde vem cada contato, e com quem chamar quando precisar mudar um pre&ccedil;o, um texto ou uma foto.</p>
         </div>
       </div>
+      </div>
+      </div>
     </div>
   </section>
 
@@ -3628,7 +4183,7 @@
             <li>Pixel do Meta e tag do Google instalados</li>
             <li>Entrega em até 4 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Página%20de%20Conversão!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Página%20de%20Conversão!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Quero escalar meu negócio →</a>
         </div>
 
         <!-- SITE 2 — o que já existia, agora no meio da escada -->
@@ -3651,7 +4206,7 @@
             <li>Integração com WhatsApp e redes sociais</li>
             <li>Entrega em até 7 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Presença%20Digital!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Presença%20Digital!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Preciso de um site →</a>
         </div>
 
         <!-- SITE 3 — topo da escada, projeto que sustenta SEO -->
@@ -3674,7 +4229,7 @@
             <li>Lead do formulário cai direto no WhatsApp</li>
             <li>Entrega em até 15 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20site%20Autoridade!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Contact')">Quero esse plano →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20site%20Autoridade!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Quero ter mais clientes vindo do Google →</a>
         </div>
 
       </div>
@@ -3690,26 +4245,89 @@
   <!-- GARANTIAS -->
   <section class="section">
     <div class="container">
-      <div class="topo-centro">
-        <div class="section-tag">Por que a Conect+</div>
-        <h2 class="heading reveal-titulo">O combinado que a gente <span style="color:var(--accent)">assume</span></h2>
-      </div>
-      <div class="promessas reveal-group">
-        <div class="promessa">
-          <h3>Sem mensalidade</h3>
-          <p>Pagamento &uacute;nico pelo site. Nada de aluguel mensal pra p&aacute;gina continuar existindo.</p>
+      <div class="dif-painel">
+        <div class="topo-centro">
+          <div class="section-tag">O diferencial</div>
+          <h2 class="heading reveal-titulo">A gente usa tecnologia. <span style="color:var(--accent)">Seu site n&atilde;o parece.</span></h2>
+          <p class="dif-sub reveal-apoio">Enquanto o mercado empurra site clonado com cara de gerador autom&aacute;tico, aqui cada projeto sai com anima&ccedil;&atilde;o, ideia e estrat&eacute;gia pro seu nicho &mdash; n&atilde;o pro nicho de ningu&eacute;m.</p>
         </div>
-        <div class="promessa">
-          <h3>Or&ccedil;amento antes de fechar</h3>
-          <p>Voc&ecirc; recebe o escopo e o pre&ccedil;o por escrito, sem compromisso de contratar.</p>
-        </div>
-        <div class="promessa">
-          <h3>O site &eacute; seu</h3>
-          <p>Dom&iacute;nio e arquivos ficam no seu nome. Voc&ecirc; n&atilde;o fica preso &agrave; gente pra continuar no ar.</p>
-        </div>
-        <div class="promessa">
-          <h3>Estrat&eacute;gia por nicho</h3>
-          <p>Advocacia n&atilde;o precisa do mesmo site que barbearia. Nada de tema pronto reaproveitado.</p>
+
+        <div class="dif-grid reveal-group">
+          <div class="dif-card">
+            <div class="dif-visual" aria-hidden="true">
+              <div class="dif-chip dif-chip-tela" style="top:2px;left:0;width:80%;--rot:-4deg;--atraso:0s">
+                <div class="dif-tela-topo"><span></span><span></span><span></span></div>
+                <div class="dif-barra" style="width:68%"></div>
+                <div class="dif-barra" style="width:38%"></div>
+                <div class="dif-barra" style="width:88%"></div>
+              </div>
+              <div class="dif-chip dif-chip-selo" style="bottom:2px;right:0;--rot:6deg;--atraso:.6s">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                100% autoral
+              </div>
+            </div>
+            <h3>Sem molde de IA</h3>
+            <p>Hoje todo mundo monta site no mesmo gerador e entrega a mesma cara. Aqui cada se&ccedil;&atilde;o &eacute; desenhada pro seu neg&oacute;cio, n&atilde;o puxada de um banco de templates.</p>
+          </div>
+
+          <div class="dif-card">
+            <div class="dif-visual" aria-hidden="true">
+              <div class="dif-chip dif-chip-tela" style="top:2px;right:0;width:80%;--rot:4deg;--atraso:.2s">
+                <div class="dif-tela-topo"><span></span><span></span><span></span></div>
+                <div class="dif-barra" style="width:58%"></div>
+                <div class="dif-barra" style="width:82%"></div>
+              </div>
+              <div class="dif-chip dif-chip-selo" style="bottom:0;left:0;--rot:-6deg;--atraso:.5s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10.5 8.5l5 3.5-5 3.5v-7z" fill="currentColor" stroke="none"/></svg>
+                60 fps de verdade
+              </div>
+            </div>
+            <h3>Anima&ccedil;&atilde;o de verdade</h3>
+            <p>Scroll, hover, transi&ccedil;&atilde;o: cada movimento foi constru&iacute;do &agrave; m&atilde;o pro seu site, n&atilde;o &eacute; o efeito padr&atilde;o que vem pronto em qualquer construtor autom&aacute;tico.</p>
+          </div>
+
+          <div class="dif-card">
+            <div class="dif-visual dif-visual-alto" aria-hidden="true">
+              <div class="dif-chip dif-chip-selo" style="top:0;left:0;--rot:-5deg;--atraso:0s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M4 6h16"/><path d="M4 6l-2.5 6a3 3 0 0 0 5 0L4 6z"/><path d="M20 6l-2.5 6a3 3 0 0 0 5 0L20 6z"/><path d="M12 6v14"/><path d="M8 20h8"/></svg>
+                Advocacia
+              </div>
+              <div class="dif-chip dif-chip-selo" style="top:0;right:0;--rot:5deg;--atraso:.35s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                Google Ads
+              </div>
+              <div class="dif-chip dif-chip-selo" style="top:38px;left:20%;--rot:-3deg;--atraso:.55s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/></svg>
+                Cl&iacute;nica est&eacute;tica
+              </div>
+              <div class="dif-chip dif-chip-selo" style="bottom:0;left:2%;--rot:-4deg;--atraso:.75s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="18" rx="4"/><path d="M8 7.5l8-2M8 12l8-2M8 16.5l8-2"/></svg>
+                Barbearia
+              </div>
+              <div class="dif-chip dif-chip-selo" style="bottom:2px;right:4%;--rot:5deg;--atraso:.95s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.1 10.8L15.9 7.2M8.1 13.2l7.8 3.6"/></svg>
+                Meta Ads
+              </div>
+            </div>
+            <h3>Estrat&eacute;gia por nicho</h3>
+            <p>Advocacia n&atilde;o recebe o mesmo site que barbearia. A estrutura nasce do que o cliente do seu nicho procura, e a m&iacute;dia paga (Google Ads, Meta Ads) segue a mesma l&oacute;gica, sem receita de bolo.</p>
+          </div>
+
+          <div class="dif-card">
+            <div class="dif-visual" aria-hidden="true">
+              <div class="dif-chip dif-chip-tela" style="top:2px;left:0;width:80%;--rot:-3deg;--atraso:.1s">
+                <div class="dif-tela-topo"><span></span><span></span><span></span></div>
+                <div class="dif-barra" style="width:74%"></div>
+                <div class="dif-barra" style="width:46%"></div>
+              </div>
+              <div class="dif-chip dif-chip-selo" style="bottom:0;right:0;--rot:6deg;--atraso:.45s">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                Exclusivo, ponto
+              </div>
+            </div>
+            <h3>Feito pra n&atilde;o confundir com outro</h3>
+            <p>Enquanto o mercado vende site clonado com cara de gerador, o seu sai parecido com a sua empresa, n&atilde;o com o resto da internet.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -3717,16 +4335,59 @@
 
   
 
-  <!-- PHILOSOPHY -->
+  <!-- PHILOSOPHY / PALCO DA MARCA -->
   <section class="section" id="about">
     <div class="container">
-      <div class="philosophy-block reveal">
-        <div>
-          <div class="section-tag" style="margin-bottom:0">Nossa Cren&ccedil;a</div>
+
+      <!-- As duas camadas carregam o MESMO bloco, na mesma posição: a de cima
+           com a marca apagada, a de baixo com ela acesa. Alinhadas ao pixel,
+           a tocha lê como luz passando por cima, não como dois conteúdos
+           brigando. Só a de frente entra no fluxo e define a altura. -->
+      <div class="marca-palco reveal" id="marcaPalco">
+
+        <div class="marca-frente">
+          <div class="marca-conteudo">
+            <div class="marca-dizeres">
+              <div class="section-tag" style="margin-bottom:0">Nossa Cren&ccedil;a</div>
+              <p class="marca-fala">
+                O mundo <strong>digital</strong> est&aacute; em constante evolu&ccedil;&atilde;o, e na
+                <strong>Conect+</strong> estamos sempre um passo &agrave; frente. Utilizamos as mais
+                modernas <strong>t&eacute;cnicas</strong> e <strong>ferramentas</strong>, e estamos
+                prontos para adaptar nossas estrat&eacute;gias conforme as mudan&ccedil;as do mercado
+                e do comportamento do consumidor.
+              </p>
+            </div>
+            <div class="marca-palco-logo">
+              <picture>
+                <source srcset="logo-simbolo-hd.webp" type="image/webp">
+                <img class="marca-simbolo" src="logo-simbolo.png" alt="Conect+" width="678" height="640" loading="lazy" decoding="async">
+              </picture>
+            </div>
+          </div>
         </div>
-        <div class="philosophy-text">
-          O mundo <strong style="color:var(--accent)">digital</strong> está em constante evolução, e na <strong style="color:var(--accent)">Conect+</strong> estamos sempre um passo à frente. Utilizamos as mais modernas <strong style="color:var(--accent)">técnicas</strong> e <strong style="color:var(--accent)">ferramentas</strong>, e estamos prontos para adaptar nossas estratégias conforme as mudanças do mercado e do comportamento do consumidor.
+
+        <div class="marca-reveal" id="marcaReveal" aria-hidden="true">
+          <div class="marca-conteudo">
+            <div class="marca-dizeres">
+              <div class="section-tag" style="margin-bottom:0">Nossa Cren&ccedil;a</div>
+              <p class="marca-fala">
+                O mundo <strong>digital</strong> est&aacute; em constante evolu&ccedil;&atilde;o, e na
+                <strong>Conect+</strong> estamos sempre um passo &agrave; frente. Utilizamos as mais
+                modernas <strong>t&eacute;cnicas</strong> e <strong>ferramentas</strong>, e estamos
+                prontos para adaptar nossas estrat&eacute;gias conforme as mudan&ccedil;as do mercado
+                e do comportamento do consumidor.
+              </p>
+            </div>
+            <div class="marca-palco-logo">
+              <picture>
+                <source srcset="logo-simbolo-hd.webp" type="image/webp">
+                <img class="marca-simbolo" src="logo-simbolo.png" alt="" width="678" height="640" loading="lazy" decoding="async">
+              </picture>
+            </div>
+          </div>
         </div>
+
+        <div class="marca-halo" id="marcaHalo" aria-hidden="true"></div>
       </div>
     </div>
   </section>
@@ -3750,7 +4411,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3772,7 +4433,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3794,7 +4455,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3816,7 +4477,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3838,7 +4499,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3860,7 +4521,7 @@
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <p class="muro-fala">&ldquo;Precisava montar toda a estrutura online do meu workshop do zero. O Kaique entendeu o que eu precisava e cuidou de tudo. Hoje vendo minhas turmas sem correr atr&aacute;s.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-midia-comunica.webp" type="image/webp"><img src="selo-midia-comunica.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">A M&iacute;dia Comunica</div>
                   <div class="muro-papel">Comunica&ccedil;&atilde;o &amp; Workshops</div>
@@ -3884,9 +4545,9 @@
           <div class="muro-pista">
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -3906,9 +4567,9 @@
             </div>
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -3928,9 +4589,9 @@
             </div>
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -3950,9 +4611,9 @@
             </div>
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -3972,9 +4633,9 @@
             </div>
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -3994,9 +4655,9 @@
             </div>
             <div class="muro-card">
               <div class="muro-estrelas" role="img" aria-label="5 de 5 estrelas"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-              <p class="muro-fala">&ldquo;Eu n&atilde;o entendia nada de an&uacute;ncio e tinha medo de jogar dinheiro fora. O Kaique explicou tudo desde o in&iacute;cio, e hoje a gente recebe pedido de or&ccedil;amento quase todo dia.&rdquo;</p>
+              <p class="muro-fala">&ldquo;A gente vivia de indica&ccedil;&atilde;o e n&atilde;o tinha onde mostrar o servi&ccedil;o pra quem ainda n&atilde;o conhecia. Agora quem procura no Google acha a empresa e j&aacute; chega pedindo or&ccedil;amento.&rdquo;</p>
               <div class="muro-pessoa">
-                <span class="muro-avatar" aria-hidden="true"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></span>
+                <span class="muro-avatar" aria-hidden="true"><picture><source srcset="selo-graficon.webp" type="image/webp"><img src="selo-graficon.png" alt="" loading="lazy" decoding="async"></picture></span>
                 <div>
                   <div class="muro-nome">Graficon</div>
                   <div class="muro-papel">Revestimento industrial</div>
@@ -4020,41 +4681,26 @@
     </div>
   </section>
 
-  <!-- fecho de marca: a mídia expande com a rolagem e o logo parte ao meio,
-       logo antes do convite pra conversar -->
-  <div class="abre" id="abre">
-    <div class="abre-palco" id="abrePalco">
-      <div class="abre-fundo"></div>
-      <div class="abre-veu"></div>
-
-      <div class="abre-pes" aria-hidden="true">
-        <span>Conect+</span>
-        <span>Role para abrir</span>
-      </div>
-
-      <div class="abre-janela">
-        <!-- mesmo arquivo do hero: já está em cache quando chega aqui, então
-             não custa byte nenhum. O src é posto pelo script, que sabe se é
-             celular, e o vídeo só toca com a seção em tela. -->
-        <video id="abreVideo" muted playsinline loop preload="none" poster="teia-poster.jpg"></video>
-      </div>
-
-      <!-- o logo parte ao meio: são duas cópias do mesmo arquivo na mesma
-           posição, cada uma mostrando metade. Encaixadas, formam o logo
-           inteiro; separadas, cada metade sai por um lado. -->
-      <div class="abre-logo" aria-hidden="true">
-        <img class="abre-logo-a" src="logo-nome.png" alt="" width="303" height="96">
-        <img class="abre-logo-b" src="logo-nome.png" alt="" width="303" height="96">
-      </div>
-    </div>
-  </div>
+  <!-- degradê fixo cobrindo a costura entre depoimentos e CTA: independe de
+       animação/scroll, então some a linha desde o primeiro paint -->
+  <div class="secao-emenda" aria-hidden="true"></div>
 
   <!-- CTA -->
   <section class="cta-section" id="contact">
+
+    <!-- horizonte aceso: quatro elipses empilhadas, a preta por cima
+         recortando o miolo e deixando só o aro colorido -->
+    <div class="glow-horizonte" aria-hidden="true">
+      <div class="gh-arco gh-branca"></div>
+      <div class="gh-arco gh-halo"></div>
+      <div class="gh-arco gh-nucleo"></div>
+      <div class="gh-arco gh-preta"></div>
+    </div>
+
     <div class="container">
       <div class="cta-tag">Vamos Conversar</div>
       <h2 class="cta-title reveal-titulo">
-        Bora tirar o seu site <em>do papel?</em>
+        Vamos construir algo <em>incr&iacute;vel hoje?</em>
       </h2>
       <p class="cta-note" style="max-width:52ch;margin:0 auto">
         Conta o que o seu neg&oacute;cio faz e o que voc&ecirc; precisa. Devolvo o escopo e o
@@ -4099,19 +4745,6 @@
               <span class="erro" data-erro="segmento"></span>
             </div>
 
-            <div class="campo full">
-              <label id="lbl-invest">J&aacute; investe em an&uacute;ncio?</label>
-              <div class="opcoes" role="radiogroup" aria-labelledby="lbl-invest">
-                <input type="radio" id="inv-1" name="investe" value="Nunca investi">
-                <label for="inv-1">Nunca investi</label>
-                <input type="radio" id="inv-2" name="investe" value="Já tentei e não deu certo">
-                <label for="inv-2">J&aacute; tentei e n&atilde;o deu certo</label>
-                <input type="radio" id="inv-3" name="investe" value="Invisto hoje">
-                <label for="inv-3">Invisto hoje</label>
-              </div>
-              <span class="erro" data-erro="investe"></span>
-            </div>
-
           </div>
 
           <div class="form-envio">
@@ -4128,7 +4761,7 @@
 
           <div class="form-alt">
             Prefere falar agora?
-            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site%20da%20minha%20conta." target="_blank" rel="noopener" onclick="fbq('track','Contact')">Chamar no WhatsApp</a>
+            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site%20da%20minha%20conta." target="_blank" rel="noopener" onclick="fbq('track','Lead')">Chamar no WhatsApp</a>
           </div>
         </form>
 
@@ -4178,7 +4811,7 @@
 
         <div class="rodape-acoes" id="rodapeAcoes">
           <div class="rodape-fila">
-            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site." target="_blank" rel="noopener" class="vidro-pilula pilula-forte ima" onclick="fbq('track', 'Contact')">
+            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site." target="_blank" rel="noopener" class="vidro-pilula pilula-forte ima" onclick="fbq('track', 'Lead')">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12.05 21.8h-.02a9.8 9.8 0 01-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.78 9.78 0 01-1.5-5.22c0-5.41 4.4-9.81 9.82-9.81 2.62 0 5.08 1.02 6.94 2.88a9.75 9.75 0 012.87 6.94c0 5.41-4.4 9.81-9.81 9.81zM20.52 3.45A11.75 11.75 0 0012.05 0C5.55 0 .26 5.29.26 11.79c0 2.08.54 4.11 1.58 5.9L.16 24l6.45-1.69a11.76 11.76 0 005.44 1.39h.01c6.5 0 11.79-5.29 11.79-11.79 0-3.15-1.23-6.11-3.46-8.34z"/></svg>
               Falar no WhatsApp
             </a>
@@ -4197,15 +4830,79 @@
         </div>
       </div>
 
+      <div class="rodape-selos">
+    <a class="selo2 selo2--ouro" data-selo2 href="#" onclick="return false" aria-label="Originalidade: site 100% autoral">
+      <span class="selo2__placa">
+        <svg viewBox="0 0 260 54" width="260" height="54" role="img" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id="selo2-blur-a"><feGaussianBlur in="SourceGraphic" stdDeviation="3"/></filter>
+            <mask id="selo2-mask-a"><rect width="260" height="54" rx="10" fill="white"/></mask>
+          </defs>
+          <rect class="selo2__fundo" width="260" height="54" rx="10"/>
+          <rect x="4" y="4" width="252" height="46" rx="8" fill="transparent" stroke="#bbb" stroke-width="1"/>
+          <text class="selo2__acima" x="53" y="20">ORIGINALIDADE</text>
+          <text class="selo2__abaixo" x="52" y="40">Site 100% autoral</text>
+          <g transform="translate(9, 8) scale(0.53)" fill="none">
+        <path class="selo2__ic-linha" d="M21 32V23a11 11 0 0 1 22 0v9"/>
+        <rect class="selo2__ic-cheio" x="11" y="31" width="42" height="32" rx="6"/>
+        <rect class="selo2__ic-vazio" x="16.5" y="36.5" width="31" height="21" rx="3.5"/>
+        <circle class="selo2__ic-cheio" cx="32" cy="44.5" r="4.2"/>
+        <path class="selo2__ic-linha" d="M32 48.7v6.1"/>
+          </g>
+          <g class="selo2__brilho" mask="url(#selo2-mask-a)">
+        <g class="selo2__cam" style="--g:0deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(358, 100%, 62%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:10deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(30, 100%, 50%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:20deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(60, 100%, 50%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:30deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(96, 100%, 50%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:40deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(233, 85%, 47%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:50deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(271, 85%, 47%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:60deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(300, 20%, 35%)" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:70deg"><polygon points="0,0 260,54 260,0 0,54" fill="transparent" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:80deg"><polygon points="0,0 260,54 260,0 0,54" fill="transparent" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:90deg"><polygon points="0,0 260,54 260,0 0,54" fill="white" filter="url(#selo2-blur-a)" opacity="0.5"/></g>
+          </g>
+        </svg>
+      </span>
+    </a>
+    <a class="selo2 selo2--prata" data-selo2 href="#" onclick="return false" aria-label="Confiabilidade: 4 anos no ar">
+      <span class="selo2__placa">
+        <svg viewBox="0 0 260 54" width="260" height="54" role="img" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id="selo2-blur-b"><feGaussianBlur in="SourceGraphic" stdDeviation="3"/></filter>
+            <mask id="selo2-mask-b"><rect width="260" height="54" rx="10" fill="white"/></mask>
+          </defs>
+          <rect class="selo2__fundo" width="260" height="54" rx="10"/>
+          <rect x="4" y="4" width="252" height="46" rx="8" fill="transparent" stroke="#bbb" stroke-width="1"/>
+          <text class="selo2__acima" x="53" y="20">CONFIABILIDADE</text>
+          <text class="selo2__abaixo" x="52" y="40">4 anos no ar</text>
+          <g transform="translate(9, 8) scale(0.53)" fill="none">
+        <path class="selo2__ic-cheio" d="M32 3 59 12v24c0 17-12 27-27 33C20 63 5 53 5 36V12Z"/>
+        <path class="selo2__ic-vaza" d="M32 9 53.5 16v20c0 13.6-9.6 22-21.5 27C20.1 58 10.5 49.6 10.5 36V16Z"/>
+        <path class="selo2__ic-vaza" d="M11 21.5h42"/>
+        <path class="selo2__ic-vaza-cheio" d="M24 12.5 26.6 15.5 24 18.5 21.4 15.5Z"/>
+        <path class="selo2__ic-vaza-cheio" d="M32 12.5 34.6 15.5 32 18.5 29.4 15.5Z"/>
+        <path class="selo2__ic-vaza-cheio" d="M40 12.5 42.6 15.5 40 18.5 37.4 15.5Z"/>
+        <path class="selo2__ic-vaza-cheio" d="M32 40.5 37 47 32 53.5 27 47Z"/>
+          </g>
+          <g class="selo2__brilho" mask="url(#selo2-mask-b)">
+        <g class="selo2__cam" style="--g:0deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(358, 100%, 62%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:10deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(30, 100%, 50%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:20deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(60, 100%, 50%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:30deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(96, 100%, 50%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:40deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(233, 85%, 47%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:50deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(271, 85%, 47%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:60deg"><polygon points="0,0 260,54 260,0 0,54" fill="hsl(300, 20%, 35%)" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:70deg"><polygon points="0,0 260,54 260,0 0,54" fill="transparent" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:80deg"><polygon points="0,0 260,54 260,0 0,54" fill="transparent" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+        <g class="selo2__cam" style="--g:90deg"><polygon points="0,0 260,54 260,0 0,54" fill="white" filter="url(#selo2-blur-b)" opacity="0.5"/></g>
+          </g>
+        </svg>
+      </span>
+    </a>
+      </div>
+
       <div class="rodape-base">
         <div class="rodape-copy">&copy; 2026 Conect+. Todos os direitos reservados.</div>
-
-        <div class="vidro-pilula rodape-selo">
-          <span>Feito com</span>
-          <span class="rodape-coracao" aria-hidden="true">&#10084;</span>
-          <span>por</span>
-          <b>Conect+</b>
-        </div>
 
         <button type="button" class="vidro-pilula rodape-topo ima" id="btnVoltarTopo" aria-label="Voltar ao topo da p&aacute;gina">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
@@ -4332,8 +5029,8 @@
     // Só no desktop. No celular o hero não é dirigido pela rolagem, então essas
     // ~90 spans não teriam o que animar e só engordariam o DOM.
     let introChars = [], tituloChars = [];
+    introTitleEl.textContent = 'Desenvolvemos sites únicos para negócios únicos';
     if (!modoLeve) {
-      introTitleEl.textContent = 'Desenvolvemos sites únicos para negócios únicos';
       introChars = dividirEmLetras(introTitleEl);
       tituloChars = dividirEmLetras(heroTituloEl);
     }
@@ -4760,21 +5457,68 @@
     }
 
     if (modoLeve) {
-      // CELULAR: hero estático. Nada de scrubbing, escada de letras nem fases.
-      // A animação dirigida pela rolagem depende de reescrever estilo a cada
-      // quadro, e no celular ela nunca ficou fluida. Aqui o conteúdo já nasce
-      // no lugar e a única coisa que a rolagem faz é o fundo da nav.
-      heroItems.forEach(item => item.classList.add('visible'));
-      const soNav = () => {
+      // CELULAR: hero dirigido pela rolagem, versão leve.
+      //
+      // A escada letra por letra continua fora daqui de propósito: são ~84
+      // spans reescritas por quadro, e é isso que nunca ficou fluido no
+      // celular. Aqui cada texto anda como um bloco só — 2 escritas de estilo
+      // por quadro em vez de 84 — e a sequência que o visitante vê é a mesma
+      // do desktop:
+      //
+      //   0,00 → 0,26   frase de abertura parada na tela
+      //   0,26 → 0,44   ela sobe e sai
+      //   0,38 → ...    o h1 entra
+      //   0,58 / 0,66   subtítulo e botões
+      //
+      // As fases são mais curtas que as do desktop porque o curso aqui é
+      // 240vh contra 320vh: em celular cada tela de rolagem custa um gesto.
+      const FASES_LEVES = [0.38, 0.58, 0.66];
+      heroItems.forEach((item, i) => { item.dataset.faseLeve = FASES_LEVES[i]; });
+
+      // Entrada no relógio, igual ao desktop: quem chega precisa achar a frase
+      // já na tela, sem ter que rolar pra descobrir que existe alguma coisa.
+      introTitleEl.style.opacity = '0';
+      introTitleEl.style.transform = 'translate(-50%, -50%) translateY(' + (18 * percurso) + 'px)';
+      requestAnimationFrame(() => {
+        introTitleEl.style.transition = 'opacity 0.9s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
+        introTitleEl.style.opacity = '1';
+        introTitleEl.style.transform = 'translate(-50%, -50%)';
+        setTimeout(() => scrollHint.classList.add('pronto'), 900);
+      });
+
+      let pAntes = -1;
+      const aoRolarLeve = () => {
         if (ticking) return;
         ticking = true;
         requestAnimationFrame(() => {
           ticking = false;
-          nav.classList.toggle('scrolled', window.scrollY > 60);
+          const y = window.scrollY;
+          nav.classList.toggle('scrolled', y > 60);
+
+          const p = trava01((y - wrapperTop) / wrapperScrollable);
+          // Passado o hero o p trava em 1: sem esta saída, cada quadro de
+          // rolagem do site inteiro repintaria o mesmo desenho.
+          if (p === pAntes) return;
+          pAntes = p;
+
+          scrollHint.classList.toggle('longe', p > HINT_THRESHOLD);
+
+          // A frase de abertura sai. A transição do relógio é desligada na
+          // primeira rolagem, senão ela brigaria com o valor da rolagem e o
+          // texto sairia atrasado em relação ao dedo.
+          if (p > 0) introTitleEl.style.transition = 'none';
+          const sai = janela(p, 0.26, 0.44);
+          introTitleEl.style.opacity = (1 - fora(sai)).toFixed(3);
+          introTitleEl.style.transform = 'translate(-50%, -50%) translateY(' + (fora(sai) * -64 * percurso).toFixed(1) + 'px)';
+
+          heroItems.forEach(item => {
+            item.classList.toggle('visible', p >= parseFloat(item.dataset.faseLeve));
+          });
         });
       };
-      window.addEventListener('scroll', soNav, { passive: true });
-      soNav();
+      window.addEventListener('scroll', aoRolarLeve, { passive: true });
+      window.addEventListener('resize', () => { pAntes = -1; aoRolarLeve(); }, { passive: true });
+      aoRolarLeve();
     } else if (lenis) {
       lenis.on('scroll', ({ scroll }) => aoRolar(scroll));
     } else {
@@ -4792,97 +5536,229 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
 
-    document.querySelectorAll('.reveal, .reveal-titulo, .reveal-apoio, .reveal-group').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal, .reveal-titulo, .reveal-apoio, .reveal-group, .glow-horizonte').forEach(el => io.observe(el));
 
-    // --- ABERTURA QUE EXPANDE ---
+    // --- PALCO DOS PASSOS: os cartões entram pela direita e empilham ---
+    //
+    // Porte do componente React de timeline horizontal. A conta de cada
+    // cartão é a mesma do original (ver o comentário no CSS); o que muda é
+    // que aqui não existe biblioteca de animação, então o valor vai direto
+    // pro transform, como o hero já faz.
     (function () {
-      const secao = document.getElementById('abre');
-      const palco = document.getElementById('abrePalco');
-      if (!secao || !palco) return;
+      const palco = document.getElementById('passosPalco');
+      if (!palco) return;
 
-      let alvo = 0;      // progresso cru, vindo da rolagem
-      let suave = -1;    // progresso perseguindo o alvo, é ele que desenha
-      let raf = 0;
+      const trilho  = palco.querySelector('.passos-fixo');
+      const esteira = palco.querySelector('.services-grid');
+      const cartoes = Array.from(esteira.children);
+      const n = cartoes.length;
+      if (n < 2) return;
+
+      // o quanto cada cartão sobra pra fora do que veio antes dele — 64px é o
+      // valor do original, mas no mobile o cartão é mais largo (86%, não
+      // 70%) e sobra pouco trilho pra empilhar 4 com degrau grande
+      const degrau = () => (window.matchMedia('(max-width: 759px)').matches ? 24 : 64);
+
+      // O primeiro pedaço e o último ficam de folga: sem eles o primeiro
+      // cartão já sai andando no instante em que o palco encosta no topo, e o
+      // último para de andar exatamente quando o palco acaba.
+      const INICIO = 0.06, FIM = 0.94;
+      const faixa = (FIM - INICIO) / (n - 1);
+
+      const podeDeck = () => !semMovimento;
+
+      let ligado = false, topo = 0, curso = 1, larguraCartao = 0, larguraTrilho = 0;
+      let pUlt = -1, agendado = false;
 
       function medir() {
-        const curso = secao.offsetHeight - window.innerHeight;
-        if (curso <= 0) { alvo = 1; return; }
-        alvo = Math.max(0, Math.min(1, -secao.getBoundingClientRect().top / curso));
+        // O trilho carrega o título junto com os cartões, então ele é alto. Se
+        // a colagem de 6rem não couber na janela, o pé do bloco fica cortado.
+        // A colagem cede o quanto precisar, MAS o piso é a nav: abaixo dela o
+        // título cola por baixo da barra fixa e some. Numa janela baixa é o pé
+        // do último cartão que é sacrificado, e ali só tem folga vazia.
+        const barra = (nav && nav.offsetHeight) || 77;
+        const folga = window.innerHeight - trilho.offsetHeight - 16;
+        const colagem = Math.max(barra + 8, Math.min(96, folga));
+        trilho.style.top = colagem + 'px';
+
+        // getBoundingClientRect e não offsetTop: o palco está dentro de um
+        // .container, e offsetTop conta a partir do ancestral posicionado, não
+        // do documento. Com offsetTop a faixa inteira sai deslocada.
+        topo = palco.getBoundingClientRect().top + window.scrollY;
+        // o trilho é sticky: ele só encosta quando o palco chega no `top` dele,
+        // então a rolagem útil começa esse tanto antes
+        topo -= colagem;
+        curso = Math.max(1, palco.offsetHeight - trilho.offsetHeight);
+        larguraCartao  = cartoes[0].offsetWidth;
+        larguraTrilho  = trilho.offsetWidth;
       }
 
-      function desenhar() {
-        // Persegue o alvo em vez de saltar pra ele. É o que dá a fluidez: a
-        // rolagem chega em degraus (roda do mouse, dedo), e sem isso a mídia
-        // pularia de tamanho junto com os degraus.
-        suave += (alvo - suave) * 0.14;
-        if (Math.abs(alvo - suave) < 0.0004) suave = alvo;
+      function pintar() {
+        const p = trava01((window.scrollY - topo) / curso);
+        // Passado o palco o p trava nas pontas: sem esta saída cada quadro de
+        // rolagem do site inteiro reescreveria os mesmos 3 transforms.
+        if (p === pUlt) return;
+        pUlt = p;
 
-        // smoothstep: sai devagar, anda reto no meio, pousa devagar. Um
-        // ease-out cúbico deixava a mídia quase aberta no primeiro quarto da
-        // rolagem, e o resto do curso não tinha mais o que mostrar.
-        const e = suave * suave * (3 - 2 * suave);
-
-        const lv = window.innerWidth, la = window.innerHeight;
-        const jaW = Math.min(lv * 0.86, 620);
-        const jaH = Math.min(la * 0.52, jaW * 0.78);
-
-        palco.style.setProperty('--w', (jaW + (lv - jaW) * e) + 'px');
-        palco.style.setProperty('--h', (jaH + (la - jaH) * e) + 'px');
-        palco.style.setProperty('--r', (22 * (1 - e)) + 'px');
-        // Zoom menor no celular: a janela lá é pequena, e com 1,35 a foto
-        // chegava tão cortada que só aparecia meia letra do cartaz.
-        const zi = lv < 700 ? 1.12 : 1.35;
-        palco.style.setProperty('--zoom', (zi - (zi - 1) * e).toFixed(4));
-        palco.style.setProperty('--sai', (e * lv * 0.62) + 'px');
-        palco.style.setProperty('--fundo', (1.18 - 0.12 * e).toFixed(4));
-        // as metades do logo somem já bem separadas, não no meio do caminho
-        palco.style.setProperty('--tinta', Math.max(0, 1 - e * 1.3).toFixed(3));
-
-        raf = suave === alvo ? 0 : requestAnimationFrame(desenhar);
-      }
-
-      function acordar() {
-        medir();
-        if (!raf) raf = requestAnimationFrame(desenhar);
-      }
-
-      // Esse vídeo era o mesmo do hero, e vinha do cache porque o hero já
-      // tinha baixado. O hero virou canvas e não baixa vídeo nenhum, então
-      // agora esse arquivo é download próprio. Ele fica pra depois do
-      // carregamento: a página abre 1,3 MB mais leve, e quando a pessoa chega
-      // aqui, muitas telas abaixo, ele já desceu em segundo plano.
-      const video = document.getElementById('abreVideo');
-      video.src = modoLeve ? 'teia-conect-mobile.mp4' : 'teia-conect.mp4';
-      const puxar = () => { video.preload = 'auto'; video.load(); };
-      if (document.readyState === 'complete') setTimeout(puxar, 400);
-      else window.addEventListener('load', () => setTimeout(puxar, 400), { once: true });
-
-      // Só escuta a rolagem com a seção em tela. Fora dela não há o que animar,
-      // e um ouvinte a menos na rolagem da página é um ouvinte a menos.
-      let ligado = false;
-      new IntersectionObserver(([ent]) => {
-        if (ent.isIntersecting === ligado) return;
-        ligado = ent.isIntersecting;
-        palco.classList.toggle('ativo', ligado);
-        if (ligado) {
-          video.play().catch(() => {});
-          window.addEventListener('scroll', acordar, { passive: true });
-          if (lenis) lenis.on('scroll', acordar);
-          acordar();
-        } else {
-          // um decodificador de vídeo por vez: o do hero está longe daqui
-          video.pause();
-          window.removeEventListener('scroll', acordar);
-          if (lenis) lenis.off('scroll', acordar);
-          if (raf) { cancelAnimationFrame(raf); raf = 0; }
-          // deixa parado no extremo certo, senão fica congelado no meio
-          suave = alvo = secao.getBoundingClientRect().top > 0 ? 0 : 1;
-          desenhar();
+        const deg = degrau();
+        for (let i = 1; i < n; i++) {
+          const t = trava01((p - (INICIO + (i - 1) * faixa)) / faixa);
+          // de onde ele entra: a borda direita do trilho, descontada a posição
+          // natural dele na fileira
+          const de = larguraTrilho - larguraCartao * i;
+          // onde ele para: deg * i à frente da borda esquerda
+          const ate = deg * i - larguraCartao * i;
+          cartoes[i].style.transform = 'translate3d(' + (de + (ate - de) * t).toFixed(1) + 'px,0,0)';
         }
-      }, { rootMargin: '10% 0px' }).observe(secao);
+      }
 
-      window.addEventListener('resize', acordar, { passive: true });
-      medir(); suave = alvo; desenhar();
+      function aoRolar() {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(() => { agendado = false; pintar(); });
+      }
+
+      function ligar() {
+        palco.classList.add('deck-ligado');
+        // o reveal escreve transform nos filhos e brigaria com o do palco
+        esteira.classList.remove('reveal-group');
+        esteira.classList.remove('in');
+        cartoes.forEach(c => { c.style.opacity = '1'; });
+        ligado = true;
+        medir(); pUlt = -1; pintar();
+        window.addEventListener('scroll', aoRolar, { passive: true });
+      }
+
+      function desligar() {
+        palco.classList.remove('deck-ligado');
+        trilho.style.top = '';
+        cartoes.forEach(c => { c.style.transform = ''; });
+        ligado = false;
+        window.removeEventListener('scroll', aoRolar);
+      }
+
+      function conferir() {
+        const quer = podeDeck();
+        if (quer && !ligado) ligar();
+        else if (!quer && ligado) desligar();
+        else if (ligado) { medir(); pUlt = -1; pintar(); }
+      }
+
+      conferir();
+      window.addEventListener('resize', conferir, { passive: true });
+      // as fontes mudam a altura do cartão, e a altura do cartão é o curso
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(conferir);
+    })();
+
+    // --- PALCO DA MARCA: tocha que revela (port do Torch Reveal, MIT) ---
+    // Escreve três custom properties por quadro (centro x, centro y, raio) e
+    // nada mais. Sem tocar em layout, sem criar nó, sem recalcular estilo de
+    // ninguém além da própria máscara.
+    (function () {
+      const palco = document.getElementById('marcaPalco');
+      const halo  = document.getElementById('marcaHalo');
+      if (!palco) return;
+
+      const RAIO = 190;          // radius do demo
+      const TREMOR = 0.25;       // flicker do demo
+      const RIGIDEZ = 260;       // lag.stiffness
+      const ATRITO = 24;         // lag.damping
+      const CAIXA_HALO = 420;    // GLOW_BOX
+      // O tremor são duas senoides incomensuráveis. As amplitudes vêm
+      // calibradas do original pra que flicker 0.35 dê 5px a 9Hz + 2,5px a
+      // 23Hz; aqui entram na mesma proporção.
+      const AMP1 = 5 / 0.35, AMP2 = 2.5 / 0.35;
+
+      const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const semCursor = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      if (semMovimento) return; // o CSS já entrega o corte 55/45 parado
+
+      let px = -1e4, py = -1e4, dentro = false;
+
+      // Mola de Euler semi-implícito com subpassos: estável quando o quadro
+      // atrasa. Sem os subpassos, um engasgo de 50ms faz a mola explodir.
+      function mola(s, alvo, k, c, dt) {
+        const n = dt > 0.012 ? Math.ceil(dt / 0.008) : 1;
+        const h = dt / n;
+        for (let i = 0; i < n; i++) {
+          s.v += (-k * (s.x - alvo) - c * s.v) * h;
+          s.x += s.v * h;
+        }
+        return s.x;
+      }
+
+      const tx = { x: -400, v: 0 }, ty = { x: -400, v: 0 };
+      let raf = 0, ultimo = 0, inicio = 0, ocioso = Math.random() * 40;
+
+      function quadro(agora) {
+        raf = requestAnimationFrame(quadro);
+        if (!inicio) inicio = agora;
+        let dt = (agora - ultimo) / 1000;
+        ultimo = agora;
+        if (!(dt > 0) || dt > 0.05) dt = 0.016;
+        ocioso += dt;
+        const t = (agora - inicio) / 1000;
+
+        const l = palco.clientWidth, a = palco.clientHeight;
+        let gx, gy;
+        if (dentro) {
+          gx = px; gy = py;
+        } else {
+          // Ronda de Lissajous: sem cursor (celular, ou mouse parado longe),
+          // a tocha passeia sozinha e a seção se conta sem ninguém tocar.
+          gx = l * (0.5 + 0.36 * Math.sin(ocioso * 0.3));
+          gy = a * (0.5 + 0.30 * Math.sin(ocioso * 0.43 + 0.9));
+        }
+        mola(tx, gx, RIGIDEZ, ATRITO, dt);
+        mola(ty, gy, RIGIDEZ, ATRITO, dt);
+        const r = RAIO + (Math.sin(t * 9) * AMP1 + Math.sin(t * 23 + 1.3) * AMP2) * TREMOR;
+
+        palco.style.setProperty('--mk-tx', tx.x.toFixed(1));
+        palco.style.setProperty('--mk-ty', ty.x.toFixed(1));
+        palco.style.setProperty('--mk-tr', r.toFixed(1));
+        if (halo) {
+          halo.style.transform = 'translate3d(' + (tx.x - CAIXA_HALO / 2).toFixed(1) + 'px,' +
+                                                  (ty.x - CAIXA_HALO / 2).toFixed(1) + 'px,0)';
+        }
+      }
+
+      if (!semCursor) {
+        const segue = (e) => {
+          const r = palco.getBoundingClientRect();
+          px = e.clientX - r.left; py = e.clientY - r.top; dentro = true;
+        };
+        const solta = () => { px = -1e4; py = -1e4; dentro = false; };
+        palco.addEventListener('pointermove', segue, { passive: true });
+        palco.addEventListener('pointerdown', segue, { passive: true });
+        palco.addEventListener('pointerleave', solta, { passive: true });
+        palco.addEventListener('pointercancel', solta, { passive: true });
+      }
+
+      // Só gasta quadro com a seção em tela e a aba à frente. É o mesmo
+      // cuidado do resto do site: rAF girando atrás de conteúdo que ninguém
+      // vê é bateria queimada de graça.
+      let girando = false;
+      function liga() {
+        if (girando) return;
+        girando = true;
+        ultimo = performance.now(); inicio = 0;
+        raf = requestAnimationFrame(quadro);
+      }
+      function desliga() {
+        if (!girando) return;
+        girando = false;
+        cancelAnimationFrame(raf); raf = 0;
+      }
+
+      let naTela = false;
+      new IntersectionObserver(([e]) => {
+        naTela = e.isIntersecting;
+        (naTela && document.visibilityState !== 'hidden') ? liga() : desliga();
+      }, { threshold: 0.06 }).observe(palco);
+
+      document.addEventListener('visibilitychange', () => {
+        (naTela && document.visibilityState !== 'hidden') ? liga() : desliga();
+      });
     })();
 
     // --- ESTEIRA DE MARCAS: repete a lista até cobrir a tela ---
@@ -5029,7 +5905,7 @@
     // Os dois pixels do <head>. A Correspondência Avançada é por pixel: um
     // `init` com os dados vale só para o ID que ele nomeia, então o segundo
     // receberia o Lead sem identificação nenhuma se ficasse de fora daqui.
-    const PIXELS = ['849630247899562', '1915598985779059'];
+    const PIXELS = ['849630247899562'];
     const ZAP_CONECT = '5511989466431';
 
     const formDiag = document.getElementById('formDiagnostico');
@@ -5066,19 +5942,17 @@
           nome: (d.get('nome') || '').toString().trim(),
           whatsapp: (d.get('whatsapp') || '').toString().replace(/\D/g, ''),
           email: (d.get('email') || '').toString().trim(),
-          segmento: (d.get('segmento') || '').toString(),
-          investe: (d.get('investe') || '').toString()
+          segmento: (d.get('segmento') || '').toString()
         };
       }
 
       function valida(v) {
         let ok = true;
-        ['nome', 'whatsapp', 'email', 'segmento', 'investe'].forEach(c => mostraErro(c, ''));
+        ['nome', 'whatsapp', 'email', 'segmento'].forEach(c => mostraErro(c, ''));
         if (v.nome.length < 2) { mostraErro('nome', 'Digite o seu nome'); ok = false; }
         if (v.whatsapp.length < 10) { mostraErro('whatsapp', 'Digite o WhatsApp com DDD'); ok = false; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email)) { mostraErro('email', 'Digite um e-mail válido'); ok = false; }
         if (!v.segmento) { mostraErro('segmento', 'Escolha o seu segmento'); ok = false; }
-        if (!v.investe) { mostraErro('investe', 'Escolha uma opção'); ok = false; }
         return ok;
       }
 
@@ -5087,8 +5961,7 @@
 
 Nome: ${v.nome}
 E-mail: ${v.email}
-Segmento: ${v.segmento}
-Já investe em anúncio: ${v.investe}`;
+Segmento: ${v.segmento}`;
       }
 
       formDiag.addEventListener('submit', async (e) => {
@@ -5117,7 +5990,7 @@ Já investe em anúncio: ${v.investe}`;
             ln: (partes.slice(1).join(' ') || '').toLowerCase()
           };
           PIXELS.forEach(id => fbq('init', id, dados));
-          fbq('track', 'FormContact');
+          fbq('trackCustom', 'FormContact');
         } catch (_) { /* pixel bloqueado por adblock não pode derrubar o envio */ }
 
         let gravou = false;
@@ -5132,7 +6005,7 @@ Já investe em anúncio: ${v.investe}`;
 
         try {
           fbq('track', 'Lead', { content_category: v.segmento });
-          fbq('track', 'FormSuccess');
+          fbq('trackCustom', 'FormSuccess');
         } catch (_) { /* idem */ }
 
         if (!gravou) {
@@ -5184,16 +6057,328 @@ Já investe em anúncio: ${v.investe}`;
       }
     }
 
+    // --- BOTAO DE INDUCAO: o shader do "Induction Button" nos CTAs ---
+    //
+    // O fragment shader abaixo e o do componente de origem, linha por linha.
+    // O que mudou esta marcado com [MUDOU] e tem motivo escrito junto.
+    //
+    // ARQUITETURA: UM contexto WebGL, compartilhado.
+    // Hoje o efeito esta num botao so, mas a montagem continua a de varios de
+    // proposito. Ela existe porque a versao com um contexto POR botao foi
+    // medida e falhou: com seis, o navegador estoura o limite de contextos e
+    // comeca a DERRUBAR os antigos — isContextLost virava true e o botao
+    // sumia. Aqui existe um unico canvas WebGL fora da tela; a cada quadro
+    // ele desenha o botao da vez e o resultado e copiado pro canvas 2D
+    // daquele botao. Contexto 2D nao tem limite pratico. Se um dia o efeito
+    // voltar pra mais botoes, basta trocar o seletor logo abaixo.
+    (function () {
+      // So o CTA do plano em destaque (Presenca Digital). O efeito e caro e
+      // chama muita atencao: espalhado pelos seis CTAs ele deixa de apontar
+      // pra lugar nenhum. Num botao so ele vira o destaque do plano-ancora.
+      const alvos = document.querySelectorAll('.pricing-card.featured .pricing-cta');
+      if (!alvos.length) return;
+
+      const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+
+      const FS = [
+        'precision highp float;',
+        'uniform vec2 u_res;',
+        'uniform float u_time;',
+        'uniform float u_arcs;',
+        'uniform float u_flash;',
+        'uniform float u_radius;',
+        'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}',
+        'float noise(vec2 p){',
+        '  vec2 i=floor(p), f=fract(p);',
+        '  vec2 u=f*f*(3.0-2.0*f);',
+        '  return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),',
+        '             mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);',
+        '}',
+        'float fbm(vec2 p){',
+        '  float v=0.0; float a=0.5;',
+        '  for(int i=0;i<4;i++){ v+=a*noise(p); p=p*2.05+vec2(9.7,3.1); a*=0.5; }',
+        '  return v;',
+        '}',
+        'float sdRBox(vec2 p, vec2 b, float r){',
+        '  vec2 q = abs(p) - b + r;',
+        '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+        '}',
+        'void main(){',
+        '  vec2 p = (gl_FragCoord.xy - 0.5 * u_res) / u_res.y;',
+        '  float ar = u_res.x / u_res.y;',
+        '  vec2 hs = vec2(ar * 0.5 - 0.2, 0.5 - 0.2);',
+        // [MUDOU] o original fixa o raio em 0.14; os nossos botoes sao pilula
+        '  float d = sdRBox(p, hs, min(u_radius, min(hs.x, hs.y)));',
+        '  float t = u_time;',
+        '  float hover = clamp(u_arcs / 6.0, 0.0, 1.0);',
+        // [MUDOU] era vec3(0.039) opaco, porque a pagina do componente e preta;
+        // aqui embaixo tem o azul-noite da casa e o preto viraria uma caixa
+        '  vec3 col = vec3(0.0);',
+        '  float plate = 1.0 - smoothstep(-0.004, 0.004, d);',
+        '  vec3 plateCol = vec3(0.04, 0.05, 0.055);',
+        '  plateCol += vec3(0.014, 0.022, 0.035) * fbm(p * 9.0);',
+        // [MUDOU] era ciano (0, .25, .3); a marca é azul royal (#1E5FE0), sem verde-água
+        '  plateCol += vec3(0.02, 0.06, 0.2) * exp(d * 9.0) * (0.25 + hover * 0.6);',
+        '  col = mix(col, plateCol, plate);',
+        '  float a = atan(p.y, p.x);',
+        '  vec3 arcCol = vec3(0.0);',
+        '  for (int i = 0; i < 6; i++) {',
+        '    float fi = float(i);',
+        '    float w = clamp(u_arcs - fi, 0.0, 1.0);',
+        '    float n1 = fbm(vec2(a * 2.4 + fi * 11.3, t * (1.6 + fi * 0.27) + fi * 53.1));',
+        '    float off = (n1 - 0.5) * (0.11 + u_flash * 0.1);',
+        '    float seg = smoothstep(0.35, 0.75, noise(vec2(a * 1.8 + fi * 7.7, t * (0.9 + fi * 0.13) + fi * 19.0)));',
+        '    seg = 0.3 + 0.7 * seg;',
+        '    float g = 0.0042 / (abs(d + off) + 0.006);',
+        // [MUDOU] arco era ciano puro (0,.75,.9); troquei pro azul royal da
+        // marca (#1E5FE0 ~ .12,.37,.88) com o realce indo pro "céu" do guia
+        // de identidade (#6E9BD6), não pro branco-azulado do original
+        '    arcCol += (vec3(0.1, 0.35, 0.88) * g + vec3(0.43, 0.61, 0.95) * g * g * 0.55) * w * seg;',
+        '  }',
+        '  float outerMask = 1.0 - smoothstep(0.04, 0.15, d);',
+        '  float ring = 0.006 / (abs(d) + 0.006);',
+        // [MUDOU] o brilho vai pra um vetor a parte e vira o alfa: e ele que
+        // deixa o canvas transparente fora da placa
+        '  vec3 add = arcCol * (0.6 + 0.4 * hover) * outerMask;',
+        // [MUDOU] os dois abaixo eram brancos puxando ciano; puxam azul agora
+        '  add += vec3(0.75, 0.85, 1.0) * ring * u_flash * 1.5 * outerMask;',
+        '  add += vec3(0.6, 0.75, 1.0) * u_flash * 0.16 * outerMask;',
+        '  col += add;',
+        '  float alfa = clamp(plate + max(max(add.r, add.g), add.b), 0.0, 1.0);',
+        '  gl_FragColor = vec4(col, alfa);',
+        '}'
+      ].join('\n');
+
+      // --- o unico contexto WebGL da pagina ---
+      const glCanvas = document.createElement('canvas');
+      const gl = glCanvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true, preserveDrawingBuffer: true });
+      if (!gl) return;   // sem WebGL os botoes continuam o azul solido de sempre
+
+      // Se o navegador derrubar o contexto (aba em segundo plano por muito
+      // tempo, driver reiniciando, pressao de memoria), o canvas para de
+      // pintar. Sem esta guarda o resultado nao e "sem efeito": e um botao
+      // INVISIVEL, porque o CSS do gl-ativo ja tirou o azul solido. Aqui a
+      // classe volta atras e o botao vira de novo o de sempre.
+      let contextoVivo = true;
+      glCanvas.addEventListener('webglcontextlost', function (e) {
+        e.preventDefault();
+        contextoVivo = false;
+        document.querySelectorAll('.gl-ativo').forEach(function (btn) {
+          btn.classList.remove('gl-ativo');
+          const c = btn.querySelector('.btn-gl-canvas');
+          if (c) c.remove();
+        });
+      });
+
+      function compilar(tipo, src) {
+        const sh = gl.createShader(tipo);
+        gl.shaderSource(sh, src); gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+          console.error('shader:', gl.getShaderInfoLog(sh)); return null;
+        }
+        return sh;
+      }
+      const vs = compilar(gl.VERTEX_SHADER, VS);
+      const fsh = compilar(gl.FRAGMENT_SHADER, FS);
+      if (!vs || !fsh) return;
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fsh); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        console.error('program:', gl.getProgramInfoLog(prog)); return;
+      }
+      gl.useProgram(prog);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+      const locP = gl.getAttribLocation(prog, 'p');
+      gl.enableVertexAttribArray(locP);
+      gl.vertexAttribPointer(locP, 2, gl.FLOAT, false, 0, 0);
+
+      const uRes    = gl.getUniformLocation(prog, 'u_res');
+      const uTime   = gl.getUniformLocation(prog, 'u_time');
+      const uArcs   = gl.getUniformLocation(prog, 'u_arcs');
+      const uFlash  = gl.getUniformLocation(prog, 'u_flash');
+      const uRadius = gl.getUniformLocation(prog, 'u_radius');
+
+      // O shader desenha a placa com folga de 0.2 (em unidades de altura de
+      // canvas) de cada lado: a placa fica com 60% da altura do canvas e a
+      // sobra e onde os arcos correm. Pra a placa cair EXATAMENTE em cima do
+      // botao, o canvas precisa ser maior que ele nessa mesma proporcao.
+      const FOLGA_Y = 1 / 3;
+      const FOLGA_X = 2 / 3;
+
+      const semMov = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const vivos = [];
+
+      alvos.forEach(btn => {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'btn-gl-canvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // O rotulo precisa passar por cima do canvas. Texto solto nao aceita
+        // z-index, entao ele e embrulhado. Onde os filhos ja sao todos
+        // elementos (o botao de envio, que empilha dois rotulos numa celula de
+        // grade), embrulhar quebraria o layout: ali sobem os proprios filhos.
+        const temTextoSolto = Array.from(btn.childNodes)
+          .some(no => no.nodeType === 3 && no.textContent.trim());
+        if (temTextoSolto) {
+          const capa = document.createElement('span');
+          capa.className = 'btn-gl-conteudo';
+          while (btn.firstChild) capa.appendChild(btn.firstChild);
+          btn.appendChild(capa);
+        } else {
+          Array.from(btn.children).forEach(f => f.classList.add('btn-gl-camada'));
+        }
+        btn.insertBefore(canvas, btn.firstChild);
+        btn.classList.add('gl-ativo');
+
+        const alvo = {
+          btn: btn, canvas: canvas, ctx: ctx,
+          arcs: 2.4, arcsAlvo: 2.4, flash: 0, crawl: 0,
+          visivel: true, raio: 0.3, cw: 0, ch: 0
+        };
+
+        btn.addEventListener('mouseenter', () => alvo.arcsAlvo = 5.8);
+        btn.addEventListener('mouseleave', () => alvo.arcsAlvo = 2.4);
+        btn.addEventListener('focus',      () => alvo.arcsAlvo = 5.8);
+        btn.addEventListener('blur',       () => alvo.arcsAlvo = 2.4);
+        btn.addEventListener('click',      () => alvo.flash = 1);
+
+        vivos.push(alvo);
+      });
+
+      if (!vivos.length) return;
+
+      function medir(a) {
+        const l = a.btn.offsetWidth, h = a.btn.offsetHeight;
+        if (!l || !h) return false;
+        const extraY = h * FOLGA_Y, extraX = h * FOLGA_X;
+        a.canvas.style.left   = (-extraX / 2) + 'px';
+        a.canvas.style.top    = (-extraY / 2) + 'px';
+        a.canvas.style.width  = (l + extraX) + 'px';
+        a.canvas.style.height = (h + extraY) + 'px';
+
+        // raio do canto em unidades do shader: a meia-altura da placa (0,3)
+        // corresponde a h/2 px, entao 1 unidade vale h/0,6 px
+        const cssRaio = parseFloat(getComputedStyle(a.btn).borderTopLeftRadius) || 0;
+        a.raio = Math.min(0.3, (cssRaio * 0.6) / h);
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        a.cw = Math.max(1, Math.round((l + extraX) * dpr));
+        a.ch = Math.max(1, Math.round((h + extraY) * dpr));
+        if (a.canvas.width !== a.cw || a.canvas.height !== a.ch) {
+          a.canvas.width = a.cw; a.canvas.height = a.ch;
+        }
+        return true;
+      }
+
+      // O canvas compartilhado e do tamanho do maior botao. Cada botao desenha
+      // num viewport do proprio tamanho, ancorado no canto de baixo-esquerda
+      // (que e a origem do GL), e a copia pega exatamente esse pedaco.
+      let maxW = 0, maxH = 0;
+      function ajustarCompartilhado() {
+        let w = 1, h = 1;
+        for (let i = 0; i < vivos.length; i++) {
+          if (vivos[i].cw > w) w = vivos[i].cw;
+          if (vivos[i].ch > h) h = vivos[i].ch;
+        }
+        if (w !== maxW || h !== maxH) {
+          maxW = w; maxH = h;
+          glCanvas.width = w; glCanvas.height = h;
+        }
+      }
+
+      function desenhar(a, dt) {
+        if (!medir(a)) return;
+        if (a.cw > maxW || a.ch > maxH) ajustarCompartilhado();
+
+        a.arcs += (a.arcsAlvo - a.arcs) * Math.min(1, dt * 5);
+        a.flash *= Math.exp(-3.6 * dt);
+        a.crawl += dt * (0.6 + (a.arcs / 6) * 1.1 + a.flash * 2.0);
+
+        gl.viewport(0, 0, a.cw, a.ch);
+        gl.uniform2f(uRes, a.cw, a.ch);
+        gl.uniform1f(uTime, semMov ? 3.0 : a.crawl);
+        gl.uniform1f(uArcs, a.arcs);
+        gl.uniform1f(uFlash, a.flash);
+        gl.uniform1f(uRadius, a.raio);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(0, 0, a.cw, a.ch);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.disable(gl.SCISSOR_TEST);
+
+        // a origem do GL e embaixo a esquerda; a do canvas 2D e em cima
+        a.ctx.clearRect(0, 0, a.cw, a.ch);
+        a.ctx.drawImage(glCanvas, 0, maxH - a.ch, a.cw, a.ch, 0, 0, a.cw, a.ch);
+      }
+
+      // So desenha quem esta na tela: o CTA do plano vive no meio da pagina, e
+      // sem isto ele consumiria quadro desde o topo, sem ninguem estar vendo.
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entradas => {
+          entradas.forEach(e => {
+            for (let i = 0; i < vivos.length; i++) {
+              if (vivos[i].btn === e.target) { vivos[i].visivel = e.isIntersecting; break; }
+            }
+          });
+        }, { rootMargin: '120px' });
+        vivos.forEach(a => io.observe(a.btn));
+      }
+
+      vivos.forEach(a => medir(a));
+      ajustarCompartilhado();
+
+      // Com movimento reduzido o componente congela o tempo num quadro so.
+      // Aqui ele e desenhado uma vez e o laco nem comeca: o botao fica com a
+      // cara do efeito, sem nada se mexendo.
+      if (semMov) {
+        const uma = () => { vivos.forEach(a => medir(a)); ajustarCompartilhado(); vivos.forEach(a => desenhar(a, 0)); };
+        uma();
+        window.addEventListener('resize', uma, { passive: true });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(uma);
+        return;
+      }
+
+      let antes = performance.now();
+      (function quadro(agora) {
+        if (!contextoVivo) return;
+        const dt = Math.min(0.05, (agora - antes) / 1000);
+        antes = agora;
+        for (let i = 0; i < vivos.length; i++) {
+          if (vivos[i].visivel) desenhar(vivos[i], dt);
+        }
+        requestAnimationFrame(quadro);
+      })(antes);
+    })();
+
     // --- MAGNETIC BUTTONS ---
+    // [MUDOU] o mousemove escrevia style.transform direto, um recalculo de
+    // estilo por evento — no Chrome isso passa fácil de 60 eventos/s e o
+    // botão "engasgava" atrás do cursor. Agora só guarda o alvo e um rAF
+    // por quadro aplica o último valor, igual a pílula magnética do rodapé
+    // logo abaixo já fazia.
     document.querySelectorAll('.mag-btn').forEach(btn => {
+      let tx = 0, ty = 0, agendado = false;
+      function aplicar() {
+        agendado = false;
+        btn.style.transform = `translate(${tx}px, ${ty}px)`;
+      }
       btn.addEventListener('mousemove', (e) => {
         const r = btn.getBoundingClientRect();
-        const x = e.clientX - r.left - r.width / 2;
-        const y = e.clientY - r.top - r.height / 2;
-        btn.style.transform = `translate(${x * 0.22}px, ${y * 0.22}px)`;
+        tx = (e.clientX - r.left - r.width / 2) * 0.22;
+        ty = (e.clientY - r.top - r.height / 2) * 0.22;
+        if (!agendado) { agendado = true; requestAnimationFrame(aplicar); }
       });
       btn.addEventListener('mouseleave', () => {
-        btn.style.transform = '';
+        tx = 0; ty = 0;
+        if (!agendado) { agendado = true; requestAnimationFrame(aplicar); }
       });
     });
 
@@ -5248,6 +6433,123 @@ Já investe em anúncio: ${v.investe}`;
       if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
         document.querySelectorAll('.ima').forEach(imantar);
       }
+    })();
+
+    // --- SELOS HOLOGRÁFICOS: inclinação 3D pelo ponteiro ---
+    // Porte 1:1 do script que já roda em clientes/Security-Recovery
+    // (selosHolograficos), só com os nomes de propriedade trocados pra
+    // --m2/--hov2 (o `--m`/`--hov` já existe nesse outro projeto, não aqui,
+    // mas o prefixo evita qualquer colisão se os dois scripts um dia
+    // convivirem numa mesma página). Mesma física: interpolação contínua
+    // (atual += (alvo-atual)*CALMA) em vez de transition, e o loop morre
+    // sozinho quando a placa já chegou perto o bastante do alvo.
+    (function () {
+      var selos = document.querySelectorAll('[data-selo2]');
+      if (!selos.length) return;
+
+      var IDENTIDADE = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+      var MAX_ROT = 0.25, MIN_ROT = -0.25, MAX_ESC = 1, MIN_ESC = 0.97;
+      var REPOUSO = 40, CALMA = 0.095, PARADA = 0.0015;
+
+      selos.forEach(function (selo) {
+        var placa = selo.querySelector('.selo2__placa');
+        var camadas = selo.querySelectorAll('.selo2__cam');
+        if (!placa) return;
+
+        var atual = IDENTIDADE.slice(), alvo = IDENTIDADE.slice();
+        var giroAtual = REPOUSO, giroAlvo = REPOUSO, rodando = false;
+
+        function caixa() { return selo.getBoundingClientRect(); }
+
+        function desenhar() {
+          placa.style.setProperty('--m2', atual.join(', '));
+          var g = giroAtual + 'deg';
+          for (var i = 0; i < camadas.length; i++) camadas[i].style.setProperty('--hov2', g);
+        }
+
+        function passo() {
+          var longe = 0, i, d;
+          for (i = 0; i < 16; i++) {
+            d = alvo[i] - atual[i];
+            atual[i] += d * CALMA;
+            if (Math.abs(d) > longe) longe = Math.abs(d);
+          }
+          d = (giroAlvo - giroAtual);
+          giroAtual += d * CALMA;
+          if (Math.abs(d) / 90 > longe) longe = Math.abs(d) / 90;
+
+          desenhar();
+
+          if (longe > PARADA) {
+            requestAnimationFrame(passo);
+          } else {
+            atual = alvo.slice(); giroAtual = giroAlvo;
+            desenhar();
+            rodando = false;
+          }
+        }
+
+        function acordar() {
+          if (rodando) return;
+          rodando = true;
+          requestAnimationFrame(passo);
+        }
+
+        function calcular(x, y) {
+          var c = caixa(), esq = c.left, dir = c.right, topo = c.top, base = c.bottom;
+          var cx = (esq + dir) / 2, cy = (topo + base) / 2;
+
+          var e0 = MAX_ESC - (MAX_ESC - MIN_ESC) * Math.abs(cx - x) / (cx - esq);
+          var e1 = MAX_ESC - (MAX_ESC - MIN_ESC) * Math.abs(cy - y) / (cy - topo);
+          var e2 = MAX_ESC - (MAX_ESC - MIN_ESC) * (Math.abs(cx - x) + Math.abs(cy - y)) / (cx - esq + cy - topo);
+
+          var x1 = 0.25 * ((cy - y) / cy - (cx - x) / cx);
+          var x2 = MAX_ROT - (MAX_ROT - MIN_ROT) * Math.abs(dir - x) / (dir - esq);
+          var y2 = MAX_ROT - (MAX_ROT - MIN_ROT) * (topo - y) / (topo - base);
+          var z0 = -(MAX_ROT - (MAX_ROT - MIN_ROT) * Math.abs(dir - x) / (dir - esq));
+          var z1 = 0.2 - (0.2 + 0.6) * (topo - y) / (topo - base);
+
+          return [e0, 0, z0, 0,  x1, e1, z1, 0,  x2, y2, e2, 0,  0, 0, 0, 1];
+        }
+
+        function oposta(m, y) {
+          var c = caixa(), topo = c.top, base = c.bottom;
+          var yOposto = base - y + topo;
+          var freio = 0.7, sinal = -1;
+
+          return m.map(function (item, i) {
+            if (i === 2 || i === 4 || i === 8) return -item * sinal / freio;
+            if (i === 0 || i === 5 || i === 10) return 1;
+            if (i === 6) return sinal * (MAX_ROT - (MAX_ROT - MIN_ROT) * (topo - yOposto) / (topo - base)) / freio;
+            if (i === 9) return (MAX_ROT - (MAX_ROT - MIN_ROT) * (topo - yOposto) / (topo - base)) / freio;
+            return item;
+          });
+        }
+
+        function distancia(x, y) {
+          var c = caixa();
+          var cx = (c.left + c.right) / 2, cy = (c.top + c.bottom) / 2;
+          return (Math.abs(cx - x) + Math.abs(cy - y)) / 1.5;
+        }
+
+        selo.addEventListener('mouseenter', function (e) {
+          alvo = oposta(calcular(e.clientX, e.clientY), e.clientY);
+          giroAlvo = distancia(e.clientX, e.clientY);
+          acordar();
+        });
+        selo.addEventListener('mousemove', function (e) {
+          alvo = calcular(e.clientX, e.clientY);
+          giroAlvo = distancia(e.clientX, e.clientY);
+          acordar();
+        });
+        selo.addEventListener('mouseleave', function () {
+          alvo = IDENTIDADE.slice();
+          giroAlvo = REPOUSO;
+          acordar();
+        });
+
+        desenhar();
+      });
     })();
 
     // --- RODAPÉ: PARALLAX DA CORTINA ---

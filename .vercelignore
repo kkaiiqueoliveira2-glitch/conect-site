@@ -7,6 +7,11 @@ preview.js
 # Rascunho antigo, ficaria acessível em /index_updated.html
 index_updated.html
 
+# Seções aposentadas (tabelas de Meta Ads / Google Ads e planos mensais).
+# Ficam no repositório como referência, mas o site hoje vende só criação de
+# site: no ar, essa página contradizia a oferta e ainda era indexável.
+_secoes-arquivadas.html
+
 # Vídeo não usado pelo site (15 MB)
 interior_design.mp4
 
