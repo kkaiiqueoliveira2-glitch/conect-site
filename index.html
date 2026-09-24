@@ -2002,28 +2002,6 @@
 
     .sistema-fecho { text-align: center; margin-top: var(--vao-g); }
 
-    /* ---- PHILOSOPHY ---- */
-    .philosophy-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 2rem;
-      padding: clamp(2.5rem, 6vw, 5.5rem);
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: clamp(2rem, 5vw, 5rem);
-      align-items: start;
-    }
-
-    .philosophy-text {
-      font-size: clamp(1.35rem, 2.25vw, 2rem);
-      font-weight: 500;
-      letter-spacing: -0.025em;
-      line-height: 1.45;
-      color: var(--text);
-    }
-
-    .philosophy-text strong { color: var(--accent); font-weight: 600; }
-
     /* ---- NUMBERS BAND ---- */
 
     /* ---- DEPOIMENTOS EM MURO ----
@@ -2223,154 +2201,6 @@
       width: 600px; height: 400px;
       background: radial-gradient(ellipse, rgba(30,95,224,0.10) 0%, transparent 70%);
       pointer-events: none;
-    }
-
-    /* ---- PALCO DA MARCA: Torch Reveal (Motiq / 21st.dev, MIT) ----
-       Duas camadas na mesma geometria: a da frente com a marca apagada, a de
-       trás com a marca acesa sobre a malha técnica. Uma tocha segue o cursor
-       e revela a de baixo.
-
-       O recorte é MÁSCARA ALPHA em CSS, não SVG: um radial-gradient cujo
-       centro e raio moram em três custom properties. O script escreve três
-       números por quadro e nunca mexe em layout. (Máscara de luminância em
-       SVG com conteúdo de gradiente é no-op silencioso no Chromium, por isso
-       o componente original também não usa.)
-
-       Por que isso aqui e não outro efeito: o site já tem constelação no
-       hero, blob nos cards e horizonte no CTA. Uma tocha que ACENDE a marca
-       conta a história da agência (a gente ilumina a estrutura de quem
-       contrata) e não repete nada do que já está na página. */
-    .marca-palco {
-      position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      background: #050a1c;
-      /* pan-y mantém a página rolando enquanto o dedo carrega a tocha */
-      touch-action: pan-y;
-      cursor: none;
-      /* posição e raio da tocha, escritos pelo script */
-      --mk-tx: -400;
-      --mk-ty: -400;
-      --mk-tr: 190;
-    }
-
-    .marca-frente { position: relative; z-index: 1; }
-
-    /* softness 0.55 do original vira núcleo sólido até 45% e degradê até a borda */
-    .marca-reveal {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      background: #071540;
-      -webkit-mask-image: radial-gradient(circle calc(var(--mk-tr) * 1px) at calc(var(--mk-tx) * 1px) calc(var(--mk-ty) * 1px), #000 0 45%, transparent 100%);
-              mask-image: radial-gradient(circle calc(var(--mk-tr) * 1px) at calc(var(--mk-tx) * 1px) calc(var(--mk-ty) * 1px), #000 0 45%, transparent 100%);
-    }
-
-    /* malha técnica só na camada revelada: é o "por baixo da tinta" */
-    .marca-reveal::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(76, 134, 245, 0.16) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(76, 134, 245, 0.16) 1px, transparent 1px);
-      background-size: 34px 34px;
-    }
-    .marca-reveal::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(30, 95, 224, 0.38) 0%, transparent 72%);
-    }
-
-    /* o halo de 420px que cavalga a tocha, em screen sobre o fundo escuro */
-    .marca-halo {
-      position: absolute;
-      left: 0; top: 0;
-      z-index: 3;
-      width: 420px; height: 420px;
-      border-radius: 999px;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      will-change: transform;
-      transform: translate3d(-999px, -999px, 0);
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.16), transparent 62%);
-    }
-
-    /* Duas colunas: a fala de um lado, o símbolo grande do outro. Mesma
-       caixa nas duas camadas, então a tocha acende sem desalinhar nada.
-       A coluna do texto é a que manda na altura. */
-    .marca-conteudo {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      align-items: center;
-      gap: clamp(2rem, 5vw, 4.5rem);
-      padding: clamp(3.5rem, 7vw, 5.5rem) clamp(2rem, 5vw, 4.5rem);
-    }
-
-    .marca-dizeres { display: flex; flex-direction: column; align-items: flex-start; gap: 1.4rem; }
-
-    .marca-fala {
-      max-width: 42ch;
-      font-size: clamp(1.05rem, 1.6vw, 1.38rem);
-      line-height: 1.6;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-    }
-
-    .marca-palco-logo { display: flex; justify-content: center; align-items: center; }
-    .marca-simbolo {
-      height: clamp(190px, 26vw, 360px);
-      width: auto;
-      user-select: none;
-    }
-
-    /* estado apagado (frente): o símbolo quase some, o texto continua
-       perfeitamente legível — ele é o assunto, não o efeito */
-    .marca-frente .marca-simbolo { opacity: 0.16; filter: grayscale(1) brightness(1.6); }
-    .marca-frente .marca-fala { color: rgba(255,255,255,0.62); }
-    .marca-frente .marca-fala strong { color: rgba(255,255,255,0.82); }
-    .marca-frente .section-tag { opacity: 0.5; }
-
-    /* estado aceso (revelado): o símbolo acende e o texto vai a branco
-       pleno com os destaques em azul */
-    .marca-reveal .marca-simbolo { opacity: 0.62; filter: none; }
-    .marca-reveal .marca-fala { color: #FFFFFF; }
-    .marca-reveal .marca-fala strong { color: #7FA9FF; }
-
-    /* Sem movimento: a tocha não roda, então entra o corte 55/45 do próprio
-       componente, com o fio tracejado. Vira um antes/depois parado, que é
-       leitura melhor do que a marca apagada sozinha. */
-    @media (prefers-reduced-motion: reduce) {
-      .marca-palco { cursor: auto; }
-      .marca-reveal {
-        -webkit-mask-image: none;
-                mask-image: none;
-        clip-path: inset(0 0 0 55%);
-        border-left: 1.5px dashed rgba(34, 211, 238, 0.55);
-      }
-      .marca-halo { display: none; }
-    }
-
-    /* no estreito as duas colunas viram uma: símbolo em cima, fala embaixo */
-    @media (max-width: 820px) {
-      .marca-conteudo {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        text-align: center;
-      }
-      .marca-palco-logo { order: -1; }
-      .marca-dizeres { align-items: center; }
-      .marca-simbolo { height: clamp(150px, 34vw, 230px); }
-    }
-
-    @media (max-width: 700px) {
-      .marca-palco { cursor: auto; }
     }
 
     /* ---- GLOW HORIZON (21st.dev) ----
@@ -3609,7 +3439,6 @@
     /* ---- RESPONSIVE ---- */
     @media (max-width: 1024px) {
       .hero { padding-top: 9rem; }
-      .philosophy-block { grid-template-columns: 1fr; }
     }
 
     /* Mesmo limite do `modoLeve` no JS. No celular o hero deixou de ser dirigido
@@ -3677,7 +3506,6 @@
     <ul class="nav-links">
       <li><a href="#work">Trabalhos</a></li>
       <li><a href="#sites">Planos</a></li>
-      <li><a href="#about">Sobre</a></li>
       <li><a href="#services">Servi&ccedil;os</a></li>
       <li><a href="#contact">Contato</a></li>
     </ul>
@@ -4067,63 +3895,6 @@
   </section>
 
   
-
-  <!-- PHILOSOPHY / PALCO DA MARCA -->
-  <section class="section" id="about">
-    <div class="container">
-
-      <!-- As duas camadas carregam o MESMO bloco, na mesma posição: a de cima
-           com a marca apagada, a de baixo com ela acesa. Alinhadas ao pixel,
-           a tocha lê como luz passando por cima, não como dois conteúdos
-           brigando. Só a de frente entra no fluxo e define a altura. -->
-      <div class="marca-palco reveal" id="marcaPalco">
-
-        <div class="marca-frente">
-          <div class="marca-conteudo">
-            <div class="marca-dizeres">
-              <div class="section-tag" style="margin-bottom:0">Nossa Cren&ccedil;a</div>
-              <p class="marca-fala">
-                O mundo <strong>digital</strong> est&aacute; em constante evolu&ccedil;&atilde;o, e na
-                <strong>Conect+</strong> estamos sempre um passo &agrave; frente. Utilizamos as mais
-                modernas <strong>t&eacute;cnicas</strong> e <strong>ferramentas</strong>, e estamos
-                prontos para adaptar nossas estrat&eacute;gias conforme as mudan&ccedil;as do mercado
-                e do comportamento do consumidor.
-              </p>
-            </div>
-            <div class="marca-palco-logo">
-              <picture>
-                <source srcset="logo-simbolo-hd.webp" type="image/webp">
-                <img class="marca-simbolo" src="logo-simbolo.png" alt="Conect+" width="678" height="640" loading="lazy" decoding="async">
-              </picture>
-            </div>
-          </div>
-        </div>
-
-        <div class="marca-reveal" id="marcaReveal" aria-hidden="true">
-          <div class="marca-conteudo">
-            <div class="marca-dizeres">
-              <div class="section-tag" style="margin-bottom:0">Nossa Cren&ccedil;a</div>
-              <p class="marca-fala">
-                O mundo <strong>digital</strong> est&aacute; em constante evolu&ccedil;&atilde;o, e na
-                <strong>Conect+</strong> estamos sempre um passo &agrave; frente. Utilizamos as mais
-                modernas <strong>t&eacute;cnicas</strong> e <strong>ferramentas</strong>, e estamos
-                prontos para adaptar nossas estrat&eacute;gias conforme as mudan&ccedil;as do mercado
-                e do comportamento do consumidor.
-              </p>
-            </div>
-            <div class="marca-palco-logo">
-              <picture>
-                <source srcset="logo-simbolo-hd.webp" type="image/webp">
-                <img class="marca-simbolo" src="logo-simbolo.png" alt="" width="678" height="640" loading="lazy" decoding="async">
-              </picture>
-            </div>
-          </div>
-        </div>
-
-        <div class="marca-halo" id="marcaHalo" aria-hidden="true"></div>
-      </div>
-    </div>
-  </section>
 
   <!-- SERVICES — o argumento de venda em cinco telas (script "HISTÓRIA").
        Arco: a dor, o prejuízo que não aparece, a virada, o risco zerado e a
@@ -4671,7 +4442,6 @@
           <div class="rodape-fila rodape-fila-fina">
             <a href="#work" class="vidro-pilula pilula-fina ima">Trabalhos</a>
             <a href="#sites" class="vidro-pilula pilula-fina ima">Sites</a>
-            <a href="#about" class="vidro-pilula pilula-fina ima">Sobre</a>
             <a href="https://instagram.com/conect.pluss" target="_blank" rel="noopener" class="vidro-pilula pilula-fina ima">Instagram</a>
           </div>
         </div>
@@ -5460,117 +5230,6 @@
       }, { passive: true });
       // a fonte muda a altura dos painéis, e a altura é quem decide onde colam
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { colar(); pintar(); });
-    })();
-
-    // --- PALCO DA MARCA: tocha que revela (port do Torch Reveal, MIT) ---
-    // Escreve três custom properties por quadro (centro x, centro y, raio) e
-    // nada mais. Sem tocar em layout, sem criar nó, sem recalcular estilo de
-    // ninguém além da própria máscara.
-    (function () {
-      const palco = document.getElementById('marcaPalco');
-      const halo  = document.getElementById('marcaHalo');
-      if (!palco) return;
-
-      const RAIO = 190;          // radius do demo
-      const TREMOR = 0.25;       // flicker do demo
-      const RIGIDEZ = 260;       // lag.stiffness
-      const ATRITO = 24;         // lag.damping
-      const CAIXA_HALO = 420;    // GLOW_BOX
-      // O tremor são duas senoides incomensuráveis. As amplitudes vêm
-      // calibradas do original pra que flicker 0.35 dê 5px a 9Hz + 2,5px a
-      // 23Hz; aqui entram na mesma proporção.
-      const AMP1 = 5 / 0.35, AMP2 = 2.5 / 0.35;
-
-      const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const semCursor = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-      if (semMovimento) return; // o CSS já entrega o corte 55/45 parado
-
-      let px = -1e4, py = -1e4, dentro = false;
-
-      // Mola de Euler semi-implícito com subpassos: estável quando o quadro
-      // atrasa. Sem os subpassos, um engasgo de 50ms faz a mola explodir.
-      function mola(s, alvo, k, c, dt) {
-        const n = dt > 0.012 ? Math.ceil(dt / 0.008) : 1;
-        const h = dt / n;
-        for (let i = 0; i < n; i++) {
-          s.v += (-k * (s.x - alvo) - c * s.v) * h;
-          s.x += s.v * h;
-        }
-        return s.x;
-      }
-
-      const tx = { x: -400, v: 0 }, ty = { x: -400, v: 0 };
-      let raf = 0, ultimo = 0, inicio = 0, ocioso = Math.random() * 40;
-
-      function quadro(agora) {
-        raf = requestAnimationFrame(quadro);
-        if (!inicio) inicio = agora;
-        let dt = (agora - ultimo) / 1000;
-        ultimo = agora;
-        if (!(dt > 0) || dt > 0.05) dt = 0.016;
-        ocioso += dt;
-        const t = (agora - inicio) / 1000;
-
-        const l = palco.clientWidth, a = palco.clientHeight;
-        let gx, gy;
-        if (dentro) {
-          gx = px; gy = py;
-        } else {
-          // Ronda de Lissajous: sem cursor (celular, ou mouse parado longe),
-          // a tocha passeia sozinha e a seção se conta sem ninguém tocar.
-          gx = l * (0.5 + 0.36 * Math.sin(ocioso * 0.3));
-          gy = a * (0.5 + 0.30 * Math.sin(ocioso * 0.43 + 0.9));
-        }
-        mola(tx, gx, RIGIDEZ, ATRITO, dt);
-        mola(ty, gy, RIGIDEZ, ATRITO, dt);
-        const r = RAIO + (Math.sin(t * 9) * AMP1 + Math.sin(t * 23 + 1.3) * AMP2) * TREMOR;
-
-        palco.style.setProperty('--mk-tx', tx.x.toFixed(1));
-        palco.style.setProperty('--mk-ty', ty.x.toFixed(1));
-        palco.style.setProperty('--mk-tr', r.toFixed(1));
-        if (halo) {
-          halo.style.transform = 'translate3d(' + (tx.x - CAIXA_HALO / 2).toFixed(1) + 'px,' +
-                                                  (ty.x - CAIXA_HALO / 2).toFixed(1) + 'px,0)';
-        }
-      }
-
-      if (!semCursor) {
-        const segue = (e) => {
-          const r = palco.getBoundingClientRect();
-          px = e.clientX - r.left; py = e.clientY - r.top; dentro = true;
-        };
-        const solta = () => { px = -1e4; py = -1e4; dentro = false; };
-        palco.addEventListener('pointermove', segue, { passive: true });
-        palco.addEventListener('pointerdown', segue, { passive: true });
-        palco.addEventListener('pointerleave', solta, { passive: true });
-        palco.addEventListener('pointercancel', solta, { passive: true });
-      }
-
-      // Só gasta quadro com a seção em tela e a aba à frente. É o mesmo
-      // cuidado do resto do site: rAF girando atrás de conteúdo que ninguém
-      // vê é bateria queimada de graça.
-      let girando = false;
-      function liga() {
-        if (girando) return;
-        girando = true;
-        ultimo = performance.now(); inicio = 0;
-        raf = requestAnimationFrame(quadro);
-      }
-      function desliga() {
-        if (!girando) return;
-        girando = false;
-        cancelAnimationFrame(raf); raf = 0;
-      }
-
-      let naTela = false;
-      new IntersectionObserver(([e]) => {
-        naTela = e.isIntersecting;
-        (naTela && document.visibilityState !== 'hidden') ? liga() : desliga();
-      }, { threshold: 0.06 }).observe(palco);
-
-      document.addEventListener('visibilitychange', () => {
-        (naTela && document.visibilityState !== 'hidden') ? liga() : desliga();
-      });
     })();
 
     // --- ESTEIRA DE MARCAS: repete a lista até cobrir a tela ---
