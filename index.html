@@ -2864,7 +2864,7 @@
         to   { transform: scale(1); opacity: 1; }
       }
       /* o brilho do esqueleto é um laço infinito: esse sai de vez */
-      .cine-caixa.carregando::before { animation: none; }
+      .pilha-cartao.carregando::before { animation: none; }
     }
     .form-ok h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
     .form-ok p { font-size: 0.92rem; color: var(--text-muted); max-width: 42ch; }
@@ -2900,7 +2900,7 @@
       /* --- laços puramente decorativos: fora --- */
       .rodape-aurora,
       .scroll-hint-line,
-      .cine-caixa.carregando::before { animation: none !important; }
+      .pilha-cartao.carregando::before { animation: none !important; }
 
       /* --- laços que carregam CONTEÚDO: desaceleram, não param ---
          A esteira de marcas e o muro de depoimentos não são enfeite: são a
@@ -2937,9 +2937,6 @@
       .pricing-cta:active,
       .opcoes label:active,
       .dep-seta:active,
-      .cine-caixa:active,
-      .cine-caixa:hover,
-      .cine-caixa:hover img,
       .service-item:hover,
       .etapa:hover,
       .hero-img-main:hover img { transform: none !important; }
@@ -3476,7 +3473,6 @@
       outline: 2px solid var(--accent-hover);
       outline-offset: 3px;
     }
-    .cine-caixa:focus-visible { outline-offset: 5px; }
 
     /* ---- ENTRADA POR ROLAGEM ----
        Antes existia UM gesto só, aplicado a 19 elementos: opacidade mais 28px
@@ -3546,137 +3542,185 @@
        é melhor que escalonar até não acabar mais. */
     .reveal-group.in > *:nth-child(n+5) { opacity:1; transform:none; transition-delay:0.4s; }
 
-    /* ---- TRABALHOS CINEMATOGRÁFICOS ----
-       Tradução direta do componente React de referência. O que produz o efeito
-       lá são três classes do Tailwind:
-         h-screen  → min-height: 100vh
-         sticky    → position: sticky
-         top-0     → top: 0
-       Cada case gruda no topo e o próximo sobe por cima, cobrindo. O
-       ReactLenis do original é só o wrapper React do Lenis, que este site já
-       carrega. Nenhuma biblioteca nova precisou entrar. */
-    /* o painel do primeiro card (--painel) é mais claro que o --bg da seção
-       de cima: sem transição isso lia como uma linha reta bem na costura.
-       Não mexe em `position` aqui — .cine-tela já é sticky, e isso serve de
-       containing block pro ::before igual serviria um relative. */
-    .cine-tela:first-of-type::before {
+    /* ---- TRABALHOS EM PILHA ----
+       Porte do "Music Video Pin Stack" (React + GSAP). O palco gruda na tela
+       e cada case sobe de baixo crescendo de 60% a 100%, com o recorte abrindo
+       de 10% até a borda; o de baixo escurece sob o que chega. A conta está
+       no script; aqui só a montagem.
+
+       ⚠ O original sequestra a roda do mouse e o toque dentro do palco. Isso
+       ficou de fora de propósito: foi o mesmo motivo de o Lenis sair do site,
+       a página descola do dedo. Quem conduz é a rolagem nativa.
+
+       Sem a classe `ligada` (script não rodou) o palco não gruda e os cases
+       ficam empilhados um sobre o outro, parados: o último fica visível. */
+    .pilha {
+      --pl-fonte: clamp(2.6rem, 12.8vw, 11.5rem);
+      --pl-topo: calc(5.5rem + var(--pl-fonte) * 0.55);
+      --pl-w: min(72vw, calc(100vw - 26rem), 1120px, calc((100svh - var(--pl-topo) - 2rem) * 16 / 9));
+      --pl-h: calc(var(--pl-w) * 9 / 16);
+      --pl-raio: 22px;
+      position: relative;
+    }
+    .pilha.ligada { height: calc((var(--n) + 1) * 100svh); }
+
+    .pilha-palco {
+      position: relative;
+      height: 100svh;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr var(--pl-w) 1fr;
+      align-content: start;
+      align-items: center;
+      column-gap: 1.8rem;
+      /* centrado na tela, mas nunca acima do piso: o card sempre morde o pé
+         do título, que é a assinatura do efeito */
+      padding: max(var(--pl-topo), calc((100svh - var(--pl-h)) / 2)) 0 2rem;
+      background: var(--bg);
+    }
+    .pilha.ligada .pilha-palco { position: sticky; top: 0; }
+
+    /* grão de papel do original, sem o multiply: sobre o azul-noite o
+       multiply não aparece. Camada estática, pintada uma vez. */
+    .pilha-palco::after {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: clamp(120px, 16vw, 220px);
-      background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
+      inset: 0;
+      z-index: 1;
       pointer-events: none;
-      z-index: 1;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    .cine-tela {
-      position: sticky;
-      top: 0;
-      min-height: 100vh;
-      display: grid;
-      /* coluna explícita: sem isso a largura da caixa vinha do tamanho natural
-         da imagem, e o <picture> troca essa imagem por breakpoint */
-      grid-template-columns: min(100%, 1140px);
-      place-content: center;
-      overflow: hidden;
-      padding: 6.5rem clamp(1.25rem, 5vw, 5rem) 4rem;
-      background: var(--painel, var(--bg));
+    .pilha-titulo {
+      position: absolute;
+      z-index: 2;
+      top: 5.5rem;
+      left: clamp(1rem, 2.4vw, 2.5rem);
+      margin: 0;
+      font-size: var(--pl-fonte);
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      line-height: 0.92;
+      text-transform: uppercase;
+      color: var(--text);
+      pointer-events: none;
     }
 
-    /* o canto arredondado é o que faz a tela de cima ser lida como uma peça
-       deslizando sobre a anterior (rounded-t no original) */
-    .cine-tela + .cine-tela {
-      border-top-left-radius: 1.75rem;
-      border-top-right-radius: 1.75rem;
-      border-top: 1px solid rgba(120, 160, 240, 0.22);
-      box-shadow: 0 -30px 70px rgba(0, 0, 0, 0.6);
-    }
-
-    .cine-caixa {
+    .pilha-nomes,
+    .pilha-metas {
       position: relative;
-      z-index: 1;
-      width: min(100%, 1140px);
-      aspect-ratio: 16 / 9;
-      border-radius: 1.5rem;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      /* sombra em camadas pra o card parecer flutuando sobre o painel: uma
-         curta de contato, uma média e uma longa bem espalhada. Uma sombra só,
-         grande, vira uma mancha; três dão a distância. */
-      box-shadow:
-        0 4px 10px rgba(2, 6, 22, 0.45),
-        0 18px 36px rgba(2, 6, 22, 0.5),
-        0 48px 88px -16px rgba(0, 0, 0, 0.72);
-      cursor: pointer;
-      /* A sombra não muda durante a rolagem, mas era repintada a cada quadro
-         junto com o painel sticky. Camada própria: pintada uma vez e daí em
-         diante só composta. */
-      transform: translateZ(0);
-      transition: transform var(--mov-base) var(--curva),
-                  border-color var(--mov-base) var(--curva),
-                  box-shadow var(--mov-base) var(--curva);
+      z-index: 4;
+      display: grid;
+      pointer-events: none;
+      color: var(--text);
     }
-
-    /* O card é a maior área clicável da página, quase uma tela inteira, e não
-       respondia ao mouse: só a setinha do canto mudava de cor. Uma superfície
-       desse tamanho sem reação nenhuma não se lê como clicável, e quem passava
-       por cima não descobria que ali tinha link.
-
-       O card sobe 5px e a foto encosta um zoom de 2%. O zoom é da IMAGEM, não
-       do card: aumentar o card empurraria o layout, aumentar a foto dentro de
-       um overflow:hidden não move nada de lugar. */
-    .cine-caixa:hover {
-      transform: translateZ(0) translateY(-5px);
-      border-color: rgba(160, 195, 255, 0.38);
-      box-shadow:
-        0 6px 14px rgba(2, 6, 22, 0.5),
-        0 24px 46px rgba(2, 6, 22, 0.55),
-        0 60px 104px -16px rgba(0, 0, 0, 0.78);
+    .pilha-nomes {
+      justify-self: end;
+      max-width: 12rem;
+      text-align: right;
+      font-size: clamp(0.8rem, 1.05vw, 0.98rem);
+      font-weight: 500;
+      line-height: 1.4;
     }
-    .cine-caixa:hover img { transform: scale(1.025); }
-
-    /* depois do :hover, obrigatoriamente: pressionar sempre acontece com o
-       mouse em cima, e com a mesma especificidade quem vem por último vence */
-    .cine-caixa:active {
-      transform: translateZ(0) translateY(-1px) scale(0.99);
-      transition-duration: var(--mov-toque);
+    .pilha-metas {
+      justify-self: start;
+      max-width: 12rem;
+      font-size: clamp(0.72rem, 0.95vw, 0.88rem);
+      letter-spacing: 0.1em;
+      line-height: 1.45;
+      color: var(--text-muted);
     }
-
-    /* o <picture> é inline por padrão e não daria altura pro img de dentro */
-    .cine-caixa picture {
+    .pilha-metas b {
       display: block;
-      width: 100%;
-      height: 100%;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--accent-hover);
+    }
+    /* as quatro legendas moram na mesma célula, uma sobre a outra */
+    .pilha-nomes > *,
+    .pilha-metas > * {
+      grid-area: 1 / 1;
+      margin: 0;
+      opacity: 0;
+    }
+    .pilha-nomes > [data-ativo],
+    .pilha-metas > [data-ativo] {
+      opacity: 1;
+      animation: pilha-pisca 0.075s steps(1) 4 forwards;
+    }
+    @keyframes pilha-pisca {
+      0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 1; }
     }
 
-    .cine-caixa img {
+    .pilha-lista {
+      position: relative;
+      z-index: 3;
+      width: var(--pl-w);
+      height: var(--pl-h);
+    }
+
+    .pilha-cartao {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      border-radius: var(--pl-raio);
+      background: #0c1738;
+      transform-origin: 50% 50%;
+      will-change: transform, clip-path;
+      color: inherit;
+    }
+    .pilha-cartao[data-atras] { pointer-events: none; }
+    .pilha-cartao:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+
+    .pilha-cartao picture { display: block; width: 100%; height: 100%; }
+    .pilha-cartao img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
       object-position: top center;
-      display: block;
-      /* o zoom do hover é mais lento que o resto de propósito: uma foto do
-         tamanho da tela chegando em 260ms parece um solavanco */
-      transition: opacity var(--mov-bloco) var(--curva),
-                  transform 700ms var(--curva);
+      transition: opacity var(--mov-bloco) var(--curva), transform 0.35s ease;
+    }
+    @media (hover: hover) {
+      .pilha-cartao:hover img { transform: scale(1.1); }
+    }
+
+    .pilha-ver {
+      position: absolute;
+      z-index: 6;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      background: rgba(6, 14, 40, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .pilha-veu {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      background: var(--bg);
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* ---- ESQUELETO DOS CASES ----
-       São as quatro imagens pesadas da página e todas entram por lazy load,
-       então elas chegam DEPOIS que a pessoa já rolou até ali. Sem isso o card
-       ficava um buraco escuro do tamanho de uma tela e a foto aparecia de
-       estalo, o que lê como travamento.
-
-       A caixa já tem aspect-ratio fixo, então o esqueleto não é pra evitar
-       salto de layout: é pra dizer "tem alguma coisa vindo aqui". Por isso ele
-       se move. Retângulo cinza parado é indistinguível de erro de carregamento.
-
-       Quem liga é o script, e só quando a imagem AINDA não chegou. Se o
-       JavaScript falhar ou a foto já estiver em cache, nada disso existe e a
-       imagem aparece direto, como antes. */
-    .cine-caixa.carregando img { opacity: 0; }
-
-    .cine-caixa::before {
+       As quatro imagens entram por lazy load e chegam depois que a pessoa já
+       rolou até ali. Sem isso o card fica um buraco escuro e a foto aparece de
+       estalo, o que lê como travamento. Quem liga é o script, e só quando a
+       imagem AINDA não chegou. */
+    .pilha-cartao.carregando img { opacity: 0; }
+    .pilha-cartao::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -3693,12 +3737,10 @@
         rgba(255,255,255,0) 80%);
       background-size: 220% 100%;
       background-repeat: no-repeat;
-      /* a saída é mais longa que a entrada: o esqueleto some devagar por baixo
-         da foto que aparece, então as duas coisas se cruzam em vez de trocar */
       transition: opacity var(--mov-bloco) var(--curva-sai),
                   visibility 0s linear var(--mov-bloco);
     }
-    .cine-caixa.carregando::before {
+    .pilha-cartao.carregando::before {
       opacity: 1;
       visibility: visible;
       transition-delay: 0s;
@@ -3709,86 +3751,40 @@
       to   { background-position: -60% 0; }
     }
 
-    /* escurece a base pro texto ter contraste sem esconder o print */
-    .cine-caixa::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(4, 10, 28, 0.94) 0%, rgba(4, 10, 28, 0.62) 32%, rgba(4, 10, 28, 0.06) 62%, transparent 100%);
-      pointer-events: none;
-    }
-
-    .cine-info {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 2;
-      padding: clamp(1.25rem, 3.2vw, 2.75rem);
-    }
-
-    .cine-indice {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--text-dim);
-      margin-bottom: 0.7rem;
-    }
-
-    .cine-badge {
-      display: inline-block;
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.32rem 0.8rem;
-      border-radius: 99px;
-      margin-bottom: 0.9rem;
-    }
-
-    .cine-titulo {
-      font-size: clamp(1.25rem, 3.1vw, 2.5rem);
-      font-weight: 800;
-      letter-spacing: -0.035em;
-      line-height: 1.12;
-      max-width: 24ch;
-      margin-bottom: 0.5rem;
-    }
-
-    .cine-cliente {
-      font-size: clamp(0.8rem, 1.2vw, 0.98rem);
-      color: var(--text-muted);
-    }
-
-    .cine-seta {
-      position: absolute;
-      top: clamp(1rem, 2.4vw, 1.75rem);
-      right: clamp(1rem, 2.4vw, 1.75rem);
-      z-index: 2;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: rgba(6, 14, 40, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      transition: background var(--mov-base) var(--curva), transform var(--mov-base) var(--curva);
-    }
-    .cine-caixa:hover .cine-seta {
-      background: var(--accent);
-      transform: translate(2px, -2px);
-    }
-
+    /* celular: legenda em cima, card no meio, ficha embaixo. O card vira
+       retrato na proporção dos prints -mobile.jpg (o <picture> troca em 700px,
+       e o corte daqui acompanha) */
     @media (max-width: 700px) {
-      .cine-tela { padding: 5.5rem 1.15rem 3rem; min-height: 100svh; }
-      /* print de site em 16/9 fica minúsculo no celular: sobe pra vertical, na
-         mesma proporção do recorte dos prints -mobile.jpg */
-      .cine-caixa { aspect-ratio: 2 / 3; }
-      .cine-seta { width: 36px; height: 36px; }
-      /* backdrop-filter é caro no celular e aqui não faz falta */
-      .cine-seta { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(6, 14, 40, 0.9); }
+      .pilha {
+        --pl-fonte: clamp(2.2rem, 12vw, 3.5rem);
+        --pl-topo: calc(6.25rem + var(--pl-fonte));
+        --pl-w: min(86vw, 640px, calc((100svh - var(--pl-topo) - 9rem) * 2 / 3));
+        --pl-h: calc(var(--pl-w) * 3 / 2);
+        --pl-raio: 18px;
+      }
+      .pilha-palco {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        align-content: center;
+        row-gap: 0.9rem;
+        padding: var(--pl-topo) 1rem 1.5rem;
+      }
+      .pilha-titulo { top: 6.25rem; left: 1rem; right: 1rem; letter-spacing: -0.02em; }
+      /* aqui a legenda fica no caminho do card que sobe: passa por baixo dele,
+         senão o texto corre por cima do print e nenhum dos dois se lê */
+      .pilha-nomes,
+      .pilha-metas { z-index: 2; justify-self: stretch; max-width: none; text-align: center; }
+      .pilha-metas { letter-spacing: 0.06em; }
+    }
+
+    /* movimento reduzido: o script troca os cases por corte, sem subir nem
+       crescer; a troca de legenda perde a piscada e vira opacidade */
+    @media (prefers-reduced-motion: reduce) {
+      .pilha-nomes > [data-ativo],
+      .pilha-metas > [data-ativo] { animation: none; }
+      .pilha-cartao { transition: opacity var(--mov-base) var(--curva); }
+      .pilha-cartao img { transition: none; }
+      .pilha-cartao:hover img { transform: none; }
     }
 
     /* ---- RESPONSIVE ---- */
@@ -4003,73 +3999,67 @@
 
     </div>
 
-    <article class="cine-tela" style="--painel:linear-gradient(165deg,#0d1c48 0%,#08122f 55%,#060e28 100%)">
-      <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://midiacomunica.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://midiacomunica.com/','_blank')">
-        <picture>
-          <source media="(max-width: 700px)" srcset="workshop-midia-comunica-mobile.jpg">
-          <source srcset="workshop-midia-comunica.webp" type="image/webp">
-          <img src="workshop-midia-comunica.png" alt="Workshop Mídia Comunica" loading="lazy" decoding="async">
-        </picture>
-        <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
-        <div class="cine-info">
-          <div class="cine-indice">01 / 04</div>
-          <span class="cine-badge">Site de Evento</span>
-          <h3 class="cine-titulo">Workshop Mídia Comunica, 23 de Maio em Alphaville</h3>
-          <div class="cine-cliente">Mídia Comunica &middot; 2025</div>
-        </div>
-      </div>
-    </article>
+    <!-- PILHA DOS CASES — a conta mora no script "PILHA DOS TRABALHOS".
+         A ordem dos .pilha-cartao, dos .pilha-nomes e dos .pilha-metas é a
+         mesma: o índice amarra os três. -->
+    <div class="pilha" id="pilhaTrabalhos" style="--n:4">
+      <div class="pilha-palco">
+        <p class="pilha-titulo" aria-hidden="true">Trabalhos</p>
 
-    <article class="cine-tela" style="--painel:linear-gradient(165deg,#0f2057 0%,#0a1738 55%,#060e28 100%)">
-      <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://graficonrevestimento.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://graficonrevestimento.com/','_blank')">
-        <picture>
-          <source media="(max-width: 700px)" srcset="graficon-revestimento-mobile.jpg">
-          <source srcset="graficon-revestimento.webp" type="image/webp">
-          <img src="graficon-revestimento.png" alt="Graficon Revestimento e Recuperação de Cilindros Industriais" loading="lazy" decoding="async">
-        </picture>
-        <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
-        <div class="cine-info">
-          <div class="cine-indice">02 / 04</div>
-          <span class="cine-badge">Site Empresarial</span>
-          <h3 class="cine-titulo">Especialistas em cilindros para flexografia, gráfica e processos industriais com alta precisão e confiabilidade</h3>
-          <div class="cine-cliente">Graficon Revestimento &middot; 2025</div>
+        <div class="pilha-nomes" aria-hidden="true">
+          <p data-ativo>Workshop Mídia Comunica, 23 de Maio em Alphaville</p>
+          <p>Especialistas em cilindros para flexografia, gráfica e processos industriais com alta precisão e confiabilidade</p>
+          <p>Loja virtual de cosméticos e maquiagem com experiência de compra premium</p>
+          <p>AMC Insider, ecossistema de mentoria e network</p>
         </div>
-      </div>
-    </article>
 
-    <article class="cine-tela" style="--painel:linear-gradient(165deg,#123061 0%,#0b1a3f 55%,#060e28 100%)">
-      <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://www.lojabrmake.com.br/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://www.lojabrmake.com.br/','_blank')">
-        <picture>
-          <source media="(max-width: 700px)" srcset="brmaker-cosmeticos-mobile.jpg">
-          <source srcset="brmaker-cosmeticos.webp" type="image/webp">
-          <img src="brmaker-cosmeticos.png" alt="BRmaker Loja de Cosméticos e Maquiagem" loading="lazy" decoding="async">
-        </picture>
-        <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
-        <div class="cine-info">
-          <div class="cine-indice">03 / 04</div>
-          <span class="cine-badge">E-commerce</span>
-          <h3 class="cine-titulo">Loja virtual de cosméticos e maquiagem com experiência de compra premium</h3>
-          <div class="cine-cliente">BRmaker &middot; 2025</div>
+        <div class="pilha-lista">
+          <a class="pilha-cartao" href="https://midiacomunica.com/" target="_blank" rel="noopener" aria-label="Site de Evento: Workshop Mídia Comunica, 23 de Maio em Alphaville. Mídia Comunica, 2025">
+            <picture>
+              <source media="(max-width: 700px)" srcset="workshop-midia-comunica-mobile.jpg">
+              <source srcset="workshop-midia-comunica.webp" type="image/webp">
+              <img src="workshop-midia-comunica.png" alt="" loading="lazy" decoding="async">
+            </picture>
+            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-veu"></span>
+          </a>
+          <a class="pilha-cartao" href="https://graficonrevestimento.com/" target="_blank" rel="noopener" aria-label="Site Empresarial: Graficon Revestimento, especialistas em cilindros para flexografia, gráfica e processos industriais. 2025">
+            <picture>
+              <source media="(max-width: 700px)" srcset="graficon-revestimento-mobile.jpg">
+              <source srcset="graficon-revestimento.webp" type="image/webp">
+              <img src="graficon-revestimento.png" alt="" loading="lazy" decoding="async">
+            </picture>
+            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-veu"></span>
+          </a>
+          <a class="pilha-cartao" href="https://www.lojabrmake.com.br/" target="_blank" rel="noopener" aria-label="E-commerce: BRmaker, loja virtual de cosméticos e maquiagem. 2025">
+            <picture>
+              <source media="(max-width: 700px)" srcset="brmaker-cosmeticos-mobile.jpg">
+              <source srcset="brmaker-cosmeticos.webp" type="image/webp">
+              <img src="brmaker-cosmeticos.png" alt="" loading="lazy" decoding="async">
+            </picture>
+            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-veu"></span>
+          </a>
+          <a class="pilha-cartao" href="https://amcinsider.midiacomunica.com/" target="_blank" rel="noopener" aria-label="Landing Page: AMC Insider, ecossistema de mentoria e network da Mídia Comunica. 2026">
+            <picture>
+              <source media="(max-width: 700px)" srcset="amc-insider-mobile.jpg">
+              <source srcset="amc-insider.webp" type="image/webp">
+              <img src="amc-insider.jpg" alt="" loading="lazy" decoding="async">
+            </picture>
+            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-veu"></span>
+          </a>
         </div>
-      </div>
-    </article>
 
-    <article class="cine-tela" style="--painel:linear-gradient(165deg,#15376e 0%,#0d1f4a 55%,#060e28 100%)">
-      <div class="cine-caixa" role="link" tabindex="0" onclick="window.open('https://amcinsider.midiacomunica.com/','_blank')" onkeydown="if(event.key==='Enter')window.open('https://amcinsider.midiacomunica.com/','_blank')">
-        <picture>
-          <source media="(max-width: 700px)" srcset="amc-insider-mobile.jpg">
-          <source srcset="amc-insider.webp" type="image/webp">
-          <img src="amc-insider.jpg" alt="AMC Insider, ecossistema de mentoria da Mídia Comunica" loading="lazy" decoding="async">
-        </picture>
-        <div class="cine-seta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
-        <div class="cine-info">
-          <div class="cine-indice">04 / 04</div>
-          <span class="cine-badge">Landing Page</span>
-          <h3 class="cine-titulo">AMC Insider, ecossistema de mentoria e network</h3>
-          <div class="cine-cliente">Mídia Comunica &middot; 2026</div>
+        <div class="pilha-metas" aria-hidden="true">
+          <p data-ativo><b>Site de Evento</b>Mídia Comunica &middot; 2025</p>
+          <p><b>Site Empresarial</b>Graficon Revestimento &middot; 2025</p>
+          <p><b>E-commerce</b>BRmaker &middot; 2025</p>
+          <p><b>Landing Page</b>Mídia Comunica &middot; 2026</p>
         </div>
       </div>
-    </article>
+    </div>
   </section>
 
   <!-- SERVICES -->
@@ -5884,21 +5874,134 @@
     // A seção inteira está guardada em `_secoes-arquivadas.html`, e este
     // trecho de JS vai junto de lá se ela voltar.
 
-    // --- ESQUELETO DOS CASES ---
-    // As quatro fotos entram por lazy load, então chegam depois que a pessoa
-    // já rolou até elas. O esqueleto ocupa o lugar enquanto isso.
+    // --- PILHA DOS TRABALHOS ---
+    // Porte do "Music Video Pin Stack". Mesma conta do original: o card i
+    // entra na faixa [(i-1)/(n-1), i/(n-1)] do progresso, subindo 100% da
+    // altura do palco, crescendo de 0,6 a 1 e abrindo o recorte de 10% a 0.
+    // O de baixo escurece até 0,75 conforme o de cima chega.
     //
-    // `img.complete` é a checagem que evita o pior caso: com a imagem já em
-    // cache, ligar o esqueleto mostraria um brilho correndo por 400ms sobre
-    // uma foto que estava pronta desde o início. Aí o carregador vira o
-    // problema que ele foi resolver.
+    // No desktop o progresso persegue a rolagem com fator 0,2 por quadro (a
+    // suavização do original); no toque ele é a própria rolagem, senão o card
+    // fica atrás do dedo. O laço só roda enquanto não assentou.
     (function () {
-      document.querySelectorAll('.cine-caixa').forEach(caixa => {
-        const img = caixa.querySelector('img');
+      const pilha = document.getElementById('pilhaTrabalhos');
+      if (!pilha) return;
+      const palco   = pilha.querySelector('.pilha-palco');
+      const cartoes = Array.from(pilha.querySelectorAll('.pilha-cartao'));
+      const veus    = cartoes.map(c => c.querySelector('.pilha-veu'));
+      const nomes   = Array.from(pilha.querySelectorAll('.pilha-nomes > *'));
+      const metas   = Array.from(pilha.querySelectorAll('.pilha-metas > *'));
+      const n = cartoes.length;
+      if (n < 2) return;
+
+      const corte = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const toque = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+      pilha.classList.add('ligada');
+      cartoes.forEach((c, i) => { c.style.zIndex = i + 1; });
+
+      let curso = 1, alturaPalco = 0;
+      function medir() {
+        alturaPalco = palco.offsetHeight;
+        curso = Math.max(1, pilha.offsetHeight - alturaPalco);
+      }
+
+      const local = (p, i) => i === 0 ? 1 : trava01((p - (i - 1) / (n - 1)) * (n - 1));
+
+      const ult = cartoes.map(() => -1), ultVeu = veus.map(() => -1);
+      let ativo = -1;
+
+      function aplicar(p) {
+        for (let i = 1; i < n; i++) {
+          const t = local(p, i);
+          if (t === ult[i]) continue;
+          ult[i] = t;
+          const c = cartoes[i];
+          if (corte) {
+            c.style.opacity = t >= 0.5 ? '1' : '0';
+            continue;
+          }
+          const inset = ((1 - t) * 10).toFixed(2);
+          c.style.transform = 'translate3d(0,' + ((1 - t) * alturaPalco).toFixed(1) + 'px,0) scale(' + (0.6 + t * 0.4).toFixed(4) + ')';
+          c.style.clipPath = t === 1 ? '' : 'inset(' + inset + '% round var(--pl-raio))';
+        }
+
+        let novo = 0;
+        for (let i = 0; i < n; i++) {
+          const proximo = i < n - 1 ? local(p, i + 1) : 0;
+          if (!corte) {
+            const v = +(proximo * 0.75).toFixed(3);
+            if (v !== ultVeu[i]) { ultVeu[i] = v; veus[i].style.opacity = v; }
+          }
+          if (local(p, i) >= 0.55) novo = i;
+          cartoes[i].toggleAttribute('data-atras', proximo > (corte ? 0.5 : 0.07));
+        }
+
+        if (novo !== ativo) {
+          ativo = novo;
+          nomes.forEach((el, i) => el.toggleAttribute('data-ativo', i === ativo));
+          metas.forEach((el, i) => el.toggleAttribute('data-ativo', i === ativo));
+        }
+      }
+
+      const alvo = () => trava01(-pilha.getBoundingClientRect().top / curso);
+
+      let atual = 0, meta = 0, raf = 0;
+      function passo() {
+        raf = 0;
+        atual += (meta - atual) * 0.2;
+        if (Math.abs(meta - atual) < 0.0004) atual = meta;
+        aplicar(atual);
+        if (atual !== meta) raf = requestAnimationFrame(passo);
+      }
+      let agendado = false;
+      function aoRolar() {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(() => {
+          agendado = false;
+          meta = alvo();
+          if (toque || corte) { atual = meta; aplicar(atual); }
+          else if (!raf && meta !== atual) raf = requestAnimationFrame(passo);
+        });
+      }
+
+      // o scroll só é ouvido com o palco perto da tela
+      let ouvindo = false;
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !ouvindo) { ouvindo = true; window.addEventListener('scroll', aoRolar, { passive: true }); aoRolar(); }
+        else if (!e.isIntersecting && ouvindo) { ouvindo = false; window.removeEventListener('scroll', aoRolar); }
+      }, { rootMargin: '200px 0px' }).observe(pilha);
+
+      // Tab num case coberto leva a rolagem até o ponto em que ele está na frente
+      cartoes.forEach((c, i) => c.addEventListener('focus', () => {
+        if (ativo === i) return;
+        const topo = pilha.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, topo + curso * (i / (n - 1)));
+      }));
+
+      medir();
+      meta = atual = alvo();
+      aplicar(atual);
+      let larguraAntes = window.innerWidth;
+      window.addEventListener('resize', () => {
+        // no celular a barra de endereço muda só a altura; o palco é svh e não mexe
+        if (toque && window.innerWidth === larguraAntes) return;
+        larguraAntes = window.innerWidth;
+        medir(); ult.fill(-1); ultVeu.fill(-1); aplicar(atual);
+      }, { passive: true });
+    })();
+
+    // --- ESQUELETO DOS CASES ---
+    // `img.complete` evita o pior caso: com a imagem já em cache, ligar o
+    // esqueleto mostraria um brilho correndo sobre uma foto que estava pronta.
+    (function () {
+      document.querySelectorAll('.pilha-cartao').forEach(cartao => {
+        const img = cartao.querySelector('img');
         if (!img || img.complete) return;
-        caixa.classList.add('carregando');
-        const pronto = () => caixa.classList.remove('carregando');
-        // o `error` também tira: com a foto quebrada, um esqueleto girando pra
+        cartao.classList.add('carregando');
+        const pronto = () => cartao.classList.remove('carregando');
+        // o `error` também tira: foto quebrada com esqueleto girando pra
         // sempre promete uma imagem que nunca vem
         img.addEventListener('load', pronto, { once: true });
         img.addEventListener('error', pronto, { once: true });
