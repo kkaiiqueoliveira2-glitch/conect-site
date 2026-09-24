@@ -5280,7 +5280,14 @@
       }
 
       medir();
-      window.addEventListener('resize', () => { medir(); if (!raf) desenhar(performance.now()); }, { passive: true });
+      // ⚠ NÃO tire o cancel: desenhar() termina agendando o próximo quadro, e
+      // com o laço parado (celular, ou hero fora da tela) nada mais o para. No
+      // celular a barra de endereço dispara resize na primeira rolagem, e sem
+      // o cancel a malha rodava a 60 quadros/s pelo resto da visita.
+      window.addEventListener('resize', () => {
+        medir();
+        if (!raf) { desenhar(performance.now()); cancelAnimationFrame(raf); raf = 0; }
+      }, { passive: true });
 
       if (modoLeve) {
         // Sem cursor não há o que empurrar: a malha é desenhada uma vez e fica
@@ -6293,9 +6300,11 @@ Segmento: ${v.segmento}`;
         }
       }
 
+      // ⚠ NÃO volte a chamar medir() daqui: ele lê offsetWidth e
+      // getComputedStyle e escreve 4 estilos, o que força layout a cada quadro.
+      // O tamanho do botão só muda no resize e na chegada da fonte.
       function desenhar(a, dt) {
-        if (!medir(a)) return;
-        if (a.cw > maxW || a.ch > maxH) ajustarCompartilhado();
+        if (!a.cw) return;
 
         a.arcs += (a.arcsAlvo - a.arcs) * Math.min(1, dt * 5);
         a.flash *= Math.exp(-3.6 * dt);
@@ -6321,6 +6330,7 @@ Segmento: ${v.segmento}`;
 
       // So desenha quem esta na tela: o CTA do plano vive no meio da pagina, e
       // sem isto ele consumiria quadro desde o topo, sem ninguem estar vendo.
+      let acordar = () => {};
       if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(entradas => {
           entradas.forEach(e => {
@@ -6328,34 +6338,49 @@ Segmento: ${v.segmento}`;
               if (vivos[i].btn === e.target) { vivos[i].visivel = e.isIntersecting; break; }
             }
           });
+          acordar();
         }, { rootMargin: '120px' });
         vivos.forEach(a => io.observe(a.btn));
       }
 
-      vivos.forEach(a => medir(a));
-      ajustarCompartilhado();
+      const remedir = () => { vivos.forEach(a => medir(a)); ajustarCompartilhado(); };
+      remedir();
 
       // Com movimento reduzido o componente congela o tempo num quadro so.
       // Aqui ele e desenhado uma vez e o laco nem comeca: o botao fica com a
       // cara do efeito, sem nada se mexendo.
       if (semMov) {
-        const uma = () => { vivos.forEach(a => medir(a)); ajustarCompartilhado(); vivos.forEach(a => desenhar(a, 0)); };
+        const uma = () => { remedir(); vivos.forEach(a => desenhar(a, 0)); };
         uma();
         window.addEventListener('resize', uma, { passive: true });
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(uma);
         return;
       }
 
-      let antes = performance.now();
-      (function quadro(agora) {
+      window.addEventListener('resize', remedir, { passive: true });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(remedir);
+
+      // O laço só existe enquanto algum botão está na tela. Rodando vazio ele
+      // não desenha nada, mas mantém o pipeline de quadros acordado no site
+      // inteiro.
+      let antes = 0, raf = 0;
+      function quadro(agora) {
+        raf = 0;
         if (!contextoVivo) return;
         const dt = Math.min(0.05, (agora - antes) / 1000);
         antes = agora;
+        let algum = false;
         for (let i = 0; i < vivos.length; i++) {
-          if (vivos[i].visivel) desenhar(vivos[i], dt);
+          if (vivos[i].visivel) { desenhar(vivos[i], dt); algum = true; }
         }
-        requestAnimationFrame(quadro);
-      })(antes);
+        if (algum) raf = requestAnimationFrame(quadro);
+      }
+      acordar = () => {
+        if (raf || !vivos.some(a => a.visivel)) return;
+        antes = performance.now();
+        raf = requestAnimationFrame(quadro);
+      };
+      acordar();
     })();
 
     // --- MAGNETIC BUTTONS ---
