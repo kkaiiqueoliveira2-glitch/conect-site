@@ -817,262 +817,104 @@
       flex-shrink: 0;
     }
 
-    /* ---- SERVICES ---- */
-    /* cabeçalho em duas colunas: o título sozinho deixava metade da linha vazia */
-    /* A grade era um fio de 1px separando quatro retângulos, o que lia como
-       tabela. Agora são quatro cards soltos, com respiro entre eles. */
-    /* Fundo azul da seção.
-       O azul é forte no topo e morre no azul-noite da página nas duas pontas.
-       Sem esse esmaecimento apareceria uma emenda reta em cima e outra
-       embaixo, e a seção pareceria uma faixa colada por cima do site em vez
-       de uma parte dele. */
+    /* ---- HISTÓRIA (#services) ----
+       Porte do "Story scroll" (React + GSAP ScrollTrigger). Cinco telas cheias:
+       cada uma gruda quando o pé dela encosta no pé da janela, e a seguinte
+       sobe por cima entrando girada 30° a partir do canto de baixo à esquerda,
+       endireitando até o topo dela chegar a 25% da altura da tela.
+
+       O `pin` do ScrollTrigger virou position:sticky com top negativo (a
+       altura que sobra do painel), escrito pelo script. O giro é o único valor
+       por quadro, e é transform: vai direto pro compositor.
+
+       Sem a classe `ligada` (script não rodou, ou movimento reduzido) os
+       painéis ficam em fluxo normal, um embaixo do outro, com o texto inteiro. */
     #services {
       position: relative;
-      isolation: isolate;
-      /* "clip" e nao "hidden": hidden faz da secao um contexto de rolagem, e
-         isso mata o position:sticky do trilho dos passos la dentro. O clip
-         corta igual sem criar contexto nenhum. A linha hidden fica embaixo
-         como reserva pra quem nao conhece clip: la o corte continua valendo,
-         so o trilho e que nao cola. */
-      overflow: hidden;
-      overflow: clip;
-    }
-    #services::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background:
-        radial-gradient(120% 75% at 50% 8%, rgba(30, 95, 224, 0.34) 0%, rgba(30, 95, 224, 0.10) 48%, transparent 76%),
-        linear-gradient(180deg, #0b2154 0%, #0b2154 30%, #091a44 66%, var(--bg) 100%);
-      /* A máscara é o que garante que não apareça emenda reta na borda de
-         cima. Sem ela, a parada de 0% do degradê tem que bater exatamente com
-         a cor da seção anterior, e basta alguém mexer numa das duas pra a
-         linha voltar. Assim a própria camada some antes de encostar. */
-      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 88%, transparent 100%);
-              mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 88%, transparent 100%);
+      /* clip e não hidden: hidden viraria contexto de rolagem e mataria o sticky */
+      overflow-x: clip;
     }
 
-    .services-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-top: 3rem;
-    }
-
-    /* Vidro em cima do azul.
-       Sem backdrop-filter de propósito: atrás desses cartões só existe um
-       degradê liso, e borrar um degradê liso devolve o mesmo degradê. O que
-       faz o vidro aqui é o fundo translúcido mais a linha de luz interna na
-       borda de cima, e isso não custa quadro nenhum na rolagem. */
-    .service-item {
+    .hist-painel {
       position: relative;
-      overflow: hidden;
-      padding: clamp(1.75rem, 3vw, 2.75rem);
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.028) 100%);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10),
-                  0 16px 34px -18px rgba(2, 6, 22, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.11);
-      border-radius: 1.5rem;
-      transition: transform var(--mov-base) var(--curva),
-                  border-color var(--mov-base) var(--curva),
-                  background var(--mov-base) var(--curva),
-                  box-shadow var(--mov-base) var(--curva);
-    }
-
-    /* brilho que nasce do canto onde o numeral está */
-    .service-item::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(420px circle at 100% 0%, rgba(30, 95, 224, 0.18), transparent 62%);
-      opacity: 0;
-      transition: opacity var(--mov-base) var(--curva);
-      pointer-events: none;
-    }
-    .service-item:hover::before { opacity: 1; }
-    .service-item:hover {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border-color: rgba(160, 195, 255, 0.42);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
-                  0 26px 48px -20px rgba(2, 6, 22, 0.8);
-    }
-    /* o .reveal-group.in zera o transform dos filhos com especificidade maior
-       que um :hover simples: sem esta linha o card não levantava */
-    .services-grid.reveal-group.in > .service-item:hover { transform: translateY(-5px); }
-
-    /* ---- PALCO DOS PASSOS ----
-       Porte do componente React de timeline horizontal. Lá o efeito é um
-       useTransform por cartão:
-
-         range    [i/n, (i+1)/n] do progresso de rolagem do container
-         valor    x: innerWidth  ->  -(largura * i) + 64 * i
-
-       ou seja: cada cartão entra pela direita e para empilhado 64px à frente
-       do anterior, e o primeiro nunca sai do lugar.
-
-       Aqui a conta é a mesma, escrita à mão. Três diferenças, e nenhuma por
-       gosto:
-
-       1. O ponto de partida é a borda direita do trilho, não `innerWidth`.
-          No original um cartão de 70% já nasce fora da tela por causa da
-          posição natural dele na fileira, e somar innerWidth por cima manda
-          ele pra muito longe: o começo da faixa vira espera. Partindo da
-          borda o cartão aparece assim que a faixa dele começa.
-
-       2. As faixas não dividem 0..1 em n. Com n cartões o primeiro pedaço
-          (0 -> 1/n) não anima nada, porque o cartão 0 é fixo — no palco isso
-          é um quarto da rolagem sem nada acontecendo. As faixas aqui dividem
-          0,06 -> 0,94 entre os cartões que de fato se movem.
-
-       3. No mobile o cartão é 86% (não 70%) e o degrau cai pra 24px (não
-          64px) — com o valor do desktop numa tela de 390px o cartão tinha
-          273px e os degraus comiam mais 192: o texto de cada etapa não cabia.
-
-       O border-radius não muda — os cartões continuam os mesmos, só passam a
-       andar. */
-    .passos-palco { position: relative; }
-
-    .passos-palco.deck-ligado {
-      /* uma tela por cartão que se move, mais uma de folga pra ler o último */
-      height: 300vh;
-      margin-top: 3rem;
-    }
-    .passos-palco.deck-ligado .passos-fixo {
-      position: sticky;
-      top: 6rem;
+      min-height: 100svh;
       overflow: hidden;
     }
-    .passos-palco.deck-ligado .services-grid {
+    #services.ligada .hist-painel:not(:last-child) { position: sticky; }
+
+    .hist-miolo {
+      position: relative;
+      min-height: 100svh;
       display: flex;
-      flex-wrap: nowrap;
-      align-items: stretch;
-      gap: 0;
-      margin-top: 2rem;
-    }
-    .passos-palco.deck-ligado .service-item {
-      min-width: 70%;
-      max-width: 70%;
-      /* o transform é reescrito a cada quadro pela rolagem: deixá-lo na
-         transição faria o cartão perseguir o dedo com atraso */
-      transition: border-color var(--mov-base) var(--curva),
-                  background var(--mov-base) var(--curva),
-                  box-shadow var(--mov-base) var(--curva);
-    }
-    /* o empilhamento depende de quem pinta por cima: na ordem do documento o
-       cartão seguinte já ganha do anterior, e os dois são position:relative */
-    .passos-palco.deck-ligado .service-item:hover { transform: none; }
-
-    /* CORPO OPACO — na grade os cartões nunca se tocam, então um vidro de 7%
-       de branco sobre o azul da seção resolve. Empilhados, esse mesmo vidro
-       deixa ler o texto do cartão de baixo através do de cima, e as quatro
-       etapas viram um borrão. Aqui entra uma camada opaca ATRÁS do vidro: o
-       brilho e a linha de luz da borda continuam idênticos, só o que estava
-       atravessando é que para. (No componente de origem isso é o
-       `bg-gradient-to-br from-[rgba(15,23,42,0.7)]` mais o backdrop-blur.) */
-    .passos-palco.deck-ligado .service-item,
-    .passos-palco.deck-ligado .service-item:hover {
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.028) 100%),
-        linear-gradient(165deg, #0d2359 0%, #0a1c47 62%, #08173c 100%);
+      flex-direction: column;
+      justify-content: space-between;
+      gap: clamp(1.1rem, 2vw, 1.75rem);
+      padding: clamp(6.5rem, 9vw, 8rem) 5vw clamp(2.5rem, 5vw, 4.5rem);
+      background: var(--fundo);
+      color: var(--tinta);
+      transform-origin: bottom left;
     }
 
-    /* cartão mais largo no mobile: com 70% (o valor do desktop) o texto não
-       cabia com os degraus de empilhamento (ver nota acima) */
-    @media (max-width: 759px) {
-      .passos-palco.deck-ligado .service-item {
-        min-width: 86%;
-        max-width: 86%;
-      }
-    }
-
-    /* numeral como elemento gráfico, não como legenda */
-    .service-num {
-      position: absolute;
-      top: 0.15rem;
-      right: 1.25rem;
-      font-size: clamp(3.6rem, 6vw, 5.5rem);
-      font-weight: 800;
-      letter-spacing: -0.05em;
-      line-height: 1;
-      color: rgba(255, 255, 255, 0.055);
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .service-icone {
-      position: relative;
-      width: 48px;
-      height: 48px;
-      border-radius: 15px;
-      display: grid;
-      place-items: center;
-      color: var(--accent);
-      background: rgba(30, 95, 224, 0.14);
-      border: 1px solid rgba(30, 95, 224, 0.32);
-      margin-bottom: 1.5rem;
-      transition: background var(--mov-base) var(--curva), border-color var(--mov-base) var(--curva), color var(--mov-base) var(--curva);
-    }
-    .service-item:hover .service-icone {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .service-name {
-      position: relative;
-      font-size: 1.375rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      color: var(--text);
-      margin-bottom: 0.875rem;
-    }
-
-    .service-desc {
-      position: relative;
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      line-height: 1.75;
-      max-width: 38ch;
-      margin-bottom: 1.75rem;
-    }
-
-    /* Faixa de onde o anúncio aparece. O card vira coluna flex só pra ela
-       poder colar no fim: assim os dois cards da linha ficam com a faixa na
-       mesma altura, mesmo com descrições de tamanhos diferentes. */
-    .service-item { display: flex; flex-direction: column; }
-
-    .service-onde {
-      position: relative;
-      margin-top: auto;
-      padding-top: 1.35rem;
-      border-top: 1px solid var(--border);
-    }
-    .service-onde b {
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
+    .hist-rotulo {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 0.8rem;
     }
-    .service-onde span { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-    .service-onde em {
-      font-style: normal;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.3rem 0.72rem;
-      transition: border-color var(--mov-base) var(--curva), color var(--mov-base) var(--curva);
+    .hist-linha {
+      width: 100%;
+      margin: 0;
+      border: 0;
+      border-top: 1px solid currentColor;
+      opacity: 0.3;
     }
-    .service-item:hover .service-onde em {
-      border-color: rgba(120, 160, 240, 0.34);
-      color: #fff;
+    .hist-titulo {
+      margin: 0;
+      font-size: clamp(3.1rem, 11.5vw, 13rem);
+      font-weight: 800;
+      line-height: 0.86;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+    .hist-texto {
+      max-width: 48ch;
+      font-size: clamp(1.08rem, 2.1vw, 1.85rem);
+      line-height: 1.42;
+    }
+    .hist-grade {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(1.25rem, 3vw, 3rem);
+    }
+    .hist-grade > div { flex: 1; min-width: 210px; }
+    .hist-grade b {
+      display: block;
+      margin-bottom: 0.55rem;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hist-grade p {
+      font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+      line-height: 1.58;
+      opacity: 0.82;
+    }
+    .hist-fecho { margin-left: auto; text-align: right; }
+
+    .hist-pergunta {
+      max-width: 24ch;
+      font-size: clamp(1.7rem, 4.2vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .hist-pergunta em { font-style: normal; color: var(--accent-hover); }
+    .hist-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+    /* no celular o space-between do original abre buracos de meia tela nos
+       painéis curtos: o bloco fica junto e centrado */
+    @media (max-width: 700px) {
+      .hist-miolo { justify-content: center; }
     }
 
     /* ---- PRICING ---- */
@@ -2937,7 +2779,6 @@
       .pricing-cta:active,
       .opcoes label:active,
       .dep-seta:active,
-      .service-item:hover,
       .etapa:hover,
       .hero-img-main:hover img { transform: none !important; }
 
@@ -3835,7 +3676,6 @@
 
     @media (max-width: 768px) {
       .nav-links { display: none; }
-      .services-grid { grid-template-columns: 1fr; }
       .hero-badge { display: none; }
     }
   </style>
@@ -4062,73 +3902,116 @@
     </div>
   </section>
 
-  <!-- SERVICES -->
-  <section class="section" id="services">
-    <div class="container">
-      <!-- PALCO DOS PASSOS
-           Porte em JS/CSS do componente de timeline horizontal (React +
-           motion): um palco alto, um trilho fixo por cima dele, e os cartoes
-           numa fileira que nao quebra. Cada cartao depois do primeiro entra
-           pela direita e para empilhado 64px a frente do anterior, tudo
-           amarrado a rolagem.
-           O efeito so liga quando o JS diz que pode (`deck-ligado`): sem
-           script, em tela estreita ou com movimento reduzido, isso continua
-           sendo a mesma grade de dois por dois de antes. -->
-      <div class="passos-palco" id="passosPalco">
-      <div class="passos-fixo">
-      <!-- centralizado como as outras seções de grade simétrica.
-           Mora dentro do trilho de propósito: fora dele, o título subia e saía
-           da tela antes de o segundo cartão chegar, e a etapa aparecia sem a
-           pergunta que ela responde. Preso aqui, ele para junto com os cartões
-           e fica de pé durante as quatro etapas. -->
-      <div class="topo-centro">
-        <h2 class="heading reveal-titulo" style="max-width:26ch;margin-inline:auto">Passo a passo da constru&ccedil;&atilde;o da sua <span style="color:var(--accent)">estrutura online</span></h2>
-        <p class="pricing-lede reveal-apoio">
-          S&atilde;o quatro etapas, e a ordem importa. A maior parte dos sites que d&atilde;o errado
-          pula a primeira e come&ccedil;a escolhendo cor.
-        </p>
+  <!-- SERVICES — o argumento de venda em cinco telas (script "HISTÓRIA").
+       Arco: a dor, o prejuízo que não aparece, a virada, o risco zerado e a
+       pergunta. Todo número aqui sai dos pacotes logo abaixo; se o preço ou o
+       prazo mudar lá, muda aqui também. -->
+  <section id="services" aria-label="Por que a sua empresa precisa de um site">
+
+    <div class="hist-painel" role="group" aria-label="Agora mesmo">
+      <div class="hist-miolo" style="--fundo:#1E5FE0;--tinta:#fff">
+        <p class="hist-rotulo">01 · Agora mesmo</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Ele procurou.<br>Achou outro.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Neste minuto, alguém na sua cidade está digitando no Google exatamente o que você vende. Ele não vai ler dez resultados. Vai abrir os primeiros, escolher o que passa mais confiança e chamar no WhatsApp. Se esse não for você, a venda aconteceu do mesmo jeito. Só que na empresa do lado.</p>
       </div>
+    </div>
 
-      <div class="services-grid reveal-group">
-        <div class="service-item">
-          <div class="service-num">01</div>
-          <div class="service-icone">
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg>
+    <div class="hist-painel" role="group" aria-label="O prejuízo que não aparece">
+      <div class="hist-miolo" style="--fundo:#0B1A33;--tinta:#fff">
+        <p class="hist-rotulo">02 · O prejuízo que não aparece</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Ninguém<br>avisa que<br>desistiu.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Cliente perdido não deixa recado. Não liga para reclamar, não aparece no extrato, não entra em relatório nenhum. Ele só some. Um hoje, outro amanhã, e o seu concorrente, que talvez nem faça melhor que você, fica com o serviço por um motivo só: ele estava lá quando o cliente procurou.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Só Instagram</b>
+            <p>Perfil em rede social não aparece quando alguém pesquisa no Google. E quem chega por lá quer ver endereço, preço e um jeito rápido de falar com você.</p>
           </div>
-          <div class="service-name">Antes de desenhar, a gente entende</div>
-          <p class="service-desc">Ningu&eacute;m come&ccedil;a um site pelo layout. Primeiro a gente descobre o que o seu cliente digita, o que ele precisa ver pra confiar e qual p&aacute;gina fecha a venda. O desenho vem depois disso.</p>
-          <div class="service-onde"><b>O que sai daqui</b><span><em>Mapa de p&aacute;ginas</em><em>Textos</em><em>Refer&ecirc;ncias</em></span></div>
+          <div>
+            <b>Site antigo</b>
+            <p>Página lenta, quebrada no celular ou esquecida desde a inauguração diz ao cliente que a empresa também parou no tempo. Ele fecha a aba em segundos.</p>
+          </div>
+          <div>
+            <b>Só indicação</b>
+            <p>Boca a boca é ótimo, mas depende de alguém lembrar de você na hora certa. O Google está aberto todos os dias, inclusive quando ninguém lembra.</p>
+          </div>
         </div>
+        <hr class="hist-linha">
+        <p class="hist-texto hist-fecho">O problema quase nunca é a qualidade do seu trabalho. É que o cliente decide antes de te conhecer.</p>
+      </div>
+    </div>
 
-        <div class="service-item">
-          <div class="service-num">02</div>
-          <div class="service-icone">
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.8"/><path d="M20.5 20.5l-5-5"/></svg>
+    <div class="hist-painel" role="group" aria-label="O que muda com um site de verdade">
+      <div class="hist-miolo" style="--fundo:#DCE7F2;--tinta:#14296B">
+        <p class="hist-rotulo">03 · O que muda com um site de verdade</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Aparecer.<br>Convencer.<br>Fechar.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Um site bem feito trabalha como o seu melhor vendedor: atende de madrugada, responde a mesma dúvida cem vezes sem perder a paciência e entrega o cliente já decidido no seu WhatsApp.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Aparecer</b>
+            <p>Páginas montadas do jeito que o Google entende, para a sua empresa estar na busca quando o cliente procura pelo que você faz.</p>
           </div>
-          <div class="service-name">Feito pra ser achado</div>
-          <p class="service-desc">Site bonito que ningu&eacute;m encontra &eacute; cart&atilde;o de visita caro. O seu nasce com estrutura de busca, Google Meu Neg&oacute;cio ligado e as p&aacute;ginas na forma que o Google entende.</p>
-          <div class="service-onde"><b>Onde voc&ecirc; passa a aparecer</b><span><em>Pesquisa</em><em>Maps</em><em>Perfil da empresa</em></span></div>
-        </div>
-
-        <div class="service-item">
-          <div class="service-num">03</div>
-          <div class="service-icone">
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.2"/><path d="M3 9h18M6.6 6.5h.01M9.4 6.5h.01"/></svg>
+          <div>
+            <b>Convencer</b>
+            <p>Texto na língua do seu cliente, provas no lugar certo e abertura rápida no celular, que é onde a decisão acontece.</p>
           </div>
-          <div class="service-name">Sob medida, n&atilde;o em template</div>
-          <p class="service-desc">Nada de tema pronto com a sua logo em cima. Cada p&aacute;gina &eacute; montada do zero, abre r&aacute;pido no celular ruim e no 4G fraco, e continua funcionando quando o seu neg&oacute;cio muda.</p>
-        </div>
-
-        <div class="service-item">
-          <div class="service-num">04</div>
-          <div class="service-icone">
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 01-9 8.4 8.5 8.5 0 01-3.9-.9L3 21l1.9-5A8.4 8.4 0 0112 3a8.4 8.4 0 019 8.5z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/></svg>
+          <div>
+            <b>Fechar</b>
+            <p>Botão de WhatsApp e formulário sempre à mão. Quem já decidiu não precisa caçar um jeito de falar com você.</p>
           </div>
-          <div class="service-name">A gente n&atilde;o some depois de publicar</div>
-          <p class="service-desc">No ar n&atilde;o &eacute; o fim. Voc&ecirc; recebe o site medido, sabendo de onde vem cada contato, e com quem chamar quando precisar mudar um pre&ccedil;o, um texto ou uma foto.</p>
         </div>
       </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="Sem letra miúda">
+      <div class="hist-miolo" style="--fundo:#14296B;--tinta:#fff">
+        <p class="hist-rotulo">04 · Sem letra miúda</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Pagou,<br>é seu.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Nada de mensalidade para o site continuar existindo. Você paga uma vez, o site fica com você e ninguém te prende por contrato.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Preço fechado</b>
+            <p>De R$697 a R$1.997, conforme o tamanho da operação. Você sabe o valor antes de começar, sem surpresa no meio do caminho.</p>
+          </div>
+          <div>
+            <b>Prazo combinado</b>
+            <p>De 4 a 15 dias úteis, dependendo do pacote. O seu cliente não espera, e o seu site também não deveria esperar.</p>
+          </div>
+          <div>
+            <b>Gente de verdade depois</b>
+            <p>Precisou trocar um preço, um texto ou uma foto? Você fala direto com quem fez o seu site.</p>
+          </div>
+        </div>
+        <hr class="hist-linha">
+        <p class="hist-texto hist-fecho">Os sites que você viu ali em cima estão no ar agora, trabalhando para clientes da casa.</p>
       </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="A pergunta que importa">
+      <div class="hist-miolo" style="--fundo:#060e28;--tinta:#fff">
+        <p class="hist-rotulo">05 · A pergunta que importa</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">E amanhã?</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Amanhã de manhã, alguém vai pesquisar pelo que você faz. Isso não é possibilidade, é rotina. A única coisa que ainda está em aberto é como essa busca termina.</p>
+        <p class="hist-pergunta">Quando esse cliente procurar, ele vai encontrar <em>a sua empresa</em> ou a do seu concorrente?</p>
+        <div class="hist-acoes">
+          <a href="#sites" class="btn btn-primary mag-btn">
+            Quero ser encontrado
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20vim%20pelo%20site%20e%20quero%20que%20minha%20empresa%20seja%20encontrada%20no%20Google!" class="btn btn-ghost" target="_blank" rel="noopener" onclick="fbq('track', 'Lead')">Conversar no WhatsApp</a>
+        </div>
       </div>
     </div>
   </section>
@@ -5535,116 +5418,74 @@
 
     document.querySelectorAll('.reveal, .reveal-titulo, .reveal-apoio, .reveal-group, .glow-horizonte').forEach(el => io.observe(el));
 
-    // --- PALCO DOS PASSOS: os cartões entram pela direita e empilham ---
-    //
-    // Porte do componente React de timeline horizontal. A conta de cada
-    // cartão é a mesma do original (ver o comentário no CSS); o que muda é
-    // que aqui não existe biblioteca de animação, então o valor vai direto
-    // pro transform, como o hero já faz.
+    // --- HISTÓRIA (#services): porte do "Story scroll" ---
+    // Mesma conta do ScrollTrigger do original:
+    //   giro   painel i>0 entra a 30° e endireita entre "top bottom" e
+    //          "top 25%" (topo dele saindo do pé da tela até 25% dela)
+    //   pin    painel i<último gruda quando o pé dele encosta no pé da tela;
+    //          aqui é sticky com top = altura da tela − altura do painel
+    // Com movimento reduzido nada liga: os painéis ficam em fluxo normal.
     (function () {
-      const palco = document.getElementById('passosPalco');
-      if (!palco) return;
-
-      const trilho  = palco.querySelector('.passos-fixo');
-      const esteira = palco.querySelector('.services-grid');
-      const cartoes = Array.from(esteira.children);
-      const n = cartoes.length;
+      const hist = document.getElementById('services');
+      if (!hist || semMovimento) return;
+      const paineis = Array.from(hist.querySelectorAll('.hist-painel'));
+      const miolos  = paineis.map(p => p.querySelector('.hist-miolo'));
+      const n = paineis.length;
       if (n < 2) return;
 
-      // o quanto cada cartão sobra pra fora do que veio antes dele — 64px é o
-      // valor do original, mas no mobile o cartão é mais largo (86%, não
-      // 70%) e sobra pouco trilho pra empilhar 4 com degrau grande
-      const degrau = () => (window.matchMedia('(max-width: 759px)').matches ? 24 : 64);
+      const toque = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      hist.classList.add('ligada');
+      paineis.forEach((p, i) => { p.style.zIndex = i + 1; });
 
-      // O primeiro pedaço e o último ficam de folga: sem eles o primeiro
-      // cartão já sai andando no instante em que o palco encosta no topo, e o
-      // último para de andar exatamente quando o palco acaba.
-      const INICIO = 0.06, FIM = 0.94;
-      const faixa = (FIM - INICIO) / (n - 1);
-
-      const podeDeck = () => !semMovimento;
-
-      let ligado = false, topo = 0, curso = 1, larguraCartao = 0, larguraTrilho = 0;
-      let pUlt = -1, agendado = false;
-
-      function medir() {
-        // O trilho carrega o título junto com os cartões, então ele é alto. Se
-        // a colagem de 6rem não couber na janela, o pé do bloco fica cortado.
-        // A colagem cede o quanto precisar, MAS o piso é a nav: abaixo dela o
-        // título cola por baixo da barra fixa e some. Numa janela baixa é o pé
-        // do último cartão que é sacrificado, e ali só tem folga vazia.
-        const barra = (nav && nav.offsetHeight) || 77;
-        const folga = window.innerHeight - trilho.offsetHeight - 16;
-        const colagem = Math.max(barra + 8, Math.min(96, folga));
-        trilho.style.top = colagem + 'px';
-
-        // getBoundingClientRect e não offsetTop: o palco está dentro de um
-        // .container, e offsetTop conta a partir do ancestral posicionado, não
-        // do documento. Com offsetTop a faixa inteira sai deslocada.
-        topo = palco.getBoundingClientRect().top + window.scrollY;
-        // o trilho é sticky: ele só encosta quando o palco chega no `top` dele,
-        // então a rolagem útil começa esse tanto antes
-        topo -= colagem;
-        curso = Math.max(1, palco.offsetHeight - trilho.offsetHeight);
-        larguraCartao  = cartoes[0].offsetWidth;
-        larguraTrilho  = trilho.offsetWidth;
-      }
-
-      function pintar() {
-        const p = trava01((window.scrollY - topo) / curso);
-        // Passado o palco o p trava nas pontas: sem esta saída cada quadro de
-        // rolagem do site inteiro reescreveria os mesmos 3 transforms.
-        if (p === pUlt) return;
-        pUlt = p;
-
-        const deg = degrau();
-        for (let i = 1; i < n; i++) {
-          const t = trava01((p - (INICIO + (i - 1) * faixa)) / faixa);
-          // de onde ele entra: a borda direita do trilho, descontada a posição
-          // natural dele na fileira
-          const de = larguraTrilho - larguraCartao * i;
-          // onde ele para: deg * i à frente da borda esquerda
-          const ate = deg * i - larguraCartao * i;
-          cartoes[i].style.transform = 'translate3d(' + (de + (ate - de) * t).toFixed(1) + 'px,0,0)';
+      function colar() {
+        const h = window.innerHeight;
+        for (let i = 0; i < n - 1; i++) {
+          paineis[i].style.top = Math.min(0, h - paineis[i].offsetHeight) + 'px';
         }
       }
 
-      function aoRolar() {
+      const ult = miolos.map(() => -1);
+      const topos = new Array(n);
+      function pintar() {
+        const h = window.innerHeight;
+        // todas as leituras antes de qualquer escrita
+        for (let i = 1; i < n; i++) topos[i] = paineis[i].getBoundingClientRect().top;
+        for (let i = 1; i < n; i++) {
+          const t = trava01((h - topos[i]) / (h * 0.75));
+          const giro = +(30 * (1 - t)).toFixed(2);
+          if (giro === ult[i]) continue;
+          ult[i] = giro;
+          miolos[i].style.transform = giro ? 'rotate(' + giro + 'deg)' : '';
+          // camada própria só enquanto gira: parado, o painel volta a ser pintura comum
+          miolos[i].style.willChange = giro && giro < 30 ? 'transform' : '';
+        }
+      }
+
+      let agendado = false;
+      const aoRolar = () => {
         if (agendado) return;
         agendado = true;
         requestAnimationFrame(() => { agendado = false; pintar(); });
-      }
+      };
 
-      function ligar() {
-        palco.classList.add('deck-ligado');
-        // o reveal escreve transform nos filhos e brigaria com o do palco
-        esteira.classList.remove('reveal-group');
-        esteira.classList.remove('in');
-        cartoes.forEach(c => { c.style.opacity = '1'; });
-        ligado = true;
-        medir(); pUlt = -1; pintar();
-        window.addEventListener('scroll', aoRolar, { passive: true });
-      }
+      let ouvindo = false;
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !ouvindo) { ouvindo = true; window.addEventListener('scroll', aoRolar, { passive: true }); aoRolar(); }
+        else if (!e.isIntersecting && ouvindo) { ouvindo = false; window.removeEventListener('scroll', aoRolar); }
+      }, { rootMargin: '100px 0px' }).observe(hist);
 
-      function desligar() {
-        palco.classList.remove('deck-ligado');
-        trilho.style.top = '';
-        cartoes.forEach(c => { c.style.transform = ''; });
-        ligado = false;
-        window.removeEventListener('scroll', aoRolar);
-      }
-
-      function conferir() {
-        const quer = podeDeck();
-        if (quer && !ligado) ligar();
-        else if (!quer && ligado) desligar();
-        else if (ligado) { medir(); pUlt = -1; pintar(); }
-      }
-
-      conferir();
-      window.addEventListener('resize', conferir, { passive: true });
-      // as fontes mudam a altura do cartão, e a altura do cartão é o curso
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(conferir);
+      colar();
+      pintar();
+      let larguraAntes = window.innerWidth;
+      window.addEventListener('resize', () => {
+        // no celular a barra de endereço muda só a altura: recolar ali faria
+        // o painel grudado dar um salto no meio da rolagem
+        if (toque && window.innerWidth === larguraAntes) return;
+        larguraAntes = window.innerWidth;
+        colar(); ult.fill(-1); pintar();
+      }, { passive: true });
+      // a fonte muda a altura dos painéis, e a altura é quem decide onde colam
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { colar(); pintar(); });
     })();
 
     // --- PALCO DA MARCA: tocha que revela (port do Torch Reveal, MIT) ---
