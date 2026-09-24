@@ -3322,7 +3322,7 @@
       border-radius: var(--pl-raio);
       background: #0c1738;
       transform-origin: 50% 50%;
-      will-change: transform, clip-path;
+      will-change: transform;
       color: inherit;
     }
     .pilha-cartao[data-atras] { pointer-events: none; }
@@ -5432,7 +5432,10 @@
           }
           const inset = ((1 - t) * 10).toFixed(2);
           c.style.transform = 'translate3d(0,' + ((1 - t) * alturaPalco).toFixed(1) + 'px,0) scale(' + (0.6 + t * 0.4).toFixed(4) + ')';
-          c.style.clipPath = t === 1 ? '' : 'inset(' + inset + '% round var(--pl-raio))';
+          // ⚠ recorte só no desktop: clip-path não vai pro compositor e
+          // repinta a foto inteira do card a cada quadro. No celular o card
+          // cresce só com transform, que a GPU faz sozinha.
+          if (!toque) c.style.clipPath = t === 1 ? '' : 'inset(' + inset + '% round var(--pl-raio))';
         }
 
         let novo = 0;
@@ -5844,7 +5847,11 @@ Segmento: ${v.segmento}`;
       const FOLGA_Y = 1 / 3;
       const FOLGA_X = 2 / 3;
 
-      const semMov = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // No toque o shader desenha um quadro só e para. Em laço ele copiava o
+      // canvas WebGL pro 2D a cada quadro (leitura da GPU), e no celular
+      // emulado isso deu 31% de quadros travados nos Planos. Sem mouse não
+      // existe o hover que acelera os arcos, então parado não perde nada.
+      const semMov = window.matchMedia('(prefers-reduced-motion: reduce), (hover: none) and (pointer: coarse)').matches;
       const vivos = [];
 
       alvos.forEach(btn => {
