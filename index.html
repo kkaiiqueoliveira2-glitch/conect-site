@@ -3396,57 +3396,43 @@
        Sem a classe `ligada` (script não rodou) o palco não gruda e os cases
        ficam empilhados um sobre o outro, parados: o último fica visível. */
     .pilha {
-      --pl-fonte: clamp(2.6rem, 12.8vw, 11.5rem);
-      --pl-topo: calc(5.5rem + var(--pl-fonte) * 0.55);
-      --pl-w: min(72vw, calc(100vw - 26rem), 1120px, calc((100svh - var(--pl-topo) - 2rem) * 16 / 9));
+      --pl-w: min(72vw, calc(100vw - 26rem), 1120px, calc((100svh - 15rem) * 16 / 9));
       --pl-h: calc(var(--pl-w) * 9 / 16);
       --pl-raio: 22px;
       position: relative;
     }
     .pilha.ligada { height: calc((var(--n) + 1) * 100svh); }
 
+    /* Sem fundo próprio: o palco é a continuação da seção de cima. Qualquer
+       tom diferente aqui vira uma emenda reta no ponto em que ele começa. */
     .pilha-palco {
       position: relative;
       height: 100svh;
       overflow: hidden;
       display: grid;
       grid-template-columns: 1fr var(--pl-w) 1fr;
-      align-content: start;
+      align-content: center;
       align-items: center;
       column-gap: 1.8rem;
-      /* centrado na tela, mas nunca acima do piso: o card sempre morde o pé
-         do título, que é a assinatura do efeito */
-      padding: max(var(--pl-topo), calc((100svh - var(--pl-h)) / 2)) 0 2rem;
-      background: var(--bg);
+      row-gap: clamp(1.5rem, 3vh, 2.5rem);
+      padding: 6.5rem 0 2rem;
     }
     .pilha.ligada .pilha-palco { position: sticky; top: 0; }
 
-    /* grão de papel do original, sem o multiply: sobre o azul-noite o
-       multiply não aparece. Camada estática, pintada uma vez. */
-    .pilha-palco::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0.07;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    .pilha-titulo {
-      position: absolute;
-      z-index: 2;
-      top: 5.5rem;
-      left: clamp(1rem, 2.4vw, 2.5rem);
+    /* o anúncio dos cases mora dentro do palco e gruda junto com eles */
+    .pilha-ponte {
+      grid-column: 1 / -1;
+      justify-self: center;
       margin: 0;
-      font-size: var(--pl-fonte);
-      font-weight: 400;
-      letter-spacing: -0.035em;
-      line-height: 0.92;
-      text-transform: uppercase;
+      padding-inline: 1rem;
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      text-align: center;
       color: var(--text);
-      pointer-events: none;
     }
+    .pilha-ponte span { color: var(--accent); }
 
     .pilha-nomes,
     .pilha-metas {
@@ -3478,21 +3464,18 @@
       text-transform: uppercase;
       color: var(--accent-hover);
     }
-    /* as quatro legendas moram na mesma célula, uma sobre a outra */
+    /* As quatro legendas moram na mesma célula, uma sobre a outra. A troca
+       entre elas é escrita pelo script a partir do mesmo progresso do card:
+       a que sai some na primeira metade da subida, a que entra aparece na
+       segunda. Sem piscada: o original piscava 4 vezes e lia como falha. */
     .pilha-nomes > *,
     .pilha-metas > * {
       grid-area: 1 / 1;
       margin: 0;
       opacity: 0;
     }
-    .pilha-nomes > [data-ativo],
-    .pilha-metas > [data-ativo] {
-      opacity: 1;
-      animation: pilha-pisca 0.075s steps(1) 4 forwards;
-    }
-    @keyframes pilha-pisca {
-      0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 1; }
-    }
+    .pilha-nomes > :first-child,
+    .pilha-metas > :first-child { opacity: 1; }
 
     .pilha-lista {
       position: relative;
@@ -3597,20 +3580,17 @@
        e o corte daqui acompanha) */
     @media (max-width: 700px) {
       .pilha {
-        --pl-fonte: clamp(2.2rem, 12vw, 3.5rem);
-        --pl-topo: calc(6.25rem + var(--pl-fonte));
-        --pl-w: min(86vw, 640px, calc((100svh - var(--pl-topo) - 9rem) * 2 / 3));
+        --pl-w: min(86vw, 640px, calc((100svh - 20rem) * 2 / 3));
         --pl-h: calc(var(--pl-w) * 3 / 2);
         --pl-raio: 18px;
       }
       .pilha-palco {
         grid-template-columns: 1fr;
         justify-items: center;
-        align-content: center;
         row-gap: 0.9rem;
-        padding: var(--pl-topo) 1rem 1.5rem;
+        padding: 6rem 1rem 1.5rem;
       }
-      .pilha-titulo { top: 6.25rem; left: 1rem; right: 1rem; letter-spacing: -0.02em; }
+      .pilha-ponte { font-size: clamp(1.5rem, 7vw, 2rem); }
       /* aqui a legenda fica no caminho do card que sobe: passa por baixo dele,
          senão o texto corre por cima do print e nenhum dos dois se lê */
       .pilha-nomes,
@@ -3621,8 +3601,6 @@
     /* movimento reduzido: o script troca os cases por corte, sem subir nem
        crescer; a troca de legenda perde a piscada e vira opacidade */
     @media (prefers-reduced-motion: reduce) {
-      .pilha-nomes > [data-ativo],
-      .pilha-metas > [data-ativo] { animation: none; }
       .pilha-cartao { transition: opacity var(--mov-base) var(--curva); }
       .pilha-cartao img { transition: none; }
       .pilha-cartao:hover img { transform: none; }
@@ -3698,9 +3676,9 @@
     </a>
     <ul class="nav-links">
       <li><a href="#work">Trabalhos</a></li>
-      <li><a href="#services">Servi&ccedil;os</a></li>
       <li><a href="#sites">Planos</a></li>
       <li><a href="#about">Sobre</a></li>
+      <li><a href="#services">Servi&ccedil;os</a></li>
       <li><a href="#contact">Contato</a></li>
     </ul>
     <a href="#contact" class="btn btn-primary mag-btn">Iniciar Projeto</a>
@@ -3831,10 +3809,6 @@
           no Google. Pre&ccedil;o fechado, sem mensalidade.
         </p>
         </div>
-
-        <div class="pricing-ponte reveal-apoio">
-          <span><span style="color:var(--accent)">Veja alguns de nossos</span> <span style="color:var(--text)">trabalhos</span></span>
-        </div>
       </div>
 
     </div>
@@ -3844,10 +3818,10 @@
          mesma: o índice amarra os três. -->
     <div class="pilha" id="pilhaTrabalhos" style="--n:4">
       <div class="pilha-palco">
-        <p class="pilha-titulo" aria-hidden="true">Trabalhos</p>
+        <p class="pilha-ponte"><span>Veja alguns de nossos</span> trabalhos</p>
 
         <div class="pilha-nomes" aria-hidden="true">
-          <p data-ativo>Workshop Mídia Comunica, 23 de Maio em Alphaville</p>
+          <p>Workshop Mídia Comunica, 23 de Maio em Alphaville</p>
           <p>Especialistas em cilindros para flexografia, gráfica e processos industriais com alta precisão e confiabilidade</p>
           <p>Loja virtual de cosméticos e maquiagem com experiência de compra premium</p>
           <p>AMC Insider, ecossistema de mentoria e network</p>
@@ -3893,124 +3867,10 @@
         </div>
 
         <div class="pilha-metas" aria-hidden="true">
-          <p data-ativo><b>Site de Evento</b>Mídia Comunica &middot; 2025</p>
+          <p><b>Site de Evento</b>Mídia Comunica &middot; 2025</p>
           <p><b>Site Empresarial</b>Graficon Revestimento &middot; 2025</p>
           <p><b>E-commerce</b>BRmaker &middot; 2025</p>
           <p><b>Landing Page</b>Mídia Comunica &middot; 2026</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICES — o argumento de venda em cinco telas (script "HISTÓRIA").
-       Arco: a dor, o prejuízo que não aparece, a virada, o risco zerado e a
-       pergunta. Todo número aqui sai dos pacotes logo abaixo; se o preço ou o
-       prazo mudar lá, muda aqui também. -->
-  <section id="services" aria-label="Por que a sua empresa precisa de um site">
-
-    <div class="hist-painel" role="group" aria-label="Agora mesmo">
-      <div class="hist-miolo" style="--fundo:#1E5FE0;--tinta:#fff">
-        <p class="hist-rotulo">01 · Agora mesmo</p>
-        <hr class="hist-linha">
-        <h2 class="hist-titulo">Ele procurou.<br>Achou outro.</h2>
-        <hr class="hist-linha">
-        <p class="hist-texto">Neste minuto, alguém na sua cidade está digitando no Google exatamente o que você vende. Ele não vai ler dez resultados. Vai abrir os primeiros, escolher o que passa mais confiança e chamar no WhatsApp. Se esse não for você, a venda aconteceu do mesmo jeito. Só que na empresa do lado.</p>
-      </div>
-    </div>
-
-    <div class="hist-painel" role="group" aria-label="O prejuízo que não aparece">
-      <div class="hist-miolo" style="--fundo:#0B1A33;--tinta:#fff">
-        <p class="hist-rotulo">02 · O prejuízo que não aparece</p>
-        <hr class="hist-linha">
-        <h2 class="hist-titulo">Ninguém<br>avisa que<br>desistiu.</h2>
-        <hr class="hist-linha">
-        <p class="hist-texto">Cliente perdido não deixa recado. Não liga para reclamar, não aparece no extrato, não entra em relatório nenhum. Ele só some. Um hoje, outro amanhã, e o seu concorrente, que talvez nem faça melhor que você, fica com o serviço por um motivo só: ele estava lá quando o cliente procurou.</p>
-        <hr class="hist-linha">
-        <div class="hist-grade">
-          <div>
-            <b>Só Instagram</b>
-            <p>Perfil em rede social não aparece quando alguém pesquisa no Google. E quem chega por lá quer ver endereço, preço e um jeito rápido de falar com você.</p>
-          </div>
-          <div>
-            <b>Site antigo</b>
-            <p>Página lenta, quebrada no celular ou esquecida desde a inauguração diz ao cliente que a empresa também parou no tempo. Ele fecha a aba em segundos.</p>
-          </div>
-          <div>
-            <b>Só indicação</b>
-            <p>Boca a boca é ótimo, mas depende de alguém lembrar de você na hora certa. O Google está aberto todos os dias, inclusive quando ninguém lembra.</p>
-          </div>
-        </div>
-        <hr class="hist-linha">
-        <p class="hist-texto hist-fecho">O problema quase nunca é a qualidade do seu trabalho. É que o cliente decide antes de te conhecer.</p>
-      </div>
-    </div>
-
-    <div class="hist-painel" role="group" aria-label="O que muda com um site de verdade">
-      <div class="hist-miolo" style="--fundo:#DCE7F2;--tinta:#14296B">
-        <p class="hist-rotulo">03 · O que muda com um site de verdade</p>
-        <hr class="hist-linha">
-        <h2 class="hist-titulo">Aparecer.<br>Convencer.<br>Fechar.</h2>
-        <hr class="hist-linha">
-        <p class="hist-texto">Um site bem feito trabalha como o seu melhor vendedor: atende de madrugada, responde a mesma dúvida cem vezes sem perder a paciência e entrega o cliente já decidido no seu WhatsApp.</p>
-        <hr class="hist-linha">
-        <div class="hist-grade">
-          <div>
-            <b>Aparecer</b>
-            <p>Páginas montadas do jeito que o Google entende, para a sua empresa estar na busca quando o cliente procura pelo que você faz.</p>
-          </div>
-          <div>
-            <b>Convencer</b>
-            <p>Texto na língua do seu cliente, provas no lugar certo e abertura rápida no celular, que é onde a decisão acontece.</p>
-          </div>
-          <div>
-            <b>Fechar</b>
-            <p>Botão de WhatsApp e formulário sempre à mão. Quem já decidiu não precisa caçar um jeito de falar com você.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hist-painel" role="group" aria-label="Sem letra miúda">
-      <div class="hist-miolo" style="--fundo:#14296B;--tinta:#fff">
-        <p class="hist-rotulo">04 · Sem letra miúda</p>
-        <hr class="hist-linha">
-        <h2 class="hist-titulo">Pagou,<br>é seu.</h2>
-        <hr class="hist-linha">
-        <p class="hist-texto">Nada de mensalidade para o site continuar existindo. Você paga uma vez, o site fica com você e ninguém te prende por contrato.</p>
-        <hr class="hist-linha">
-        <div class="hist-grade">
-          <div>
-            <b>Preço fechado</b>
-            <p>De R$697 a R$1.997, conforme o tamanho da operação. Você sabe o valor antes de começar, sem surpresa no meio do caminho.</p>
-          </div>
-          <div>
-            <b>Prazo combinado</b>
-            <p>De 4 a 15 dias úteis, dependendo do pacote. O seu cliente não espera, e o seu site também não deveria esperar.</p>
-          </div>
-          <div>
-            <b>Gente de verdade depois</b>
-            <p>Precisou trocar um preço, um texto ou uma foto? Você fala direto com quem fez o seu site.</p>
-          </div>
-        </div>
-        <hr class="hist-linha">
-        <p class="hist-texto hist-fecho">Os sites que você viu ali em cima estão no ar agora, trabalhando para clientes da casa.</p>
-      </div>
-    </div>
-
-    <div class="hist-painel" role="group" aria-label="A pergunta que importa">
-      <div class="hist-miolo" style="--fundo:#060e28;--tinta:#fff">
-        <p class="hist-rotulo">05 · A pergunta que importa</p>
-        <hr class="hist-linha">
-        <h2 class="hist-titulo">E amanhã?</h2>
-        <hr class="hist-linha">
-        <p class="hist-texto">Amanhã de manhã, alguém vai pesquisar pelo que você faz. Isso não é possibilidade, é rotina. A única coisa que ainda está em aberto é como essa busca termina.</p>
-        <p class="hist-pergunta">Quando esse cliente procurar, ele vai encontrar <em>a sua empresa</em> ou a do seu concorrente?</p>
-        <div class="hist-acoes">
-          <a href="#sites" class="btn btn-primary mag-btn">
-            Quero ser encontrado
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-          <a href="https://wa.me/5511989466431?text=Olá,%20vim%20pelo%20site%20e%20quero%20que%20minha%20empresa%20seja%20encontrada%20no%20Google!" class="btn btn-ghost" target="_blank" rel="noopener" onclick="fbq('track', 'Lead')">Conversar no WhatsApp</a>
         </div>
       </div>
     </div>
@@ -4557,6 +4417,120 @@
   <!-- degradê fixo cobrindo a costura entre depoimentos e CTA: independe de
        animação/scroll, então some a linha desde o primeiro paint -->
   <div class="secao-emenda" aria-hidden="true"></div>
+
+  <!-- SERVICES — o argumento de venda em cinco telas (script "HISTÓRIA").
+       Arco: a dor, o prejuízo que não aparece, a virada, o risco zerado e a
+       pergunta. Todo número aqui sai dos pacotes logo abaixo; se o preço ou o
+       prazo mudar lá, muda aqui também. -->
+  <section id="services" aria-label="Por que a sua empresa precisa de um site">
+
+    <div class="hist-painel" role="group" aria-label="Agora mesmo">
+      <div class="hist-miolo" style="--fundo:#1E5FE0;--tinta:#fff">
+        <p class="hist-rotulo">01 · Agora mesmo</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Ele procurou.<br>Achou outro.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Neste minuto, alguém na sua cidade está digitando no Google exatamente o que você vende. Ele não vai ler dez resultados. Vai abrir os primeiros, escolher o que passa mais confiança e chamar no WhatsApp. Se esse não for você, a venda aconteceu do mesmo jeito. Só que na empresa do lado.</p>
+      </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="O prejuízo que não aparece">
+      <div class="hist-miolo" style="--fundo:#0B1A33;--tinta:#fff">
+        <p class="hist-rotulo">02 · O prejuízo que não aparece</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Ninguém<br>avisa que<br>desistiu.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Cliente perdido não deixa recado. Não liga para reclamar, não aparece no extrato, não entra em relatório nenhum. Ele só some. Um hoje, outro amanhã, e o seu concorrente, que talvez nem faça melhor que você, fica com o serviço por um motivo só: ele estava lá quando o cliente procurou.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Só Instagram</b>
+            <p>Perfil em rede social não aparece quando alguém pesquisa no Google. E quem chega por lá quer ver endereço, preço e um jeito rápido de falar com você.</p>
+          </div>
+          <div>
+            <b>Site antigo</b>
+            <p>Página lenta, quebrada no celular ou esquecida desde a inauguração diz ao cliente que a empresa também parou no tempo. Ele fecha a aba em segundos.</p>
+          </div>
+          <div>
+            <b>Só indicação</b>
+            <p>Boca a boca é ótimo, mas depende de alguém lembrar de você na hora certa. O Google está aberto todos os dias, inclusive quando ninguém lembra.</p>
+          </div>
+        </div>
+        <hr class="hist-linha">
+        <p class="hist-texto hist-fecho">O problema quase nunca é a qualidade do seu trabalho. É que o cliente decide antes de te conhecer.</p>
+      </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="O que muda com um site de verdade">
+      <div class="hist-miolo" style="--fundo:#DCE7F2;--tinta:#14296B">
+        <p class="hist-rotulo">03 · O que muda com um site de verdade</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Aparecer.<br>Convencer.<br>Fechar.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Um site bem feito trabalha como o seu melhor vendedor: atende de madrugada, responde a mesma dúvida cem vezes sem perder a paciência e entrega o cliente já decidido no seu WhatsApp.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Aparecer</b>
+            <p>Páginas montadas do jeito que o Google entende, para a sua empresa estar na busca quando o cliente procura pelo que você faz.</p>
+          </div>
+          <div>
+            <b>Convencer</b>
+            <p>Texto na língua do seu cliente, provas no lugar certo e abertura rápida no celular, que é onde a decisão acontece.</p>
+          </div>
+          <div>
+            <b>Fechar</b>
+            <p>Botão de WhatsApp e formulário sempre à mão. Quem já decidiu não precisa caçar um jeito de falar com você.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="Sem letra miúda">
+      <div class="hist-miolo" style="--fundo:#14296B;--tinta:#fff">
+        <p class="hist-rotulo">04 · Sem letra miúda</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">Pagou,<br>é seu.</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Nada de mensalidade para o site continuar existindo. Você paga uma vez, o site fica com você e ninguém te prende por contrato.</p>
+        <hr class="hist-linha">
+        <div class="hist-grade">
+          <div>
+            <b>Preço fechado</b>
+            <p>De R$697 a R$1.997, conforme o tamanho da operação. Você sabe o valor antes de começar, sem surpresa no meio do caminho.</p>
+          </div>
+          <div>
+            <b>Prazo combinado</b>
+            <p>De 4 a 15 dias úteis, dependendo do pacote. O seu cliente não espera, e o seu site também não deveria esperar.</p>
+          </div>
+          <div>
+            <b>Gente de verdade depois</b>
+            <p>Precisou trocar um preço, um texto ou uma foto? Você fala direto com quem fez o seu site.</p>
+          </div>
+        </div>
+        <hr class="hist-linha">
+        <p class="hist-texto hist-fecho">Os sites que você viu ali em cima estão no ar agora, trabalhando para clientes da casa.</p>
+      </div>
+    </div>
+
+    <div class="hist-painel" role="group" aria-label="A pergunta que importa">
+      <div class="hist-miolo" style="--fundo:#060e28;--tinta:#fff">
+        <p class="hist-rotulo">05 · A pergunta que importa</p>
+        <hr class="hist-linha">
+        <h2 class="hist-titulo">E amanhã?</h2>
+        <hr class="hist-linha">
+        <p class="hist-texto">Amanhã de manhã, alguém vai pesquisar pelo que você faz. Isso não é possibilidade, é rotina. A única coisa que ainda está em aberto é como essa busca termina.</p>
+        <p class="hist-pergunta">Quando esse cliente procurar, ele vai encontrar <em>a sua empresa</em> ou a do seu concorrente?</p>
+        <div class="hist-acoes">
+          <a href="#contact" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+            Quero ser encontrado
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20vim%20pelo%20site%20e%20quero%20que%20minha%20empresa%20seja%20encontrada%20no%20Google!" class="btn btn-ghost" target="_blank" rel="noopener" onclick="fbq('track', 'Lead')">Conversar no WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- CTA -->
   <section class="cta-section" id="contact">
@@ -5749,7 +5723,7 @@
 
       const local = (p, i) => i === 0 ? 1 : trava01((p - (i - 1) / (n - 1)) * (n - 1));
 
-      const ult = cartoes.map(() => -1), ultVeu = veus.map(() => -1);
+      const ult = cartoes.map(() => -1), ultVeu = veus.map(() => -1), ultLeg = cartoes.map(() => -1);
       let ativo = -1;
 
       function aplicar(p) {
@@ -5778,10 +5752,25 @@
           cartoes[i].toggleAttribute('data-atras', proximo > (corte ? 0.5 : 0.07));
         }
 
-        if (novo !== ativo) {
-          ativo = novo;
-          nomes.forEach((el, i) => el.toggleAttribute('data-ativo', i === ativo));
-          metas.forEach((el, i) => el.toggleAttribute('data-ativo', i === ativo));
+        ativo = novo;
+
+        // legenda: a que sai some e sobe na primeira metade da subida do card
+        // seguinte; a que entra aparece e assenta na segunda metade
+        for (let i = 0; i < n; i++) {
+          let op, y;
+          if (corte) { op = i === ativo ? 1 : 0; y = 0; }
+          else {
+            const entra = i === 0 ? 1 : trava01((local(p, i) - 0.5) * 2);
+            const sai = i < n - 1 ? trava01(local(p, i + 1) * 2) : 0;
+            op = entra * (1 - sai);
+            y = (1 - entra) * 14 - sai * 14;
+          }
+          const chave = Math.round(op * 1000) * 1000 + Math.round(y * 10);
+          if (chave === ultLeg[i]) continue;
+          ultLeg[i] = chave;
+          const tr = y ? 'translate3d(0,' + y.toFixed(1) + 'px,0)' : '';
+          nomes[i].style.opacity = metas[i].style.opacity = op.toFixed(3);
+          nomes[i].style.transform = metas[i].style.transform = tr;
         }
       }
 
@@ -5829,7 +5818,7 @@
         // no celular a barra de endereço muda só a altura; o palco é svh e não mexe
         if (toque && window.innerWidth === larguraAntes) return;
         larguraAntes = window.innerWidth;
-        medir(); ult.fill(-1); ultVeu.fill(-1); aplicar(atual);
+        medir(); ult.fill(-1); ultVeu.fill(-1); ultLeg.fill(-1); aplicar(atual);
       }, { passive: true });
     })();
 
