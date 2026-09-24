@@ -3341,22 +3341,57 @@
       .pilha-cartao:hover img { transform: scale(1.1); }
     }
 
+    /* Porte do "Motion Button" (21st.dev): o círculo da seta cresce até
+       ocupar a pílula inteira. Aqui o gatilho é o hover do card todo, que é
+       o link; o botão é só o sinal de que dá pra clicar. */
     .pilha-ver {
       position: absolute;
       z-index: 6;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      padding: 0.45rem 1rem;
+      width: 11.5rem;
+      padding: 4px;
       border-radius: 999px;
-      background: rgba(6, 14, 40, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(6, 14, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       color: #fff;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
       pointer-events: none;
+    }
+    .pilha-ver-circulo {
+      display: block;
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pilha-ver-seta {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      display: flex;
+      transform: translateY(-50%);
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pilha-ver-texto {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: 1rem;
+      transform: translate(-50%, -50%);
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .pilha-cartao:hover .pilha-ver-circulo,
+    .pilha-cartao:focus-visible .pilha-ver-circulo { width: 100%; }
+    .pilha-cartao:hover .pilha-ver-seta,
+    .pilha-cartao:focus-visible .pilha-ver-seta { transform: translate(0.4rem, -50%); }
+    @media (prefers-reduced-motion: reduce) {
+      .pilha-ver-circulo,
+      .pilha-ver-seta { transition: none; }
     }
 
     .pilha-veu {
@@ -3662,7 +3697,7 @@
               <source srcset="workshop-midia-comunica.webp" type="image/webp">
               <img src="workshop-midia-comunica.png" alt="" loading="lazy" decoding="async">
             </picture>
-            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-ver" aria-hidden="true"><span class="pilha-ver-circulo"></span><span class="pilha-ver-seta"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><span class="pilha-ver-texto">Ver site</span></span>
             <span class="pilha-veu"></span>
           </a>
           <a class="pilha-cartao" href="https://graficonrevestimento.com/" target="_blank" rel="noopener" aria-label="Site Empresarial: Graficon Revestimento, especialistas em cilindros para flexografia, gráfica e processos industriais. 2025">
@@ -3671,7 +3706,7 @@
               <source srcset="graficon-revestimento.webp" type="image/webp">
               <img src="graficon-revestimento.png" alt="" loading="lazy" decoding="async">
             </picture>
-            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-ver" aria-hidden="true"><span class="pilha-ver-circulo"></span><span class="pilha-ver-seta"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><span class="pilha-ver-texto">Ver site</span></span>
             <span class="pilha-veu"></span>
           </a>
           <a class="pilha-cartao" href="https://www.lojabrmake.com.br/" target="_blank" rel="noopener" aria-label="E-commerce: BRmaker, loja virtual de cosméticos e maquiagem. 2025">
@@ -3680,7 +3715,7 @@
               <source srcset="brmaker-cosmeticos.webp" type="image/webp">
               <img src="brmaker-cosmeticos.png" alt="" loading="lazy" decoding="async">
             </picture>
-            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-ver" aria-hidden="true"><span class="pilha-ver-circulo"></span><span class="pilha-ver-seta"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><span class="pilha-ver-texto">Ver site</span></span>
             <span class="pilha-veu"></span>
           </a>
           <a class="pilha-cartao" href="https://amcinsider.midiacomunica.com/" target="_blank" rel="noopener" aria-label="Landing Page: AMC Insider, ecossistema de mentoria e network da Mídia Comunica. 2026">
@@ -3689,7 +3724,7 @@
               <source srcset="amc-insider.webp" type="image/webp">
               <img src="amc-insider.jpg" alt="" loading="lazy" decoding="async">
             </picture>
-            <span class="pilha-ver" aria-hidden="true">Ver site</span>
+            <span class="pilha-ver" aria-hidden="true"><span class="pilha-ver-circulo"></span><span class="pilha-ver-seta"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><span class="pilha-ver-texto">Ver site</span></span>
             <span class="pilha-veu"></span>
           </a>
         </div>
