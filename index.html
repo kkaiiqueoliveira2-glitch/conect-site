@@ -40,10 +40,20 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#060e28">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#021950">
+  <!-- Outfit em arquivos estáticos por peso, servidos daqui. A versão do Google
+       é variável e, em WebKit sem suporte a eixo variável, tudo sai no peso
+       fino (visto no iPhone em 27/09/2026, no painel de clientes). -->
+  <link rel="preload" href="fontes/outfit-800.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fontes/outfit-300.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face{font-family:Outfit;font-style:normal;font-weight:300;font-display:swap;src:url(fontes/outfit-300.woff2) format("woff2")}
+    @font-face{font-family:Outfit;font-style:normal;font-weight:400;font-display:swap;src:url(fontes/outfit-400.woff2) format("woff2")}
+    @font-face{font-family:Outfit;font-style:normal;font-weight:500;font-display:swap;src:url(fontes/outfit-500.woff2) format("woff2")}
+    @font-face{font-family:Outfit;font-style:normal;font-weight:600;font-display:swap;src:url(fontes/outfit-600.woff2) format("woff2")}
+    @font-face{font-family:Outfit;font-style:normal;font-weight:700;font-display:swap;src:url(fontes/outfit-700.woff2) format("woff2")}
+    @font-face{font-family:Outfit;font-style:normal;font-weight:800 900;font-display:swap;src:url(fontes/outfit-800.woff2) format("woff2")}
+  </style>
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -83,18 +93,38 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #060e28;
-      --surface: #0b1840;
-      --surface-2: #0f2057;
-      --border: rgba(255,255,255,0.09);
-      --border-light: rgba(255,255,255,0.04);
-      --text: #ffffff;
-      --text-muted: rgba(255,255,255,0.52);
-      --text-dim: rgba(255,255,255,0.15);
-      --accent: #1E5FE0;
-      --accent-soft: rgba(30,95,224,0.14);
-      --accent-hover: #4C86F5;
-      --accent-line: rgba(30,95,224,0.30);
+      /* PALETA CONECT+ (27/09/2026): três azuis e três neutros, mais nada.
+         O azul 800 é de PREENCHIMENTO (botão, selo, card). Como texto em
+         cima do 950 ele some (dois azuis escuros), então destaque escrito
+         no escuro sai em neutro claro, pelo --accent-texto. */
+      --a800: #0043DF;
+      --a900: #0038AE;
+      --a950: #021950;
+      --n50: #FAFAFA;
+      --n100: #F5F5F5;
+      --n200: #E6E6E6;
+
+      --bg: var(--a950);
+      --surface: #0A2262;
+      --surface-2: #0D2B75;
+      --border: rgba(250,250,250,0.10);
+      --border-light: rgba(250,250,250,0.05);
+      --text: var(--n50);
+      --text-muted: rgba(250,250,250,0.58);
+      --text-dim: rgba(250,250,250,0.16);
+      --accent: var(--a800);
+      --accent-soft: rgba(0,67,223,0.16);
+      --accent-hover: var(--a900);
+      --accent-line: rgba(0,67,223,0.32);
+      --accent-texto: var(--n200);
+
+      /* vidro do painel de clientes: card translúcido, reflexo na diagonal
+         e sombra funda. Sem backdrop-filter: atrás dos cards só há o fundo
+         liso, desfocar ele não muda nada na tela e custaria GPU no celular. */
+      --vidro: rgba(250,250,250,0.055);
+      --vidro-borda: rgba(250,250,250,0.14);
+      --vidro-brilho: rgba(250,250,250,0.22);
+      --sombra-vidro: 0 1px 0 rgba(250,250,250,0.14) inset, 0 30px 70px -12px rgba(1,8,30,0.6), 0 10px 24px -8px rgba(1,8,30,0.45);
       --green: #4ade80;
       /* Erro tinha a mesma cor do foco (o azul da marca). Campo em foco e
          campo errado ficavam idênticos, e a pessoa não sabia qual era qual. */
@@ -148,6 +178,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      font-weight: 300;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
@@ -178,7 +209,7 @@
 
     .heading {
       font-size: clamp(2rem, 4vw, 4rem);
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -0.03em;
       line-height: 1.1;
     }
@@ -226,7 +257,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(30,95,224,0.30);
+      box-shadow: 0 12px 28px rgba(0, 67, 223,0.30);
     }
 
     .btn-ghost {
@@ -292,7 +323,7 @@
       border-color: transparent;
       box-shadow: none;
       color: #eaf1ff;
-      text-shadow: 0 0 12px rgba(30, 95, 224, .65), 0 1px 4px rgba(0, 0, 0, .8);
+      text-shadow: 0 0 12px rgba(0, 67, 223, .65), 0 1px 4px rgba(0, 0, 0, .8);
     }
     /* o levantar de 2px do hover continua: é o do próprio componente de origem */
     .btn.gl-ativo:hover { transform: translateY(-2px); }
@@ -334,7 +365,7 @@
       top: 0.75rem;
       max-width: min(1040px, calc(100% - 2.5rem));
       border-radius: 999px;
-      background: rgba(6,14,40,0.72);
+      background: rgba(2, 25, 80,0.72);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       /* pílula fechada: borda nos quatro lados, não só embaixo (isso fazia
@@ -365,7 +396,7 @@
        caixa, então a sobra à direita não desloca nada. */
     .nav-logo-imgs {
       position: relative;
-      width: 120px;   /* largura do wordmark, que é o mais largo dos dois */
+      width: 136px;   /* largura do wordmark, que é o mais largo dos dois */
       height: 38px;
     }
 
@@ -435,13 +466,13 @@
       position: absolute;
       inset: 0;
       z-index: 0;
+      background: var(--a950);
     }
 
     .hero-teia canvas {
       display: block;
       width: 100%;
       height: 100%;
-      cursor: crosshair;
     }
 
     /* Véu sobre a malha, pro texto ter contraste. Mais leve que o do vídeo:
@@ -451,8 +482,8 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 55% at 50% 45%, rgba(6,14,40,0.58) 0%, rgba(6,14,40,0.22) 55%, transparent 100%),
-        linear-gradient(to bottom, rgba(6,14,40,0.42) 0%, rgba(6,14,40,0.06) 30%, rgba(6,14,40,0.16) 70%, rgba(6,14,40,0.74) 100%);
+        radial-gradient(ellipse 70% 55% at 50% 45%, rgba(2, 25, 80,0.42) 0%, rgba(2, 25, 80,0.14) 55%, transparent 100%),
+        linear-gradient(to bottom, rgba(2, 25, 80,0.42) 0%, rgba(2, 25, 80,0.06) 30%, rgba(2, 25, 80,0.16) 70%, rgba(2, 25, 80,0.74) 100%);
       pointer-events: none;
       /* Camada própria. O véu não muda nunca, mas fica por cima de um canvas
          que se repinta todo quadro: sem promover, ele era redesenhado junto.
@@ -532,6 +563,9 @@
       background: linear-gradient(to bottom, var(--text-muted), transparent);
       animation: scroll-line 1.8s ease-in-out infinite;
     }
+    /* sumiu da vista, para: rodando escondida ela mantinha a página
+       produzindo quadro a visita inteira */
+    .scroll-hint.longe .scroll-hint-line { animation-play-state: paused; }
 
     @keyframes scroll-line {
       0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
@@ -593,6 +627,10 @@
       text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.75);
     }
 
+    /* palavra de destaque: Light itálico, como no h1 do hero */
+    .hero-intro-title em { font-style: italic; font-weight: 300; color: var(--text-muted); }
+    .hero-intro-title em .char { font-weight: 300; color: var(--text-muted); padding-right: 0.02em; }
+
     .hero-intro-title .char-sp {
       display: inline-block;
       width: 0.28em;
@@ -621,30 +659,7 @@
     .hero-item.hero-item-letras,
     .hero-item.hero-item-letras.visible { transform: none; }
 
-    .hero-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.625rem;
-      padding: 0.4rem 0.9rem;
-      background: var(--accent-soft);
-      border: 1px solid rgba(30,95,224,0.28);
-      border-radius: 99px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      width: fit-content;
-    }
 
-    .hero-label::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px rgba(74,222,128,0.6);
-      animation: ponto-entra 260ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
-    }
 
     /* ---- PONTOS DE STATUS ----
        Aqui piscavam dois pontos, com o mesmo keyframe, em lugares diferentes
@@ -696,91 +711,15 @@
     .hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
     /* Hero Visual */
-    .hero-visual {
-      position: relative;
-      height: 620px;
-      z-index: 1;
-    }
 
-    .hero-img-main {
-      position: absolute;
-      top: 0; right: 0;
-      width: 88%;
-      height: 490px;
-      border-radius: 1.5rem;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--surface);
-    }
 
-    .hero-img-main img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      opacity: 0.8;
-      transition: transform 8s ease-out;
-    }
 
-    .hero-img-main:hover img { transform: scale(1.03); }
 
-    .hero-img-secondary {
-      position: absolute;
-      bottom: 0; left: 0;
-      width: 52%;
-      height: 230px;
-      border-radius: 1.25rem;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      padding: 1.75rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
 
-    .metric {
-      font-size: 2.75rem;
-      font-weight: 800;
-      letter-spacing: -0.05em;
-      color: var(--text);
-      line-height: 1;
-    }
 
-    .metric-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-top: 0.375rem;
-    }
 
-    .hero-badge {
-      position: absolute;
-      top: 2.5rem; left: -0.75rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 0.875rem 1.125rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      z-index: 10;
-      /* O `float` que balançava esse cartão pra sempre saiu. Ele não indicava
-         nada: era um retângulo de dado real subindo e descendo 10px em laço,
-         concorrendo por atenção com o próprio número que ele mostra.
 
-         SEM backdrop-filter aqui. O `background: var(--surface)` é #0b1840
-         opaco, então o blur ficava atrás de uma parede e não aparecia em
-         pixel nenhum. Esse motivo continua valendo mesmo com o cartão parado. */
-    }
 
-    .badge-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 10px rgba(74,222,128,0.5);
-      flex-shrink: 0;
-      animation: ponto-entra 260ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
-    }
-
-    .badge-text { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-    .badge-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem; }
 
     /* A esteira de termos morava aqui, logo abaixo do hero, e foi substituída
        pela esteira de marcas (regra .marcas). O CSS dela saiu junto: .termo só
@@ -803,7 +742,7 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--accent-texto);
       margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
@@ -909,7 +848,7 @@
       line-height: 1.1;
       letter-spacing: -0.025em;
     }
-    .hist-pergunta em { font-style: normal; color: var(--accent-hover); }
+    .hist-pergunta em { font-style: italic; font-weight: 300; color: inherit; opacity: 0.72; }
     .hist-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; }
     /* no celular o space-between do original abre buracos de meia tela nos
        painéis curtos: o bloco fica junto e centrado */
@@ -968,7 +907,8 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--accent-texto);
+      opacity: 0.8;
     }
 
     .pricing-name {
@@ -1026,7 +966,7 @@
 
     .pricing-features li::before {
       content: '→';
-      color: var(--accent);
+      color: var(--n50);
       font-size: 0.75rem;
       margin-top: 0.15rem;
       flex-shrink: 0;
@@ -1188,37 +1128,11 @@
        qualquer largura, não pesa um byte de imagem no carregamento e continua
        legível no celular, coisa que print de dashboard nunca faz. */
 
-    .rel-lede {
-      margin-top: 1.5rem;
-      max-width: 60ch;
-      margin-left: auto;
-      margin-right: auto;
-      color: var(--text-muted);
-      font-size: 1rem;
-      line-height: 1.75;
-    }
-    .rel-lede strong { color: var(--text); font-weight: 600; }
 
-    .rel-lista {
-      list-style: none;
-      margin-top: var(--vao-g);
-      display: grid;
-      gap: 1.5rem;
-    }
-    @media (min-width: 760px)  { .rel-lista { grid-template-columns: 1fr 1fr; gap: 1.5rem 3rem; } }
-    @media (min-width: 1180px) { .rel-lista { grid-template-columns: repeat(4, 1fr); gap: 2rem; } }
+    
+    
 
-    .rel-lista li {
-      display: flex;
-      gap: 0.8rem;
-      font-size: 0.88rem;
-      line-height: 1.65;
-      color: var(--text-muted);
-    }
-    .rel-lista svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
-    .rel-lista b { color: var(--text); font-weight: 600; }
 
-    .rel-fecho { text-align: center; margin-top: var(--vao-g); }
 
     /* ---- a peça ---- */
     .painel {
@@ -1235,184 +1149,24 @@
     @media (min-width: 1024px) { .painel { grid-template-columns: 212px minmax(0, 1fr); } }
 
     /* barra lateral: some no celular, como em dashboard de verdade */
-    .painel-barra { display: none; }
-    @media (min-width: 1024px) {
-      .painel-barra {
-        display: flex;
-        flex-direction: column;
-        padding: 1.35rem 1rem 1.25rem;
-        border-right: 1px solid var(--border);
-        background: rgba(2, 6, 22, 0.32);
-      }
-    }
+    
 
-    .painel-marca {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0 0.5rem 1.5rem;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
-    .painel-marca i {
-      width: 24px; height: 24px;
-      flex-shrink: 0;
-      border-radius: 8px;
-      background: var(--accent);
-      display: grid;
-      place-items: center;
-      color: #fff;
-    }
 
-    .painel-menu { display: grid; gap: 0.15rem; }
-    .painel-menu span {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0.5rem 0.6rem;
-      border-radius: 9px;
-      font-size: 0.79rem;
-      color: var(--text-muted);
-    }
-    .painel-menu span svg { flex-shrink: 0; opacity: 0.75; }
-    .painel-menu span.atual {
-      background: rgba(30, 95, 224, 0.18);
-      color: #fff;
-      font-weight: 600;
-    }
-    .painel-menu span.atual svg { opacity: 1; color: var(--accent-hover); }
 
-    .painel-usuario {
-      margin-top: auto;
-      padding-top: 1.1rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .painel-usuario i {
-      width: 30px; height: 30px;
-      flex-shrink: 0;
-      border-radius: 50%;
-      background: linear-gradient(140deg, var(--accent), #7BA6F8);
-      display: grid;
-      place-items: center;
-      font-size: 0.68rem;
-      font-weight: 800;
-      font-style: normal;
-      color: #fff;
-    }
-    .painel-usuario b { display: block; font-size: 0.76rem; font-weight: 600; color: var(--text); }
-    .painel-usuario span { display: block; font-size: 0.67rem; color: var(--text-muted); }
 
     /* ---- corpo ---- */
-    .painel-corpo { padding: 1.25rem; min-width: 0; }
-    @media (min-width: 620px) { .painel-corpo { padding: 1.5rem; } }
+    
 
-    .painel-topo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .painel-titulo { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
-    .painel-titulo span { display: block; font-size: 0.74rem; font-weight: 400; color: var(--text-muted); margin-top: 0.2rem; }
 
-    .painel-acoes { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
-    .painel-busca {
-      display: none;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 0.74rem;
-      color: var(--text-muted);
-      background: rgba(2, 6, 22, 0.3);
-    }
-    @media (min-width: 620px) { .painel-busca { display: flex; } }
-    .painel-sino {
-      position: relative;
-      width: 30px; height: 30px;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: var(--text-muted);
-    }
-    .painel-sino::after {
-      content: '';
-      position: absolute;
-      top: 4px; right: 5px;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #f0616d;
-      border: 1.5px solid var(--surface);
-    }
+    
 
     /* ---- indicadores ---- */
-    .painel-kpis {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
-      margin-top: 1.25rem;
-    }
-    @media (min-width: 860px) { .painel-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    
 
-    .kpi {
-      position: relative;
-      padding: 0.9rem 0.9rem 0.95rem;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 0.85rem;
-    }
-    .kpi > span {
-      display: block;
-      font-size: 0.61rem;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-      padding-right: 30px;
-    }
-    .kpi b { display: block; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.025em; color: var(--text); }
-    .kpi em {
-      display: block;
-      margin-top: 0.35rem;
-      font-style: normal;
-      font-size: 0.67rem;
-      font-weight: 600;
-      color: var(--green);
-    }
-    .kpi em.neutro { color: var(--text-muted); font-weight: 500; }
-    .kpi i {
-      position: absolute;
-      top: 0.8rem; right: 0.8rem;
-      width: 26px; height: 26px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      background: rgba(30, 95, 224, 0.16);
-      color: var(--accent-hover);
-    }
-    .kpi-destaque { border-color: rgba(30, 95, 224, 0.4); background: rgba(30, 95, 224, 0.12); }
-    .kpi-destaque b { color: var(--accent-hover); }
 
     /* ---- gráficos e listas ---- */
-    .painel-duplo {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-    @media (min-width: 860px) { .painel-duplo { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
-    .painel-duplo.igual { grid-template-columns: minmax(0, 1fr); }
-    @media (min-width: 860px) { .painel-duplo.igual { grid-template-columns: 1fr 1fr; } }
+    
+    
 
     .quadro {
       padding: 1rem 1.1rem 1.15rem;
@@ -1421,88 +1175,11 @@
       border-radius: 0.85rem;
       min-width: 0;
     }
-    .quadro-topo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    .quadro-topo h4 { font-size: 0.82rem; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
-    .quadro-topo span {
-      font-size: 0.66rem;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.2rem 0.55rem;
-      white-space: nowrap;
-    }
 
     /* linha: escala em HTML e traçado em SVG. Assim o preserveAspectRatio pode
        esticar o desenho sem esticar número nenhum. */
-    .grafico { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 0.5rem; }
-    .grafico-escala {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      font-size: 0.58rem;
-      color: var(--text-muted);
-      text-align: right;
-      height: 128px;
-      padding: 2px 0;
-    }
-    .grafico svg { width: 100%; height: 128px; display: block; overflow: visible; }
-    .grafico-meses {
-      grid-column: 2;
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-      font-size: 0.6rem;
-      color: var(--text-muted);
-    }
 
-    .rosca { display: flex; align-items: center; gap: 1.15rem; }
-    .rosca svg { width: 116px; height: 116px; flex-shrink: 0; }
-    .rosca-legenda { display: grid; gap: 0.5rem; min-width: 0; flex: 1; }
-    .rosca-legenda div {
-      display: grid;
-      grid-template-columns: 9px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 0.55rem;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-    .rosca-legenda i { width: 9px; height: 9px; border-radius: 3px; }
-    .rosca-legenda b { font-weight: 700; color: var(--text); font-size: 0.74rem; }
 
-    .lista-painel { display: grid; gap: 0.65rem; }
-    .lista-painel > div {
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 0.7rem;
-    }
-    .lista-painel i {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-style: normal;
-      font-size: 0.64rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(140deg, rgba(30, 95, 224, 0.9), rgba(123, 166, 248, 0.85));
-    }
-    .lista-painel i.tarefa { background: rgba(30, 95, 224, 0.16); color: var(--accent-hover); }
-    .lista-painel b { display: block; font-size: 0.76rem; font-weight: 600; color: var(--text); }
-    .lista-painel span {
-      display: block;
-      font-size: 0.67rem;
-      color: var(--text-muted);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
     .selo {
       font-size: 0.6rem;
       font-weight: 700;
@@ -1512,24 +1189,9 @@
       border-radius: 999px;
       white-space: nowrap;
     }
-    .selo-quente { background: rgba(74, 222, 128, 0.14); color: var(--green); }
-    .selo-morno  { background: rgba(30, 95, 224, 0.18); color: var(--accent-hover); }
-    .selo-frio   { background: rgba(255, 255, 255, 0.07); color: var(--text-muted); }
 
-    .painel-nota {
-      margin-top: var(--vao);
-      text-align: center;
-      font-size: 0.72rem;
-      line-height: 1.55;
-      color: var(--text-muted);
-      opacity: 0.8;
-    }
 
-    @media (max-width: 620px) {
-      .kpi b { font-size: 1.05rem; }
-      .rosca { flex-direction: column; align-items: stretch; gap: 1rem; }
-      .rosca svg { align-self: center; }
-    }
+    
 
     /* ---- TOPO DE SEÇÃO CENTRALIZADO ----
        Usado nos planos, nos pacotes de site e nos trabalhos. O nome
@@ -1630,7 +1292,7 @@
       text-align: center;
     }
     .pricing-ponte svg {
-      color: var(--accent);
+      color: var(--accent-texto);
     }
 
     /* A ponte anuncia os cases, que são faixas de ponta a ponta: fica no meio
@@ -1642,19 +1304,6 @@
 
     /* Título de apresentação dos trabalhos: o que vem depois são faixas de
        tela cheia, e antes elas entravam sem ninguém anunciar. */
-    .trabalhos-topo {
-      text-align: center;
-      margin-top: clamp(3.5rem, 6vw, 5.5rem);
-    }
-    .trabalhos-topo .section-tag { justify-content: center; }
-    .trabalhos-topo h2 { margin: 0 auto; max-width: 22ch; }
-    .trabalhos-topo p {
-      margin: 1.1rem auto 0;
-      max-width: 46ch;
-      color: var(--text-muted);
-      font-size: 1.02rem;
-      line-height: 1.65;
-    }
 
     /* ---- PALCO DOS PLANOS ----
        Tradução do componente React de referência. Lá o efeito inteiro vem de
@@ -1704,106 +1353,19 @@
     }
 
     /* ---- COMPARADOR BÁSICO x PREMIUM ---- */
-    .comp-head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
-    }
 
-    .comp-toggle {
-      display: inline-flex;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 4px;
-      gap: 2px;
-    }
 
-    .comp-toggle button {
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-      color: var(--text-muted);
-      background: transparent;
-      border: 0;
-      border-radius: 99px;
-      padding: 0.6rem 1.2rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background var(--mov-base) var(--curva), color var(--mov-base) var(--curva);
-    }
 
-    .comp-toggle button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 
-    .comp-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface);
-    }
 
-    table.comp { border-collapse: collapse; width: 100%; min-width: 560px; }
 
-    table.comp th, table.comp td {
-      padding: 1.05rem 1.4rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-light);
-    }
 
-    table.comp thead th {
-      font-size: 0.66rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 600;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-    }
 
-    table.comp thead th b {
-      display: block;
-      font-size: 1.05rem;
-      letter-spacing: -0.02em;
-      text-transform: none;
-      color: var(--text);
-      margin-top: 0.3rem;
-      font-weight: 700;
-    }
 
-    table.comp thead th.is-prem { color: var(--accent); }
-    table.comp thead th.is-prem b { color: var(--accent); }
 
-    table.comp tbody th { font-weight: 400; color: var(--text); font-size: 0.92rem; }
-    table.comp td { text-align: center; width: 21%; color: var(--text-muted); font-size: 0.88rem; }
-    table.comp tbody tr:last-child th, table.comp tbody tr:last-child td { border-bottom: 0; }
-    table.comp tbody tr.only-prem { background: var(--accent-soft); }
-    table.comp tbody tr[hidden] { display: none; }
 
-    .tick { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
-    .dash { font-size: 1.05rem; color: var(--text-dim); }
-    .comp-strong { color: var(--accent); font-weight: 600; }
 
-    .comp-close {
-      margin-top: 1.5rem;
-      background: var(--surface);
-      border: 1px solid var(--accent-line);
-      border-radius: 14px;
-      padding: 1.9rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
 
-    .comp-close p { color: var(--text-muted); font-size: 0.95rem; max-width: 54ch; line-height: 1.65; }
-    .comp-close p strong { color: var(--text); font-weight: 600; }
-    .comp-delta { font-size: clamp(1.6rem, 2.6vw, 2.1rem); font-weight: 800; letter-spacing: -0.04em; color: var(--accent); white-space: nowrap; }
-    .comp-side { display: flex; flex-direction: column; gap: 1rem; align-items: flex-start; }
 
     /* ---- DIFERENCIAL: painel claro sobre a página escura ----
        Referência: cards brancos com mini-widgets flutuando (dashboards,
@@ -1815,21 +1377,44 @@
        que já resolvemos no CTA e na galeria de trabalhos. Dentro dele os
        cards viram azuis (pedido explícito), com um mini-widget flutuante
        cada um, ilustrando o argumento em vez de só descrever. */
+    /* Era um painel branco, o único bloco claro num site escuro. Desde
+       27/09/2026 é o vidro do painel de clientes, com luz azul por trás. */
     .dif-painel {
-      background: #FFFFFF;
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      background: var(--vidro);
+      border: 1px solid var(--vidro-borda);
       border-radius: 28px;
       padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3.5rem);
-      box-shadow: 0 50px 90px -30px rgba(2, 6, 22, 0.65), 0 18px 40px -20px rgba(2, 6, 22, 0.45);
+      box-shadow: var(--sombra-vidro);
     }
-    .dif-painel .section-tag { color: var(--accent); }
-    .dif-painel .section-tag::before { background: var(--accent); }
-    .dif-painel .heading { color: #14296B; }
+    .dif-painel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(45% 55% at 50% 0%, rgba(0, 67, 223, 0.34), transparent 70%),
+        radial-gradient(40% 40% at 90% 100%, rgba(0, 56, 174, 0.26), transparent 70%);
+    }
+    .dif-painel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(135deg, var(--vidro-brilho) 0%, transparent 28%, transparent 72%, rgba(250, 250, 250, 0.04) 100%);
+      opacity: 0.45;
+      mix-blend-mode: soft-light;
+    }
     .dif-sub {
       margin-top: 1rem;
       max-width: 46ch;
       margin-inline: auto;
       text-align: center;
-      color: #5A6B92;
+      color: var(--text-muted);
       font-size: 1rem;
       line-height: 1.6;
     }
@@ -1849,8 +1434,8 @@
       flex-direction: column;
       border-radius: 18px;
       padding: 1.5rem 1.35rem 1.75rem;
-      background: linear-gradient(160deg, #2A6BEA 0%, #1E5FE0 55%, #123A8C 100%);
-      box-shadow: 0 26px 46px -20px rgba(30, 95, 224, 0.55), 0 10px 20px -12px rgba(18, 58, 140, 0.4);
+      border: 1px solid var(--vidro-borda);
+      box-shadow: 0 1px 0 rgba(250, 250, 250, 0.12) inset, 0 24px 44px -20px rgba(1, 8, 30, 0.7);
       overflow: hidden;
     }
     .dif-card h3 { margin-top: 1.35rem; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.015em; color: #fff; }
@@ -1869,7 +1454,7 @@
       background: #fff;
       border-radius: 11px;
       box-shadow: 0 16px 30px -12px rgba(4, 10, 30, 0.45);
-      color: #14296B;
+      color: #021950;
       animation: dif-boiar 4.5s ease-in-out infinite;
       animation-delay: var(--atraso, 0s);
     }
@@ -1888,14 +1473,15 @@
       padding: 0.55rem 0.6rem 0.7rem;
     }
     .dif-tela-topo { display: flex; gap: 3px; margin-bottom: 0.5rem; }
-    .dif-tela-topo span { width: 5px; height: 5px; border-radius: 999px; background: #D7E0F2; }
-    .dif-barra { height: 7px; border-radius: 4px; background: linear-gradient(90deg, #9CB8E8, #1E5FE0); }
+    .dif-tela-topo span { width: 5px; height: 5px; border-radius: 999px; background: #E6E6E6; }
+    .dif-barra { height: 7px; border-radius: 4px; background: linear-gradient(90deg, #E6E6E6, #0043DF); }
     .dif-barra + .dif-barra { margin-top: 5px; }
 
     @keyframes dif-boiar {
       0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
       50%      { transform: translateY(-7px) rotate(var(--rot, 0deg)); }
     }
+    .dif-visual.parada .dif-chip { animation-play-state: paused; }
     @media (prefers-reduced-motion: reduce) {
       .dif-chip { animation: none; transform: rotate(var(--rot, 0deg)); }
     }
@@ -1936,7 +1522,7 @@
         right: -0.85rem;
         width: 0.85rem;
         height: 1px;
-        background: linear-gradient(90deg, rgba(30, 95, 224, 0.6), rgba(30, 95, 224, 0.12));
+        background: linear-gradient(90deg, rgba(0, 67, 223, 0.6), rgba(0, 67, 223, 0.12));
       }
     }
 
@@ -1950,8 +1536,8 @@
       font-size: 0.72rem;
       font-weight: 800;
       color: var(--accent);
-      background: rgba(30, 95, 224, 0.14);
-      border: 1px solid rgba(30, 95, 224, 0.32);
+      background: rgba(0, 67, 223, 0.14);
+      border: 1px solid rgba(0, 67, 223, 0.32);
       margin-bottom: 1.1rem;
     }
     .etapa h3 {
@@ -1969,11 +1555,7 @@
 
     /* Trilho: o fluxo fica preso na tela enquanto a rolagem acende uma etapa
        por vez. O cabeçalho vai junto pra a tela não ficar com uma tira só. */
-    .fluxo-trilho { position: relative; }
-    @media (min-width: 900px) {
-      .fluxo-trilho { height: 210vh; }
-      .fluxo-palco { position: sticky; top: 118px; }
-    }
+    
 
     /* A classe .animado só entra pelo script: sem JS, tudo nasce visível. */
     .fluxo.animado .etapa {
@@ -1993,14 +1575,12 @@
     .fluxo.animado .etapa.acesa b { background: var(--accent); border-color: var(--accent); color: #fff; }
     @media (min-width: 900px) {
       .fluxo.animado .etapa.acesa:not(:last-child)::after {
-        background: linear-gradient(90deg, rgba(30, 95, 224, 0.95), rgba(30, 95, 224, 0.45));
+        background: linear-gradient(90deg, rgba(0, 67, 223, 0.95), rgba(0, 67, 223, 0.45));
       }
     }
 
-    .promessas.tres { grid-template-columns: repeat(3, 1fr); margin-top: var(--vao); }
-    @media (max-width: 940px) { .promessas.tres { grid-template-columns: 1fr; } }
+    
 
-    .sistema-fecho { text-align: center; margin-top: var(--vao-g); }
 
     /* ---- NUMBERS BAND ---- */
 
@@ -2028,7 +1608,7 @@
       z-index: 0;
       pointer-events: none;
       background:
-        radial-gradient(68% 52% at 50% 44%, rgba(30, 95, 224, 0.22) 0%, transparent 70%),
+        radial-gradient(68% 52% at 50% 44%, rgba(0, 67, 223, 0.22) 0%, transparent 70%),
         radial-gradient(42% 38% at 10% 76%, rgba(34, 211, 238, 0.10) 0%, transparent 72%),
         radial-gradient(42% 38% at 90% 24%, rgba(109, 93, 246, 0.10) 0%, transparent 72%);
     }
@@ -2112,7 +1692,7 @@
     }
 
     .muro-estrelas { display: flex; gap: 3px; }
-    .muro-estrelas .star { width: 12px; height: 12px; fill: var(--accent); }
+    .muro-estrelas .star { width: 12px; height: 12px; fill: var(--n50); }
 
     .muro-fala { font-size: 0.92rem; line-height: 1.65; color: var(--text-muted); }
 
@@ -2199,7 +1779,7 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       width: 600px; height: 400px;
-      background: radial-gradient(ellipse, rgba(30,95,224,0.10) 0%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(0, 67, 223,0.10) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -2248,8 +1828,8 @@
        aqui vira o azul da casa mantendo a mesma relação: o halo mais
        claro por fora, o tom cheio da marca por dentro */
     .gh-halo   { transform: translateY(-40%) scale(1.20); background: #4C86F5; filter: blur(31px); }
-    .gh-nucleo { transform: translateY(-40%) scale(1.24); background: #1E5FE0; filter: blur(21px); }
-    .gh-preta  { transform: translateY(-40%) scale(1.20); background: #000;    filter: blur(51px); }
+    .gh-nucleo { transform: translateY(-40%) scale(1.24); background: #0043DF; filter: blur(21px); }
+    .gh-preta  { transform: translateY(-40%) scale(1.20); background: var(--a950); filter: blur(51px); }
 
     .glow-horizonte.in .gh-halo   { animation: gh-halo   2s var(--gh-ease) 0.6s forwards; }
     .glow-horizonte.in .gh-nucleo { animation: gh-nucleo 2s var(--gh-ease)    0s forwards; }
@@ -2272,6 +1852,33 @@
       .gh-preta  { transform: translateY(0) scale(1.20); }
     }
 
+    /* CELULAR: o horizonte vira uma foto dele mesmo.
+       As 4 elipses do tamanho da tela, com blur e sombra, são recompostas
+       pela GPU a cada quadro em que qualquer coisa se mexe na tela (a
+       rolagem, o muro de depoimentos logo acima). Parado, sem nada mudar no
+       horizonte, ele custava ~150ms de GPU a cada 2s, e isso numa GTX de
+       PC; zero quando escondido. No celular era o engasgo ao chegar no
+       formulário.
+       Não é degradê imitando o efeito (isso já falhou no site da Security
+       Recovery): `glow-horizonte-mobile.webp` é a captura do próprio
+       navegador desenhando as 4 elipses no estado final, em 412x839, com
+       400px de sobra acima e abaixo (daí o -47,68% e os 195,35%). Se mudar
+       cor, blur ou escala das elipses, recapturar a imagem. */
+    @media (max-width: 900px), (hover: none) and (pointer: coarse) {
+      .glow-horizonte { filter: none; }
+      .glow-horizonte.in { animation-name: gh-entra-leve; }
+      @keyframes gh-entra-leve { to { transform: translateY(-50%) scaleY(1); opacity: 1; } }
+      .gh-arco { display: none; }
+      .glow-horizonte::before {
+        content: '';
+        position: absolute;
+        left: 0; right: 0;
+        top: -47.68%;
+        height: 195.35%;
+        background: url(glow-horizonte-mobile.webp) center / 100% 100% no-repeat;
+      }
+    }
+
     /* o conteúdo da seção fica acima do brilho */
     .cta-section > .container { position: relative; z-index: 1; }
 
@@ -2281,13 +1888,13 @@
       gap: 0.5rem;
       padding: 0.4rem 1rem;
       background: var(--accent-soft);
-      border: 1px solid rgba(30,95,224,0.28);
+      border: 1px solid rgba(0, 67, 223,0.28);
       border-radius: 99px;
       font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--accent-texto);
       margin-bottom: var(--vao);
     }
 
@@ -2397,33 +2004,12 @@
     }
     .campo .erro:not(:empty) { opacity: 1; transform: none; }
 
-    .opcoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-    .opcoes input { position: absolute; opacity: 0; pointer-events: none; }
 
-    .opcoes label {
-      font-size: 0.84rem;
-      font-weight: 500;
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 0.55rem 1rem;
-      cursor: pointer;
-      transition: border-color var(--mov-base) var(--curva), color var(--mov-base) var(--curva), background var(--mov-base) var(--curva);
-    }
 
     /* O grupo de rádio não tem input pra receber aria-invalid, então os quatro
        outros campos ficavam vermelhos e este continuava idêntico: a mensagem
        aparecia embaixo sem nada apontando pra qual pergunta ela é. */
-    .campo[data-invalido="true"] .opcoes label {
-      border-color: var(--erro);
-      color: var(--text);
-    }
-    .opcoes label:hover { color: var(--text); border-color: var(--border-strong, rgba(255,255,255,0.2)); }
-    .opcoes input:checked + label { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .opcoes input:focus-visible + label { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
 
     .form-envio { margin-top: 1.6rem; display: flex; flex-direction: column; gap: 0.9rem; align-items: center; }
     .form-envio .btn { width: 100%; justify-content: center; }
@@ -2437,7 +2023,7 @@
       font-size: 0.85rem;
       color: var(--text-muted);
     }
-    .form-alt a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .form-alt a { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; font-weight: 700; }
     .form-alt a:hover { text-decoration: underline; }
 
     /* ---- BOTÃO EM PROGRESSO ----
@@ -2510,7 +2096,7 @@
     .form-ok .marca-ok {
       width: 46px; height: 46px; border-radius: 50%;
       background: var(--accent-soft); border: 1px solid var(--accent);
-      display: grid; place-items: center; color: var(--accent); font-size: 1.3rem; font-weight: 700;
+      display: grid; place-items: center; color: var(--n50); font-size: 1.3rem; font-weight: 700;
       transform: scale(0.4);
       opacity: 0;
     }
@@ -2665,14 +2251,14 @@
          direto: mesma cor final, sem depender de suporte a color-mix. */
       --pil-1: rgba(255, 255, 255, 0.03);
       --pil-2: rgba(255, 255, 255, 0.01);
-      --pil-sombra: rgba(6, 14, 40, 0.5);
+      --pil-sombra: rgba(2, 25, 80, 0.5);
       --pil-brilho: rgba(255, 255, 255, 0.10);
-      --pil-fundo: rgba(6, 14, 40, 0.8);
+      --pil-fundo: rgba(2, 25, 80, 0.8);
       --pil-borda: rgba(255, 255, 255, 0.08);
       --pil-1-sobre: rgba(255, 255, 255, 0.08);
       --pil-2-sobre: rgba(255, 255, 255, 0.02);
       --pil-borda-sobre: rgba(255, 255, 255, 0.20);
-      --pil-sombra-sobre: rgba(6, 14, 40, 0.7);
+      --pil-sombra-sobre: rgba(2, 25, 80, 0.7);
       --pil-brilho-sobre: rgba(255, 255, 255, 0.20);
     }
 
@@ -2697,7 +2283,133 @@
       height: 60vh;
       border-radius: 50%;
       background: radial-gradient(closest-side at 50% 50%,
-        rgba(30, 95, 224, 0.34) 0%,
+        rgba(0, 67, 223, 0.34) 0%,
+        rgba(45, 110, 232, 0.27) 26%,
+        rgba(76, 134, 245, 0.17) 50%,
+        rgba(76, 134, 245, 0.06) 72%,
+        transparent 100%);
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity;
+      pointer-events: none;
+      z-index: 0;
+      animation: rodape-respira 8s ease-in-out infinite alternate;
+    }
+
+    /* O rodapé é o fim da página: a aurora respirava desde o primeiro quadro
+       pra quem ainda estava no hero. `will-change` acima já segura uma camada
+       de GPU do tamanho de 80vw por 60vh; deixá-la respirando fora da tela
+       paga o custo dessa camada a viagem inteira. */
+    .rodape-aurora.parada { animation-play-state: paused; }
+
+    @keyframes rodape-respira {
+      0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.6; }
+      100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    }
+
+    /* ---- GRADE ----
+       Malha de 60px apagada nas duas pontas pela máscara, pra não bater
+       na borda da cortina. */
+    .rodape-grade {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-size: 60px 60px;
+      background-image:
+        linear-gradient(to right,  rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+              mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+    }
+
+    /* ---- SÍMBOLO DE FUNDO ----
+       O globo + cérebro da Conect+ atrás de tudo, numa cor só.
+
+       Logo novo (27/09/2026): o arquivo `marca-conect-linhas.png` são as
+       linhas brancas do globo + cérebro sobre transparente, usadas como
+       máscara. Quem pinta as linhas é o degradê deste bloco, então a cor
+       mora no CSS e trocar o tom não exige gerar imagem nova. */
+    .rodape-simbolo { transform: translate(-50%, -50%) scale(1) !important; opacity: 1 !important; }
+      .rodape-titulo,
+      .rodape-acoes { transform: none !important; opacity: 1 !important; }
+    }
+
+    /* ---- RODAPÉ CINEMATOGRÁFICO ----
+       Reconstrução do componente de referência (cortina + aurora + grade +
+       marca d'água gigante + faixa torta + pílulas de vidro magnéticas) em
+       CSS e JS puros. O original é React com GSAP/ScrollTrigger; aqui não
+       existe React, então cada peça foi reescrita mantendo os mesmos
+       valores: os mesmos ângulos, as mesmas durações, as mesmas curvas.
+       As cores saíram dos tokens da Conect+ em vez do tema do modelo. */
+
+    /* A CORTINA.
+       Fica no fluxo normal com a altura de uma tela e recorta tudo o que
+       estiver dentro dela. O rodapé lá dentro é fixo na janela, ou seja,
+       não rola. Quem rola é a janela de recorte, que sobe e vai revelando
+       o rodapé de baixo pra cima, como uma cortina abrindo. É isso que
+       separa esse rodapé de um bloco comum empurrado pelo conteúdo. */
+    .rodape-cortina {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100svh;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .rodape {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      /* abaixo do cabeçalho, que vive no 500 */
+      z-index: 1;
+      width: 100%;
+      height: 100vh;
+      height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+
+      /* As variáveis do modelo usam color-mix sobre foreground/background.
+         Como aqui o tema é fixo (branco sobre azul-noite), elas viram rgba
+         direto: mesma cor final, sem depender de suporte a color-mix. */
+      --pil-1: rgba(255, 255, 255, 0.03);
+      --pil-2: rgba(255, 255, 255, 0.01);
+      --pil-sombra: rgba(2, 25, 80, 0.5);
+      --pil-brilho: rgba(255, 255, 255, 0.10);
+      --pil-fundo: rgba(2, 25, 80, 0.8);
+      --pil-borda: rgba(255, 255, 255, 0.08);
+      --pil-1-sobre: rgba(255, 255, 255, 0.08);
+      --pil-2-sobre: rgba(255, 255, 255, 0.02);
+      --pil-borda-sobre: rgba(255, 255, 255, 0.20);
+      --pil-sombra-sobre: rgba(2, 25, 80, 0.7);
+      --pil-brilho-sobre: rgba(255, 255, 255, 0.20);
+    }
+
+    /* ---- AURORA ----
+       Mancha de luz que respira atrás de tudo.
+
+       O modelo faz isso com um radial-gradient de três paradas mais um
+       filter: blur(80px). A medição condenou o filtro: rolando só o
+       trecho da cortina, com o processador estrangulado em 4x, o quadro
+       mediano era 33ms com ele e 16,7ms sem ele, e os quadros estourados
+       caíam de 401 pra 146 em 552. O motivo é que a mancha muda de escala
+       a cada quadro, e um borrão de 80px sobre 80vw por 60vh precisa ser
+       recalculado em cada escala nova.
+
+       A suavidade voltou pras paradas do próprio degradê, que é onde ela
+       sai de graça. O desenho final é o mesmo; o que sumiu foi a conta. */
+    .rodape-aurora {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 80vw;
+      height: 60vh;
+      border-radius: 50%;
+      background: radial-gradient(closest-side at 50% 50%,
+        rgba(0, 67, 223, 0.34) 0%,
         rgba(45, 110, 232, 0.27) 26%,
         rgba(76, 134, 245, 0.17) 50%,
         rgba(76, 134, 245, 0.06) 72%,
@@ -2761,11 +2473,11 @@
       /* mais forte em cima, quase sumindo embaixo: assim ele não briga com
          as pílulas de vidro, que ficam na metade de baixo */
       background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.11) 0%,
-        rgba(255, 255, 255, 0.06) 52%,
-        rgba(255, 255, 255, 0.02) 100%);
-      -webkit-mask-image: url(marca-conect-branca.png);
-              mask-image: url(marca-conect-branca.png);
+        rgba(250, 250, 250, 0.16) 0%,
+        rgba(250, 250, 250, 0.09) 52%,
+        rgba(250, 250, 250, 0.03) 100%);
+      -webkit-mask-image: url(marca-conect-linhas.png);
+              mask-image: url(marca-conect-linhas.png);
       -webkit-mask-size: contain;   mask-size: contain;
       -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
       -webkit-mask-position: center;  mask-position: center;
@@ -2787,7 +2499,7 @@
       user-select: none;
       font-size: 26vw;
       line-height: 0.75;
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: -0.05em;
       color: transparent;
       -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
@@ -2814,7 +2526,7 @@
       overflow: hidden;
       padding: 1rem 0;
       transform: rotate(-2deg) scale(1.1);
-      background: rgba(6, 14, 40, 0.6);
+      background: rgba(2, 25, 80, 0.6);
       /* backdrop-filter saiu daqui e das pílulas; a conta está na nota
          longa do .vidro-pilula */
       border-top: 1px solid rgba(255, 255, 255, 0.045);
@@ -2839,7 +2551,7 @@
     }
     @media (min-width: 768px) { .rodape-termo { font-size: 0.875rem; } }
     .rodape-termo i { font-style: normal; }
-    .rodape-termo i.a { color: rgba(30, 95, 224, 0.6); }
+    .rodape-termo i.a { color: rgba(0, 67, 223, 0.6); }
     .rodape-termo i.b { color: rgba(76, 134, 245, 0.6); }
 
     /* ---- MIOLO ---- */
@@ -2864,7 +2576,7 @@
     .rodape-titulo {
       text-align: center;
       font-size: clamp(2.75rem, 8vw, 6rem);
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: -0.045em;
       line-height: 1;
       background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.4) 100%);
@@ -3007,6 +2719,12 @@
     }
     @keyframes selo2Brilho { 0%, 100% { rotate: 0deg; } 50% { rotate: 10deg; } }
     .selo2:hover .selo2__cam, .selo2:focus-visible .selo2__cam { animation: none; }
+    /* O rodapé é fixo: pro navegador ele está "na tela" a visita inteira,
+       escondido atrás do conteúdo. Sem esta pausa as 20 camadas com
+       feGaussianBlur giravam desde o primeiro quadro, e SVG com filtro não
+       vai pra GPU: o processador redesenhava tudo a cada quadro. No
+       celular era isso que travava a rolagem do site inteiro. */
+    .rodape-selos.parada .selo2__cam { animation-play-state: paused; }
     .selo2:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 12px; }
     @media (prefers-reduced-motion: reduce) { .selo2__cam { animation: none; } }
 
@@ -3044,40 +2762,10 @@
     }
     @media (min-width: 768px) { .rodape-copy { order: 1; font-size: 0.75rem; } }
 
-    .rodape-selo {
-      order: 1;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      cursor: default;
-      border-color: rgba(255, 255, 255, 0.045);
-    }
-    @media (min-width: 768px) { .rodape-selo { order: 2; } }
-    .rodape-selo span {
-      font-size: 0.625rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-    .rodape-selo b {
-      margin-left: 0.25rem;
-      font-size: 0.75rem;
-      font-weight: 900;
-      color: var(--text);
-    }
-    @media (min-width: 768px) {
-      .rodape-selo span { font-size: 0.75rem; }
-      .rodape-selo b { font-size: 0.875rem; }
-    }
+    
+    
 
-    .rodape-coracao {
-      font-size: 0.875rem;
-      color: #f0616d;
-
-    }
-    @media (min-width: 768px) { .rodape-coracao { font-size: 1rem; } }
+    
 
     .rodape-topo {
       order: 3;
@@ -3262,7 +2950,7 @@
       text-align: center;
       color: var(--text);
     }
-    .pilha-ponte span { color: var(--accent); }
+    .pilha-ponte span { font-style: italic; font-weight: 300; color: var(--text-muted); padding-right: .06em; }
 
     .pilha-nomes,
     .pilha-metas {
@@ -3292,7 +2980,7 @@
       display: block;
       font-weight: 600;
       text-transform: uppercase;
-      color: var(--accent-hover);
+      color: var(--accent-texto);
     }
     /* As quatro legendas moram na mesma célula, uma sobre a outra. A troca
        entre elas é escrita pelo script a partir do mesmo progresso do card:
@@ -3353,7 +3041,7 @@
       width: 11.5rem;
       padding: 4px;
       border-radius: 999px;
-      background: rgba(6, 14, 40, 0.9);
+      background: rgba(2, 25, 80, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.14);
       color: #fff;
       pointer-events: none;
@@ -3471,6 +3159,71 @@
       .pilha-cartao:hover img { transform: none; }
     }
 
+    /* ---- AUDITORIA DE RESPONSIVIDADE (27/09/2026) ----
+       Varredura em 320, 360, 390, 414, 768, 1024, 1280, 1440 e 1920px. */
+
+    /* tablet (701 a 1100px): na grade de 3 colunas sobravam 100vw - 26rem
+       pro card, que em 768px dava 352px, um selo no meio de uma tela vazia.
+       Aqui a pilha empilha como no celular, mas o card segue deitado (16:9)
+       porque o <picture> só troca pro print em pé abaixo de 700px. */
+    @media (min-width: 701px) and (max-width: 1100px) {
+      .pilha {
+        --pl-w: min(88vw, 900px, calc((100svh - 22rem) * 16 / 9));
+        --pl-h: calc(var(--pl-w) * 9 / 16);
+      }
+      .pilha-palco {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        row-gap: 1rem;
+        padding: 6.5rem 1.5rem 1.5rem;
+      }
+      .pilha-nomes,
+      .pilha-metas { z-index: 2; justify-self: stretch; max-width: none; text-align: center; }
+    }
+
+    /* planos: 3 colunas até 900px. Com 2, o terceiro card ficava sozinho na
+       linha de baixo. Abaixo disso, uma coluna com largura de leitura. */
+    @media (max-width: 1100px) and (min-width: 901px) {
+      .pricing-grid.tres { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+      .pricing-grid.tres .pricing-card { padding: 1.75rem 1.5rem; }
+    }
+    @media (max-width: 900px) {
+      .pricing-grid.tres { grid-template-columns: minmax(0, 460px); justify-content: center; }
+    }
+
+    /* diferencial: 4 colunas só a partir de 1180px (em 1024 cada card tinha
+       190px e o título quebrava palavra por palavra) */
+    @media (min-width: 561px) and (max-width: 1179px) {
+      .dif-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* texto mínimo de 12px: rótulos em caixa alta estavam em 10 a 11,5px */
+    .section-tag, .cta-tag { font-size: 0.75rem; }
+    .pricing-tag, .campo label, .muro-papel { font-size: 0.78rem; }
+    .hist-rotulo { font-size: 0.8rem; }
+    .scroll-hint span { font-size: 0.75rem; }
+    .rodape-copy { font-size: 0.75rem; }
+
+    /* alvo de toque: o link do WhatsApp no formulário tinha 18px de altura */
+    .form-alt a { display: inline-block; padding: 0.7rem 0.35rem; margin: -0.7rem 0; }
+
+    /* navbar no celular estreito: o botão quebrava em duas linhas em 320-360px
+       e a barra ficava com o dobro da altura */
+    #nav .btn { white-space: nowrap; }
+    @media (max-width: 380px) {
+      #nav { padding-inline: 1rem; }
+      #nav .btn { padding: 0.65rem 1.05rem; font-size: 0.8rem; }
+    }
+
+    /* contato no celular: o texto de apoio cai em cima do arco branco do
+       brilho. Sombra marinho densa por trás da letra, sem mexer no desenho. */
+    @media (max-width: 600px) {
+      .cta-note {
+        color: var(--text);
+        text-shadow: 0 0 14px rgba(2, 25, 80, 0.95), 0 0 4px rgba(2, 25, 80, 0.9), 0 1px 2px rgba(0, 0, 0, 0.6);
+      }
+    }
+
     /* ---- RESPONSIVE ---- */
     @media (max-width: 1024px) {
       .hero { padding-top: 9rem; }
@@ -3510,7 +3263,7 @@
          celular. O fundo já era 90% opaco, então subindo pra 97% ninguém nota
          a diferença e o custo vai a zero. */
       #nav.scrolled {
-        background: rgba(6, 14, 40, 0.97);
+        background: rgba(2, 25, 80, 0.97);
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
       }
@@ -3518,8 +3271,159 @@
 
     @media (max-width: 768px) {
       .nav-links { display: none; }
-      .hero-badge { display: none; }
     }
+
+    /* =========================================================
+       IDENTIDADE CONECT+ (27/09/2026)
+       Tipografia oficial: Outfit ExtraBold (800) no que importa e Outfit
+       Light (300) itálico na palavra de destaque, em todo título do site.
+       Efeitos trazidos do painel de clientes (dashboard.conectpluss.com):
+       vidro espelhado, luz azul de fundo, foco no hover e o Ribbon Field.
+       ========================================================= */
+    .heading { letter-spacing: -0.04em; }
+    h1 em, h2 em, h3 em, .pricing-name em {
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      padding-right: 0.06em;
+      color: var(--text-muted);
+    }
+    .pricing-lede strong, .hist-texto strong { font-weight: 700; }
+    .pricing-name { font-weight: 800; letter-spacing: -0.035em; }
+    .pricing-period { font-style: italic; font-weight: 300; }
+    .dif-card h3 { font-weight: 800; letter-spacing: -0.025em; }
+    .dif-card h3 em { color: rgba(250, 250, 250, 0.78); }
+    .dif-painel > * { position: relative; }
+    /* fundo neural do painel: o mesmo shader do hero, meio apagado pra o vidro continuar vidro */
+    .dif-painel > canvas.neuro { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; pointer-events: none; }
+    .dif-painel .heading { letter-spacing: -0.04em; }
+    .hist-titulo em { color: inherit; opacity: 0.62; }
+    .hist-miolo[style*="#F5F5F5"] .hist-titulo em { color: var(--a800); opacity: 1; }
+    .hist-miolo[style*="#F5F5F5"] .hist-pergunta em { color: var(--a800); }
+    .form-ok h3 em { color: var(--text-muted); }
+    .rodape-titulo em { font-style: italic; font-weight: 300; padding-right: 0.08em; }
+
+    /* cards dos diferenciais: degradê do 800 ao 950 */
+    /* card de vidro com um pouco do 800 subindo do pé; no hover o azul acende */
+    .dif-card { background: linear-gradient(180deg, rgba(250, 250, 250, 0.06) 0%, rgba(0, 67, 223, 0.16) 100%); }
+    .dif-card:hover { border-color: rgba(0, 67, 223, 0.7); background: linear-gradient(180deg, rgba(250, 250, 250, 0.08) 0%, rgba(0, 67, 223, 0.34) 100%); }
+
+    /* ---- VIDRO ESPELHADO ----
+       Card translúcido, filete de luz no topo e reflexo na diagonal. */
+    .pricing-card, .muro-card, .form-wrap {
+      background: var(--vidro);
+      border: 1px solid var(--vidro-borda);
+      box-shadow: var(--sombra-vidro);
+    }
+    .pricing-card.featured { background: var(--a800); border-color: rgba(250, 250, 250, 0.22); }
+    .form-wrap { position: relative; border-radius: 22px; }
+    .pricing-card { border-radius: 24px; }
+    .muro-card { position: relative; overflow: hidden; border-radius: 20px; }
+    .pricing-card::after, .muro-card::after, .form-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(135deg, var(--vidro-brilho) 0%, transparent 28%, transparent 72%, rgba(250, 250, 250, 0.04) 100%);
+      opacity: 0.55;
+      mix-blend-mode: soft-light;
+    }
+    /* o conteúdo sobe acima do reflexo, senão o soft-light tinge o texto */
+    .pricing-card > :not(.fita):not(.grao), .muro-card > *, .form-wrap > * { position: relative; }
+    .muro-card:hover { border-color: rgba(250, 250, 250, 0.24); box-shadow: var(--sombra-vidro); }
+    .pricing-card:hover { border-color: rgba(250, 250, 250, 0.28); }
+
+    /* ---- LUZ AZUL DE FUNDO ----
+       Manchas do 800 atrás dos cards, como no painel. Ficam longe das bordas
+       da seção pra não criar costura com a vizinha. */
+    #sites, #depoimentos { position: relative; isolation: isolate; }
+    #sites::before, #depoimentos::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(38% 34% at 18% 55%, rgba(0, 67, 223, 0.30), transparent 70%),
+        radial-gradient(34% 30% at 84% 45%, rgba(0, 56, 174, 0.28), transparent 70%);
+    }
+
+    /* ---- FOCO ----
+       O item sob o mouse fica inteiro e os vizinhos recuam, igual às barras
+       e capas do painel. Só onde existe mouse: no toque não há "hover". */
+    .pricing-card, .dif-card, .muro-card {
+      transition: border-color var(--mov-base) var(--curva), transform var(--mov-base) var(--curva),
+                  opacity var(--mov-base) var(--curva), filter var(--mov-base) var(--curva), box-shadow var(--mov-base) var(--curva);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .pricing-grid:has(.pricing-card:hover) .pricing-card:not(:hover),
+      .dif-grid:has(.dif-card:hover) .dif-card:not(:hover) { opacity: 0.42; filter: saturate(0.55); }
+      .muro:has(.muro-card:hover) .muro-card:not(:hover) { opacity: 0.38; }
+      .dif-card:hover { transform: translateY(-4px); }
+    }
+
+    /* ---- NAVEGAÇÃO: pílula na seção em que a pessoa está ---- */
+    .nav-links { gap: 0.5rem; }
+    .nav-links a {
+      display: inline-block;
+      padding: 0.45rem 1rem;
+      border-radius: 99px;
+      border: 1px solid transparent;
+      transition: color var(--mov-base) var(--curva), background var(--mov-base) var(--curva), border-color var(--mov-base) var(--curva);
+    }
+    .nav-links a[aria-current="true"] {
+      color: var(--text);
+      font-weight: 600;
+      background: var(--vidro);
+      border-color: var(--vidro-borda);
+      box-shadow: 0 1px 0 rgba(250, 250, 250, 0.12) inset;
+    }
+
+    /* ---- SOMBRA DE DESTAQUE (27/09/2026) ----
+       A mesma sombra do título do hero em todo o site. text-shadow é herdado:
+       o body dá a versão suave pro texto corrido e os títulos recebem a forte.
+       Fundo claro troca o preto por um marinho leve (preto em letra escura
+       sobre branco suja). O título do rodapé fica de fora: a letra dele é um
+       degradê recortado (background-clip) e a sombra apareceria por dentro. */
+    body { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.5); }
+    h1, h2, h3, .heading, .cta-title, .hist-titulo, .hist-pergunta, .pilha-ponte,
+    .pricing-name, .pricing-value, .pricing-ponte, .muro-nome {
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.92), 0 1px 3px rgba(0, 0, 0, 0.8);
+    }
+    .hist-miolo[style*='#F5F5F5'], .hist-miolo[style*='#F5F5F5'] .hist-titulo {
+      text-shadow: 0 2px 12px rgba(2, 25, 80, 0.16), 0 1px 2px rgba(2, 25, 80, 0.12);
+    }
+    .dif-card, .dif-card h3 { text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.45); }
+    button { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.4); }
+    .dif-chip { text-shadow: none; }
+    .rodape-titulo, .rodape-titulo em, .rodape-gigante, .selo2, .selo2 * { text-shadow: none; }
+    input, select, textarea, input::placeholder { text-shadow: none; }
+
+    /* ---- RIBBON FIELD ----
+       Faixas 800/900/950 levemente onduladas, pintadas num canvas pequeno e
+       ampliadas com desfoque. O conteúdo do bloco sobe acima delas. */
+    .com-fita { position: relative; overflow: hidden; isolation: isolate; }
+    .com-fita > .fita {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: -1; pointer-events: none;
+      filter: blur(18px) saturate(1.05);
+      transform: scale(1.12);
+    }
+    .com-fita > .grao {
+      position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      opacity: 0.5; mix-blend-mode: overlay;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    }
+    .pricing-card.featured.com-fita::before { z-index: 2; background: var(--n50); color: var(--a950); }
+    .com-fita .pricing-name, .com-fita .pricing-value,
+    .hist-miolo.com-fita .hist-titulo { text-shadow: 0 2px 22px rgba(2, 10, 50, 0.45); }
+    .pricing-card.featured.com-fita .pricing-name em,
+    .pricing-card.featured.com-fita .pricing-currency,
+    .pricing-card.featured.com-fita .pricing-period,
+    .pricing-card.featured.com-fita .pricing-features li { color: rgba(250, 250, 250, 0.84); }
+    .pricing-card.featured.com-fita .pricing-divider { background: rgba(250, 250, 250, 0.2); }
+    .pricing-card.featured.com-fita .pricing-tag { color: var(--n50); }
   </style>
 
 </head>
@@ -3534,8 +3438,8 @@
   <nav id="nav">
     <a href="#" class="nav-logo" aria-label="Conect+, início">
       <span class="nav-logo-imgs">
-        <img src="logo-simbolo.png" alt="" aria-hidden="true" class="nav-logo-symbol" width="121" height="114" decoding="async">
-        <img src="logo-nome.png" alt="" aria-hidden="true" class="nav-logo-word" width="303" height="96" decoding="async">
+        <img src="logo-simbolo-v2.png" alt="" aria-hidden="true" class="nav-logo-symbol" width="240" height="228" decoding="async">
+        <img src="logo-nome-v2.png" alt="" aria-hidden="true" class="nav-logo-word" width="746" height="210" decoding="async">
       </span>
     </a>
     <ul class="nav-links">
@@ -3551,12 +3455,10 @@
   <div class="hero-scroll-wrapper" id="heroWrapper">
   <section class="hero" id="heroSticky">
 
-    <!-- Malha de constelação. Cada nó é um ponto preso ao lugar dele por uma
-         mola; o cursor empurra quem está por perto e a mola traz de volta.
-         No celular não existe cursor, então lá a malha é desenhada uma vez
-         só e fica parada, sem gastar quadro nenhum. -->
+    <!-- Conexões neurais em WebGL: filamentos azuis que se acendem e se
+         torcem perto do cursor. O script mora em "CONEXÕES NEURAIS". -->
     <div class="hero-teia">
-      <canvas id="teiaCanvas"></canvas>
+      <canvas id="neuroCanvas"></canvas>
     </div>
 
     <!-- Barra de progresso -->
@@ -3585,7 +3487,7 @@
 
       <div class="hero-item" data-phase="0.85">
         <div class="hero-actions" style="justify-content:center;">
-          <a href="#contact" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+          <a href="#contact" class="btn btn-primary mag-btn" onclick="window.fbq&&fbq('track', 'Contact')">
             Quero alcançar mais pessoas
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a><!-- Lead agora é exclusivo do envio do formulário; clique é Contact -->
@@ -3646,7 +3548,7 @@
              Os projetos entram no fim, como prova de quem já saiu dessa. -->
         <h2 class="heading reveal-titulo" style="text-align:center;margin-inline:auto">
           Sua empresa ainda n&atilde;o tem<br>
-          <span style="color:var(--accent)">estrutura online</span>?
+          <em>estrutura online</em>?
         </h2>
 
         <p class="reveal-apoio" style="margin-top:1.35rem;margin-inline:auto;max-width:32ch;text-align:center;font-size:1.3rem;font-weight:600;color:var(--text)">A Conect+ resolve isso para voc&ecirc;.</p>
@@ -3745,7 +3647,7 @@
       <!-- mesmo topo centralizado dos planos mensais, com a ponte no fim
            amarrando o título aos três cards -->
       <div class="pricing-topo">
-        <h2 class="heading reveal-titulo">Pre&ccedil;o fechado, <span style="color:var(--accent)">sem mensalidade</span></h2>
+        <h2 class="heading reveal-titulo">Pre&ccedil;o fechado, <em>sem mensalidade</em></h2>
         <p class="pricing-lede reveal-apoio">
           Os sites que passaram ali em cima est&atilde;o no ar agora, rodando para clientes
           da casa. &Eacute; esse tipo de projeto que sai daqui. Voc&ecirc; paga uma vez, o site
@@ -3764,56 +3666,59 @@
         <div class="pricing-card">
           <div>
             <div class="pricing-tag">Cria&ccedil;&atilde;o de Site</div>
-            <div class="pricing-name">P&aacute;gina de Convers&atilde;o</div>
+            <div class="pricing-name">P&aacute;gina de <em>Convers&atilde;o</em></div>
           </div>
           <div class="pricing-price">
             <span class="pricing-currency">R$</span>
-            <span class="pricing-value">697</span>
+            <span class="pricing-value">877</span>
             <span class="pricing-period">único</span>
           </div>
           <div class="pricing-divider"></div>
           <ul class="pricing-features">
-            <li>Uma página, do topo ao formulário</li>
-            <li>Feita para receber tráfego pago</li>
+            <li>Uma página completa, do topo ao formulário, com texto escrito para vender</li>
+            <li>Feita para receber tráfego pago (Meta e Google)</li>
             <li>Formulário e botão de WhatsApp</li>
-            <li>Pixel do Meta e tag do Google instalados</li>
+            <li>Pixel do Meta e tag do Google instalados e testados</li>
+            <li>1 rodada de ajustes depois da entrega</li>
             <li>Entrega em até 4 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Página%20de%20Conversão!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Quero escalar meu negócio →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Página%20de%20Conversão!" class="pricing-cta mag-btn" target="_blank" rel="noopener" onclick="window.fbq&&fbq('track', 'Lead')">Quero escalar meu negócio →</a>
         </div>
 
         <!-- SITE 2 — o que já existia, agora no meio da escada -->
-        <div class="pricing-card featured">
+        <div class="pricing-card featured com-fita">
+          <canvas class="fita" data-ang="44" aria-hidden="true"></canvas><span class="grao" aria-hidden="true"></span>
           <div>
             <div class="pricing-tag">Cria&ccedil;&atilde;o de Site</div>
-            <div class="pricing-name">Presen&ccedil;a Digital</div>
+            <div class="pricing-name">Presen&ccedil;a <em>Digital</em></div>
           </div>
           <div class="pricing-price">
             <span class="pricing-currency">R$</span>
-            <span class="pricing-value">997</span>
+            <span class="pricing-value">1.247</span>
             <span class="pricing-period">único</span>
           </div>
           <div class="pricing-divider"></div>
           <ul class="pricing-features">
-            <li>Design premium focado em conversão</li>
-            <li>Compatível com todos os dispositivos</li>
-            <li>Carregamento ultra rápido</li>
-            <li>Otimizado para SEO desde o início</li>
-            <li>Integração com WhatsApp e redes sociais</li>
+            <li>Design exclusivo com animação, feito do zero, sem template</li>
+            <li>Todas as seções do negócio: serviços, sobre, depoimentos e contato</li>
+            <li>Rápido no celular e otimizado para aparecer no Google</li>
+            <li>WhatsApp, formulário e redes sociais integrados</li>
+            <li>Pixel do Meta e tag do Google instalados</li>
+            <li>2 rodadas de ajustes depois da entrega</li>
             <li>Entrega em até 7 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Presença%20Digital!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Preciso de um site →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20a%20Presença%20Digital!" class="pricing-cta mag-btn" target="_blank" rel="noopener" onclick="window.fbq&&fbq('track', 'Lead')">Preciso de um site →</a>
         </div>
 
         <!-- SITE 3 — topo da escada, projeto que sustenta SEO -->
         <div class="pricing-card">
           <div>
             <div class="pricing-tag">Cria&ccedil;&atilde;o de Site</div>
-            <div class="pricing-name">Autoridade</div>
+            <div class="pricing-name"><em>Autoridade</em></div>
           </div>
           <div class="pricing-price">
             <span class="pricing-currency">R$</span>
-            <span class="pricing-value">1.997</span>
+            <span class="pricing-value">2.497</span>
             <span class="pricing-period">único</span>
           </div>
           <div class="pricing-divider"></div>
@@ -3823,9 +3728,10 @@
             <li>Blog estruturado para SEO</li>
             <li>Google Meu Negócio configurado</li>
             <li>Lead do formulário cai direto no WhatsApp</li>
+            <li>30 dias de suporte para ajustes depois que o site entra no ar</li>
             <li>Entrega em até 15 dias úteis</li>
           </ul>
-          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20site%20Autoridade!" class="pricing-cta mag-btn" target="_blank" onclick="fbq('track', 'Lead')">Quero ter mais clientes vindo do Google →</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20quero%20saber%20mais%20sobre%20o%20site%20Autoridade!" class="pricing-cta mag-btn" target="_blank" rel="noopener" onclick="window.fbq&&fbq('track', 'Lead')">Quero ter mais clientes vindo do Google →</a>
         </div>
 
       </div>
@@ -3842,10 +3748,11 @@
   <section class="section">
     <div class="container">
       <div class="dif-painel">
+        <canvas class="neuro" aria-hidden="true"></canvas>
         <div class="topo-centro">
           <div class="section-tag">O diferencial</div>
-          <h2 class="heading reveal-titulo">A gente usa tecnologia. <span style="color:var(--accent)">Seu site n&atilde;o parece.</span></h2>
-          <p class="dif-sub reveal-apoio">Enquanto o mercado empurra site clonado com cara de gerador autom&aacute;tico, aqui cada projeto sai com anima&ccedil;&atilde;o, ideia e estrat&eacute;gia pro seu nicho &mdash; n&atilde;o pro nicho de ningu&eacute;m.</p>
+          <h2 class="heading reveal-titulo">Site bonito qualquer um faz. <em>O nosso &eacute; feito pra vender.</em></h2>
+          <p class="dif-sub reveal-apoio">A Conect+ vem do tr&aacute;fego pago. Todo dia a gente v&ecirc; o que faz uma pessoa clicar, confiar e chamar no WhatsApp. O seu site j&aacute; nasce com isso dentro.</p>
         </div>
 
         <div class="dif-grid reveal-group">
@@ -3858,12 +3765,12 @@
                 <div class="dif-barra" style="width:88%"></div>
               </div>
               <div class="dif-chip dif-chip-selo" style="bottom:2px;right:0;--rot:6deg;--atraso:.6s">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
-                100% autoral
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+                Meta e Google Ads
               </div>
             </div>
-            <h3>Sem molde de IA</h3>
-            <p>Hoje todo mundo monta site no mesmo gerador e entrega a mesma cara. Aqui cada se&ccedil;&atilde;o &eacute; desenhada pro seu neg&oacute;cio, n&atilde;o puxada de um banco de templates.</p>
+            <h3>Feito por quem <em>faz an&uacute;ncio</em></h3>
+            <p>Quem desenha o seu site roda Meta Ads e Google Ads todo dia. Cada se&ccedil;&atilde;o &eacute; pensada pro cliente que chega pelo an&uacute;ncio, n&atilde;o pra enfeitar.</p>
           </div>
 
           <div class="dif-card">
@@ -3874,39 +3781,39 @@
                 <div class="dif-barra" style="width:82%"></div>
               </div>
               <div class="dif-chip dif-chip-selo" style="bottom:0;left:0;--rot:-6deg;--atraso:.5s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10.5 8.5l5 3.5-5 3.5v-7z" fill="currentColor" stroke="none"/></svg>
-                60 fps de verdade
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                Novo contato pelo site
               </div>
             </div>
-            <h3>Anima&ccedil;&atilde;o de verdade</h3>
-            <p>Scroll, hover, transi&ccedil;&atilde;o: cada movimento foi constru&iacute;do &agrave; m&atilde;o pro seu site, n&atilde;o &eacute; o efeito padr&atilde;o que vem pronto em qualquer construtor autom&aacute;tico.</p>
+            <h3>Voc&ecirc; v&ecirc; <em>quem chegou</em></h3>
+            <p>O site sai com o Pixel do Meta e o Google configurados. Cada formul&aacute;rio enviado e cada clique no WhatsApp fica contado: voc&ecirc; sabe o que o site trouxe, em vez de achar.</p>
           </div>
 
           <div class="dif-card">
             <div class="dif-visual dif-visual-alto" aria-hidden="true">
               <div class="dif-chip dif-chip-selo" style="top:0;left:0;--rot:-5deg;--atraso:0s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M4 6h16"/><path d="M4 6l-2.5 6a3 3 0 0 0 5 0L4 6z"/><path d="M20 6l-2.5 6a3 3 0 0 0 5 0L20 6z"/><path d="M12 6v14"/><path d="M8 20h8"/></svg>
-                Advocacia
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                Google
               </div>
               <div class="dif-chip dif-chip-selo" style="top:0;right:0;--rot:5deg;--atraso:.35s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                Google Ads
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                ChatGPT
               </div>
               <div class="dif-chip dif-chip-selo" style="top:38px;left:20%;--rot:-3deg;--atraso:.55s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/></svg>
-                Cl&iacute;nica est&eacute;tica
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                Gemini
               </div>
               <div class="dif-chip dif-chip-selo" style="bottom:0;left:2%;--rot:-4deg;--atraso:.75s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="18" rx="4"/><path d="M8 7.5l8-2M8 12l8-2M8 16.5l8-2"/></svg>
-                Barbearia
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                Perplexity
               </div>
               <div class="dif-chip dif-chip-selo" style="bottom:2px;right:4%;--rot:5deg;--atraso:.95s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.1 10.8L15.9 7.2M8.1 13.2l7.8 3.6"/></svg>
-                Meta Ads
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                Copilot
               </div>
             </div>
-            <h3>Estrat&eacute;gia por nicho</h3>
-            <p>Advocacia n&atilde;o recebe o mesmo site que barbearia. A estrutura nasce do que o cliente do seu nicho procura, e a m&iacute;dia paga (Google Ads, Meta Ads) segue a mesma l&oacute;gica, sem receita de bolo.</p>
+            <h3>Pronto pro Google <em>e pras IAs</em></h3>
+            <p>Muita gente j&aacute; pergunta pro ChatGPT antes de pesquisar no Google. O seu site sai com as informa&ccedil;&otilde;es organizadas do jeito que o Google e as intelig&ecirc;ncias artificiais leem.</p>
           </div>
 
           <div class="dif-card">
@@ -3917,12 +3824,12 @@
                 <div class="dif-barra" style="width:46%"></div>
               </div>
               <div class="dif-chip dif-chip-selo" style="bottom:0;right:0;--rot:6deg;--atraso:.45s">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-                Exclusivo, ponto
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                100% autoral
               </div>
             </div>
-            <h3>Feito pra n&atilde;o confundir com outro</h3>
-            <p>Enquanto o mercado vende site clonado com cara de gerador, o seu sai parecido com a sua empresa, n&atilde;o com o resto da internet.</p>
+            <h3>Feito do zero, <em>n&atilde;o clonado</em></h3>
+            <p>Nenhum site sai de template. Design, texto e anima&ccedil;&atilde;o s&atilde;o feitos pro seu neg&oacute;cio, e ningu&eacute;m confunde a sua empresa com a do concorrente.</p>
           </div>
         </div>
       </div>
@@ -3938,20 +3845,21 @@
   <section id="services" aria-label="Por que a sua empresa precisa de um site">
 
     <div class="hist-painel" role="group" aria-label="Agora mesmo">
-      <div class="hist-miolo" style="--fundo:#1E5FE0;--tinta:#fff">
+      <div class="hist-miolo com-fita" style="--fundo:#0043DF;--tinta:#FAFAFA">
+        <canvas class="fita" data-ang="224" aria-hidden="true"></canvas><span class="grao" aria-hidden="true"></span>
         <p class="hist-rotulo">01 · Agora mesmo</p>
         <hr class="hist-linha">
-        <h2 class="hist-titulo">Ele procurou.<br>Achou outro.</h2>
+        <h2 class="hist-titulo">Ele procurou.<br><em>Achou outro.</em></h2>
         <hr class="hist-linha">
         <p class="hist-texto">Neste minuto, alguém na sua cidade está digitando no Google exatamente o que você vende. Ele não vai ler dez resultados. Vai abrir os primeiros, escolher o que passa mais confiança e chamar no WhatsApp. Se esse não for você, a venda aconteceu do mesmo jeito. Só que na empresa do lado.</p>
       </div>
     </div>
 
     <div class="hist-painel" role="group" aria-label="O prejuízo que não aparece">
-      <div class="hist-miolo" style="--fundo:#0B1A33;--tinta:#fff">
+      <div class="hist-miolo" style="--fundo:#021950;--tinta:#fff">
         <p class="hist-rotulo">02 · O prejuízo que não aparece</p>
         <hr class="hist-linha">
-        <h2 class="hist-titulo">Ninguém<br>avisa que<br>desistiu.</h2>
+        <h2 class="hist-titulo">Ninguém<br>avisa que<br><em>desistiu.</em></h2>
         <hr class="hist-linha">
         <p class="hist-texto">Cliente perdido não deixa recado. Não liga para reclamar, não aparece no extrato, não entra em relatório nenhum. Ele só some. Um hoje, outro amanhã, e o seu concorrente, que talvez nem faça melhor que você, fica com o serviço por um motivo só: ele estava lá quando o cliente procurou.</p>
         <hr class="hist-linha">
@@ -3975,10 +3883,10 @@
     </div>
 
     <div class="hist-painel" role="group" aria-label="O que muda com um site de verdade">
-      <div class="hist-miolo" style="--fundo:#DCE7F2;--tinta:#14296B">
+      <div class="hist-miolo" style="--fundo:#F5F5F5;--tinta:#021950">
         <p class="hist-rotulo">03 · O que muda com um site de verdade</p>
         <hr class="hist-linha">
-        <h2 class="hist-titulo">Aparecer.<br>Convencer.<br>Fechar.</h2>
+        <h2 class="hist-titulo">Aparecer.<br>Convencer.<br><em>Fechar.</em></h2>
         <hr class="hist-linha">
         <p class="hist-texto">Um site bem feito trabalha como o seu melhor vendedor: atende de madrugada, responde a mesma dúvida cem vezes sem perder a paciência e entrega o cliente já decidido no seu WhatsApp.</p>
         <hr class="hist-linha">
@@ -4000,17 +3908,17 @@
     </div>
 
     <div class="hist-painel" role="group" aria-label="Sem letra miúda">
-      <div class="hist-miolo" style="--fundo:#14296B;--tinta:#fff">
+      <div class="hist-miolo" style="--fundo:#0038AE;--tinta:#FAFAFA">
         <p class="hist-rotulo">04 · Sem letra miúda</p>
         <hr class="hist-linha">
-        <h2 class="hist-titulo">Pagou,<br>é seu.</h2>
+        <h2 class="hist-titulo">Pagou,<br><em>é seu.</em></h2>
         <hr class="hist-linha">
         <p class="hist-texto">Nada de mensalidade para o site continuar existindo. Você paga uma vez, o site fica com você e ninguém te prende por contrato.</p>
         <hr class="hist-linha">
         <div class="hist-grade">
           <div>
             <b>Preço fechado</b>
-            <p>De R$697 a R$1.997, conforme o tamanho da operação. Você sabe o valor antes de começar, sem surpresa no meio do caminho.</p>
+            <p>De R$877 a R$2.497, conforme o tamanho da operação. Você sabe o valor antes de começar, sem surpresa no meio do caminho.</p>
           </div>
           <div>
             <b>Prazo combinado</b>
@@ -4027,19 +3935,19 @@
     </div>
 
     <div class="hist-painel" role="group" aria-label="A pergunta que importa">
-      <div class="hist-miolo" style="--fundo:#060e28;--tinta:#fff">
+      <div class="hist-miolo" style="--fundo:#021950;--tinta:#fff">
         <p class="hist-rotulo">05 · A pergunta que importa</p>
         <hr class="hist-linha">
-        <h2 class="hist-titulo">E amanhã?</h2>
+        <h2 class="hist-titulo">E <em>amanhã?</em></h2>
         <hr class="hist-linha">
         <p class="hist-texto">Amanhã de manhã, alguém vai pesquisar pelo que você faz. Isso não é possibilidade, é rotina. A única coisa que ainda está em aberto é como essa busca termina.</p>
         <p class="hist-pergunta">Quando esse cliente procurar, ele vai encontrar <em>a sua empresa</em> ou a do seu concorrente?</p>
         <div class="hist-acoes">
-          <a href="#contact" class="btn btn-primary mag-btn" onclick="fbq('track', 'Contact')">
+          <a href="#contact" class="btn btn-primary mag-btn" onclick="window.fbq&&fbq('track', 'Contact')">
             Quero ser encontrado
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
-          <a href="https://wa.me/5511989466431?text=Olá,%20vim%20pelo%20site%20e%20quero%20que%20minha%20empresa%20seja%20encontrada%20no%20Google!" class="btn btn-ghost" target="_blank" rel="noopener" onclick="fbq('track', 'Lead')">Conversar no WhatsApp</a>
+          <a href="https://wa.me/5511989466431?text=Olá,%20vim%20pelo%20site%20e%20quero%20que%20minha%20empresa%20seja%20encontrada%20no%20Google!" class="btn btn-ghost" target="_blank" rel="noopener" onclick="window.fbq&&fbq('track', 'Lead')">Conversar no WhatsApp</a>
         </div>
       </div>
     </div>
@@ -4049,7 +3957,7 @@
   <section class="section" id="depoimentos">
     <div class="container">
       <div class="topo-centro">
-        <h2 class="heading reveal-titulo">N&atilde;o confie apenas na nossa palavra</h2>
+        <h2 class="heading reveal-titulo">N&atilde;o confie apenas na <em>nossa palavra</em></h2>
         <p class="pricing-lede reveal-apoio">
           Veja o que os nossos clientes satisfeitos t&ecirc;m a dizer.
         </p>
@@ -4414,7 +4322,7 @@
 
           <div class="form-alt">
             Prefere falar agora?
-            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site%20da%20minha%20conta." target="_blank" rel="noopener" onclick="fbq('track','Lead')">Chamar no WhatsApp</a>
+            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site%20da%20minha%20conta." target="_blank" rel="noopener" onclick="window.fbq&&fbq('track','Lead')">Chamar no WhatsApp</a>
           </div>
         </form>
 
@@ -4422,7 +4330,7 @@
              a confirmação precisa ser anunciada quando entra -->
         <div class="form-ok" id="formSucesso" role="status" aria-live="polite" hidden>
           <div class="marca-ok" aria-hidden="true">&#10003;</div>
-          <h3>Recebemos o seu pedido</h3>
+          <h3>Recebemos o <em>seu pedido</em></h3>
           <p>
             O Kaique vai olhar a sua conta e te chamar no WhatsApp em at&eacute; 24 horas
             nos dias &uacute;teis. Se preferir adiantar, pode chamar agora.
@@ -4460,11 +4368,11 @@
       </div>
 
       <div class="rodape-centro">
-        <h2 class="rodape-titulo" id="rodapeTitulo">Vamos come&ccedil;ar?</h2>
+        <h2 class="rodape-titulo" id="rodapeTitulo">Vamos <em>come&ccedil;ar?</em></h2>
 
         <div class="rodape-acoes" id="rodapeAcoes">
           <div class="rodape-fila">
-            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site." target="_blank" rel="noopener" class="vidro-pilula pilula-forte ima" onclick="fbq('track', 'Lead')">
+            <a href="https://wa.me/5511989466431?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20site." target="_blank" rel="noopener" class="vidro-pilula pilula-forte ima" onclick="window.fbq&&fbq('track', 'Lead')">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12.05 21.8h-.02a9.8 9.8 0 01-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.78 9.78 0 01-1.5-5.22c0-5.41 4.4-9.81 9.82-9.81 2.62 0 5.08 1.02 6.94 2.88a9.75 9.75 0 012.87 6.94c0 5.41-4.4 9.81-9.81 9.81zM20.52 3.45A11.75 11.75 0 0012.05 0C5.55 0 .26 5.29.26 11.79c0 2.08.54 4.11 1.58 5.9L.16 24l6.45-1.69a11.76 11.76 0 005.44 1.39h.01c6.5 0 11.79-5.29 11.79-11.79 0-3.15-1.23-6.11-3.46-8.34z"/></svg>
               Falar no WhatsApp
             </a>
@@ -4681,286 +4589,141 @@
     // Só no desktop. No celular o hero não é dirigido pela rolagem, então essas
     // ~90 spans não teriam o que animar e só engordariam o DOM.
     let introChars = [], tituloChars = [];
-    introTitleEl.textContent = 'Desenvolvemos sites únicos para negócios únicos';
+    introTitleEl.innerHTML = 'Desenvolvemos sites <em>únicos</em> para negócios <em>únicos</em>';
     if (!modoLeve) {
       introChars = dividirEmLetras(introTitleEl);
       tituloChars = dividirEmLetras(heroTituloEl);
     }
 
-    // --- MALHA DE CONSTELAÇÃO ---
-    // Uma grade de nós presos ao lugar deles por mola (lei de Hooke, com
-    // atrito). O cursor empurra quem está dentro do raio, e quanto mais rápido
-    // ele passa, mais forte o empurrão. Depois a mola traz todo mundo de volta.
+    // --- CONEXÕES NEURAIS (fundo do hero) ---
+    // Porte do "Interactive Neural Vortex" (21st.dev). O original é React e
+    // pinta o componente inteiro (cards, botão, fontes); daqui só veio o
+    // shader: filamentos que se enroscam e se acendem como sinapse, e que
+    // perto do cursor se torcem mais (o termo p). Roxo e ciano do original
+    // viraram o azul 800 da marca com um brilho azul-claro nas cristas.
     //
-    // Duas coisas foram reescritas em relação ao componente de origem, e as
-    // duas por medição, não por gosto:
-    //
-    // 1. Ligações. O original compara cada nó com todos os outros pra decidir
-    //    quem se liga a quem. Numa tela de 1440x900 são 504 nós, ou seja 127
-    //    mil comparações por quadro; num monitor de 2560x1440 viram 1344 nós e
-    //    900 mil. Aqui os nós entram numa grade de baldes do tamanho do alcance
-    //    da ligação, e cada um só olha o próprio balde e quatro vizinhos. O
-    //    resultado desenhado é idêntico, mas o custo cresce em linha reta com o
-    //    número de nós em vez de ao quadrado.
-    //
-    // 2. Traços. Cada linha tem a própria opacidade, e trocar strokeStyle
-    //    obriga um stroke() por linha: umas 1500 chamadas por quadro. Aqui as
-    //    opacidades são arredondadas em 8 degraus e cada degrau vira um
-    //    caminho só. São 8 stroke() no lugar de 1500, e a diferença entre um
-    //    degrau e o vizinho, em linhas que já são quase invisíveis, o olho
-    //    não pega.
-    (function () {
-      const tela = document.getElementById('teiaCanvas');
+    // Custo: 15 voltas de seno/cosseno por pixel. Por isso o canvas desenha
+    // numa fração da tela e o navegador amplia (o desenho é macio, a perda
+    // não aparece), e o laço só roda com o hero à vista e a aba aberta.
+    // Celular: resolução menor e 30 quadros/s. Movimento reduzido: o fluxo
+    // para, mas o cursor continua mexendo nos filamentos (o efeito é
+    // resposta ao gesto da pessoa, não animação sozinha).
+    // Serve o hero e qualquer <canvas class="neuro"> (o painel do diferencial).
+    // Cada um tem o próprio contexto e só anima enquanto o seu bloco aparece.
+    function ligaNeuro(tela, observado) {
       if (!tela) return;
-      const ctx = tela.getContext('2d', { alpha: false });
-      if (!ctx) return;
+      const gl = tela.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' });
+      if (!gl) return;   // sem WebGL fica o fundo 950 liso do .hero-teia
 
-      const FUNDO  = '#060e28';
-      const PONTO  = '255, 255, 255';
-      const REALCE = '76, 134, 245';   // o mesmo --accent-hover da marca
-
-      const VAO      = 55;    // distância entre nós na grade
-      const ALCANCE  = 75;    // até onde dois nós se ligam
-      const ALCANCE2 = ALCANCE * ALCANCE;
-      const RAIO     = 220;   // alcance do cursor
-      const MOLA     = 18;
-      const ATRITO   = 0.82;
-      const NIVEIS   = 8;     // degraus de opacidade dos traços
-      // O componente de origem desenha sobre um fundo quase preto (#030407) e
-      // por isso 0,18 de opacidade já rende linha visível. O nosso fundo é o
-      // azul-noite da marca, bem mais claro, e nele os mesmos 0,18 sumiam. As
-      // opacidades subiram até a malha ficar com a mesma presença da referência.
-      const ALFA_MAX = 0.26;
-      const ALFA_NO  = 0.34;  // brilho de base dos nós longe do cursor
-
-      let L = 0, A = 0, raf = 0, antes = performance.now();
-      const rato = { x: -1000, y: -1000, ax: -1000, ay: -1000, vx: 0, vy: 0 };
-
-      // arranjos paralelos em vez de objetos: o laço da física percorre isso
-      // 500 vezes por quadro e assim ele não persegue ponteiro nenhum
-      let n = 0, px, py, vx, vy, bx, by, raio, pulso, marca;
-      // baldes em lista encadeada, sem alocar nada por quadro
-      let colsB = 0, rowsB = 0, cabeca, prox;
-      const lotes = Array.from({ length: NIVEIS }, () => []);
-
-      function criar() {
-        const cols = Math.ceil(L / VAO) + 1;
-        const rows = Math.ceil(A / VAO) + 1;
-        n = cols * rows;
-        px = new Float32Array(n); py = new Float32Array(n);
-        vx = new Float32Array(n); vy = new Float32Array(n);
-        bx = new Float32Array(n); by = new Float32Array(n);
-        raio = new Float32Array(n); pulso = new Float32Array(n);
-        marca = new Array(n);
-        let k = 0;
-        for (let i = 0; i < cols; i++) {
-          for (let j = 0; j < rows; j++) {
-            const x = i * VAO, y = j * VAO;
-            px[k] = bx[k] = x; py[k] = by[k] = y;
-            raio[k] = Math.random() * 1.2 + 1.2;
-            pulso[k] = Math.random() * Math.PI * 2;
-            marca[k] = (i * 7).toString(16).toUpperCase() + ':' + (j * 11).toString(16).toUpperCase();
-            k++;
+      const VS = 'attribute vec2 a;varying vec2 v;void main(){v=.5*(a+1.);gl_Position=vec4(a,0.,1.);}';
+      const FS = `precision mediump float;
+        varying vec2 v;
+        uniform float u_t, u_ratio;
+        uniform vec2 u_p;
+        vec2 gira(vec2 uv, float th) { return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv; }
+        float neuro(vec2 uv, float t, float p) {
+          vec2 acc = vec2(0.), res = vec2(0.);
+          float esc = 8.;
+          for (int j = 0; j < 15; j++) {
+            uv = gira(uv, 1.);
+            acc = gira(acc, 1.);
+            vec2 camada = uv * esc + float(j) + acc - t;
+            acc += sin(camada) + 2.4 * p;
+            res += (.5 + .5 * cos(camada)) / esc;
+            esc *= 1.2;
           }
+          return res.x + res.y;
         }
-        colsB = Math.ceil(L / ALCANCE) + 2;
-        rowsB = Math.ceil(A / ALCANCE) + 2;
-        cabeca = new Int32Array(colsB * rowsB);
-        prox = new Int32Array(n);
-      }
+        void main() {
+          vec2 uv = .5 * v;
+          uv.x *= u_ratio;
+          vec2 pt = v - u_p;
+          pt.x *= u_ratio;
+          float p = clamp(length(pt), 0., 1.);
+          p = .5 * pow(1. - p, 2.);
+          float n = neuro(uv, u_t, p);
+          n = 1.2 * pow(n, 3.);
+          n += pow(n, 10.);
+          n = max(0., n - .5);
+          n *= (1. - length(v - .5));
+          vec3 fundo = vec3(.008, .098, .314);          // 950
+          vec3 azul  = vec3(0., .263, .875);            // 800
+          vec3 crista = vec3(.62, .76, 1.);             // brilho da sinapse
+          vec3 cor = mix(azul, crista, clamp(n * .35, 0., .6));
+          gl_FragColor = vec4(fundo + cor * n, 1.);
+        }`;
+      const sombreador = (tipo, src) => {
+        const sh = gl.createShader(tipo); gl.shaderSource(sh, src); gl.compileShader(sh);
+        return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
+      };
+      const vs = sombreador(gl.VERTEX_SHADER, VS), fs = sombreador(gl.FRAGMENT_SHADER, FS);
+      if (!vs || !fs) return;
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const aPos = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      const uT = gl.getUniformLocation(prog, 'u_t'), uRatio = gl.getUniformLocation(prog, 'u_ratio'), uP = gl.getUniformLocation(prog, 'u_p');
 
-      // Teto de pixels do buffer.
-      //
-      // A conta da malha é barata: medida quadro a quadro, a física mais a
-      // montagem dos caminhos custa cerca de 1ms mesmo numa tela grande. O
-      // caro é pintar. Numa tela de 2560x1440 em densidade 2, o buffer tem
-      // 14,7 milhões de pixels e cada quadro custou 57ms; a mesma cena em
-      // densidade 1 custou 14ms. Ou seja: o preço é a quantidade de pixel,
-      // não a quantidade de nó.
-      //
-      // E o que está desenhado aqui é ponto e fio de cabelo sobre fundo
-      // escuro, que é justamente o tipo de imagem onde densidade alta não
-      // acrescenta nada visível. Por isso o buffer é limitado a uns 3
-      // milhões de pixels: em tela pequena sobra densidade, em tela grande
-      // ele desce até 1 e para por aí, pra a linha de 0,7px não borrar.
-      const TETO = 3.0e6;
-
-      function medir() {
-        L = tela.clientWidth || window.innerWidth;
-        A = tela.clientHeight || window.innerHeight;
-        const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(TETO / (L * A))));
-        tela.width = Math.round(L * dpr);
-        tela.height = Math.round(A * dpr);
-        // setTransform e não scale: scale multiplica em cima do que já estava,
-        // então a cada redimensionamento o desenho saía maior que o anterior
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        criar();
-      }
-
-      const VIZ = [[1, 0], [-1, 1], [0, 1], [1, 1]];
-
-      function desenhar(agora) {
-        const dt = Math.min((agora - antes) / 1000, 0.05);
-        antes = agora;
-
-        // A conversão de coordenada da janela pra coordenada do canvas mora
-        // aqui, e não no ouvinte do mouse: getBoundingClientRect obriga o
-        // navegador a recalcular layout na hora, e o mouse dispara até 120
-        // eventos por segundo. Aqui é uma leitura por quadro.
-        if (rato.cx !== undefined) {
-          const r = tela.getBoundingClientRect();
-          rato.x = rato.cx - r.left;
-          rato.y = rato.cy - r.top;
-        }
-
-        rato.vx = (rato.x - rato.ax) / (dt * 1000 || 1);
-        rato.vy = (rato.y - rato.ay) / (dt * 1000 || 1);
-        rato.ax = rato.x; rato.ay = rato.y;
-        const veloc = Math.sqrt(rato.vx * rato.vx + rato.vy * rato.vy);
-
-        ctx.fillStyle = FUNDO;
-        ctx.fillRect(0, 0, L, A);
-
-        // --- física ---
-        for (let i = 0; i < n; i++) {
-          pulso[i] += dt * 3;
-          const dx = rato.x - px[i], dy = rato.y - py[i];
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < RAIO && d > 0) {
-            const forca = (1 - d / RAIO) * (1500 + veloc * 150);
-            vx[i] -= (dx / d) * forca * dt;
-            vy[i] -= (dy / d) * forca * dt;
-          }
-          vx[i] += (bx[i] - px[i]) * MOLA * dt;
-          vy[i] += (by[i] - py[i]) * MOLA * dt;
-          vx[i] *= ATRITO; vy[i] *= ATRITO;
-          px[i] += vx[i] * dt * 60;
-          py[i] += vy[i] * dt * 60;
-        }
-
-        // --- baldes ---
-        cabeca.fill(-1);
-        for (let i = 0; i < n; i++) {
-          let cx = (px[i] / ALCANCE) | 0, cy = (py[i] / ALCANCE) | 0;
-          if (cx < 0) cx = 0; else if (cx >= colsB) cx = colsB - 1;
-          if (cy < 0) cy = 0; else if (cy >= rowsB) cy = rowsB - 1;
-          const b = cy * colsB + cx;
-          prox[i] = cabeca[b];
-          cabeca[b] = i;
-        }
-
-        // --- ligações ---
-        const par = (i, j) => {
-          const dx = px[i] - px[j], dy = py[i] - py[j];
-          const q = dx * dx + dy * dy;
-          if (q >= ALCANCE2) return;
-          const nivel = Math.min(NIVEIS - 1, ((1 - Math.sqrt(q) / ALCANCE) * NIVEIS) | 0);
-          const lote = lotes[nivel];
-          lote.push(px[i], py[i], px[j], py[j]);
-        };
-        for (let cy = 0; cy < rowsB; cy++) {
-          for (let cx = 0; cx < colsB; cx++) {
-            let i = cabeca[cy * colsB + cx];
-            for (; i !== -1; i = prox[i]) {
-              for (let j = prox[i]; j !== -1; j = prox[j]) par(i, j);
-              for (let v = 0; v < 4; v++) {
-                const ox = cx + VIZ[v][0], oy = cy + VIZ[v][1];
-                if (ox < 0 || ox >= colsB || oy >= rowsB) continue;
-                for (let j = cabeca[oy * colsB + ox]; j !== -1; j = prox[j]) par(i, j);
-              }
-            }
-          }
-        }
-        ctx.lineWidth = 0.7;
-        for (let k = 0; k < NIVEIS; k++) {
-          const lote = lotes[k];
-          if (!lote.length) continue;
-          ctx.strokeStyle = `rgba(${PONTO}, ${(((k + 0.5) / NIVEIS) * ALFA_MAX).toFixed(3)})`;
-          ctx.beginPath();
-          for (let m = 0; m < lote.length; m += 4) {
-            ctx.moveTo(lote[m], lote[m + 1]);
-            ctx.lineTo(lote[m + 2], lote[m + 3]);
-          }
-          ctx.stroke();
-          lote.length = 0;
-        }
-
-        // --- nós ---
-        // mesmo agrupamento por degrau de opacidade, dessa vez em dois grupos
-        // de cor: os longe do cursor em branco, os perto em azul da marca
-        for (let grupo = 0; grupo < 2; grupo++) {
-          const cor = grupo === 0 ? PONTO : REALCE;
-          for (let k = 0; k < NIVEIS; k++) {
-            let abriu = false;
-            for (let i = 0; i < n; i++) {
-              const dx = rato.x - px[i], dy = rato.y - py[i];
-              const perto = (dx * dx + dy * dy) < RAIO * RAIO;
-              if ((perto ? 1 : 0) !== grupo) continue;
-              const alfa = perto ? 0.95 : ALFA_NO + Math.sin(pulso[i]) * 0.1;
-              if ((Math.min(0.999, alfa) * NIVEIS | 0) !== k) continue;
-              const r = perto ? raio[i] * 2.2 : raio[i] + Math.sin(pulso[i]) * 0.3;
-              const rr = r < 0.5 ? 0.5 : r;
-              if (!abriu) { ctx.beginPath(); abriu = true; }
-              ctx.moveTo(px[i] + rr, py[i]);
-              ctx.arc(px[i], py[i], rr, 0, Math.PI * 2);
-            }
-            if (abriu) {
-              ctx.fillStyle = `rgba(${cor}, ${(((k + 0.5) / NIVEIS)).toFixed(3)})`;
-              ctx.fill();
-            }
-          }
-        }
-
-        // --- anel de radar e coordenada, só bem perto do cursor ---
-        if (rato.x > -900) {
-          ctx.lineWidth = 1;
-          ctx.font = '8px ui-monospace, SFMono-Regular, Consolas, monospace';
-          for (let i = 0; i < n; i++) {
-            const dx = rato.x - px[i], dy = rato.y - py[i];
-            if (dx * dx + dy * dy >= 8100) continue;   // 90px
-            const anel = ((pulso[i] * 20) % 30) + 4;
-            ctx.strokeStyle = `rgba(${REALCE}, ${((1 - anel / 34) * 0.4).toFixed(3)})`;
-            ctx.beginPath();
-            ctx.arc(px[i], py[i], anel, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = `rgba(${REALCE}, 0.85)`;
-            ctx.fillText(marca[i], px[i] + 10, py[i] - 10);
-          }
-        }
-
-        raf = requestAnimationFrame(desenhar);
-      }
-
+      const parado = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const ESCALA = modoLeve ? 0.4 : 0.6;          // fração dos pixels CSS que o shader desenha
+      const PASSO = modoLeve ? 1000 / 30 : 0;       // celular: 30 quadros/s
+      const medir = () => {
+        const r = tela.getBoundingClientRect();
+        // teto de pixels: num monitor 4K a fração fixa virava ~3 milhões de
+        // pixels por quadro. Acima de ~420 mil a escala cai; o desenho é macio
+        // e ampliar mais não aparece, o custo sim.
+        const esc = Math.min(ESCALA, Math.sqrt(420000 / Math.max(1, r.width * r.height)));
+        tela.width = Math.max(1, Math.round(r.width * esc));
+        tela.height = Math.max(1, Math.round(r.height * esc));
+        gl.viewport(0, 0, tela.width, tela.height);
+        gl.uniform1f(uRatio, tela.width / tela.height);
+      };
       medir();
-      // ⚠ NÃO tire o cancel: desenhar() termina agendando o próximo quadro, e
-      // com o laço parado (celular, ou hero fora da tela) nada mais o para. No
-      // celular a barra de endereço dispara resize na primeira rolagem, e sem
-      // o cancel a malha rodava a 60 quadros/s pelo resto da visita.
-      window.addEventListener('resize', () => {
-        medir();
-        if (!raf) { desenhar(performance.now()); cancelAnimationFrame(raf); raf = 0; }
-      }, { passive: true });
 
-      if (modoLeve) {
-        // Sem cursor não há o que empurrar: a malha é desenhada uma vez e fica
-        // parada. Um quadro no carregamento contra um laço eterno no celular.
-        desenhar(performance.now());
-        cancelAnimationFrame(raf); raf = 0;
-      } else {
-        window.addEventListener('mousemove', e => {
-          rato.cx = e.clientX; rato.cy = e.clientY;
-        }, { passive: true });
-        document.addEventListener('mouseleave', () => {
-          rato.cx = undefined; rato.x = -1000; rato.y = -1000;
-        });
+      // cursor em coordenadas 0..1 do canvas; nasce no centro, um pouco abaixo do título
+      const ptr = { x: .5, y: .35, tx: .5, ty: .35 };
+      const alvo = (cx, cy) => {
+        const r = tela.getBoundingClientRect();
+        ptr.tx = (cx - r.left) / r.width;
+        ptr.ty = 1 - (cy - r.top) / r.height;
+        acordar();
+      };
+      window.addEventListener('pointermove', e => alvo(e.clientX, e.clientY), { passive: true });
+      window.addEventListener('touchmove', e => { if (e.touches[0]) alvo(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
 
-        // Fora da tela o hero não gasta quadro nenhum.
-        new IntersectionObserver(([e]) => {
-          if (e.isIntersecting && !raf) { antes = performance.now(); raf = requestAnimationFrame(desenhar); }
-          else if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = 0; }
-        }).observe(heroWrapper);
+      let raf = 0, visivel = true, ultimo = 0;
+      const t0 = performance.now();
+      const T_PARADO = 4200;   // instante fixo do fluxo quando o movimento é reduzido
+      function quadro(agora) {
+        raf = 0;
+        if (PASSO && agora - ultimo < PASSO) { raf = requestAnimationFrame(quadro); return; }
+        ultimo = agora;
+        ptr.x += (ptr.tx - ptr.x) * .12;
+        ptr.y += (ptr.ty - ptr.y) * .12;
+        gl.uniform1f(uT, .001 * (parado ? T_PARADO : agora - t0 + T_PARADO));
+        gl.uniform2f(uP, ptr.x, ptr.y);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        // com movimento reduzido o laço dorme quando o cursor alcança o alvo
+        const assentou = Math.abs(ptr.tx - ptr.x) + Math.abs(ptr.ty - ptr.y) < .0005;
+        if (visivel && !document.hidden && !(parado && assentou)) raf = requestAnimationFrame(quadro);
       }
-    })();
+      function acordar() { if (!raf && visivel && !document.hidden) raf = requestAnimationFrame(quadro); }
+
+      window.addEventListener('resize', () => { medir(); acordar(); }, { passive: true });
+      document.addEventListener('visibilitychange', acordar);
+      new IntersectionObserver(([e]) => {
+        visivel = e.isIntersecting;
+        if (visivel) acordar(); else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      }).observe(observado);
+      raf = requestAnimationFrame(quadro);
+    }
+    ligaNeuro(document.getElementById('neuroCanvas'), heroWrapper);
+    document.querySelectorAll('canvas.neuro').forEach(c => ligaNeuro(c, c));
 
     // Cache metrics
     let wrapperTop, wrapperScrollable;
@@ -5291,7 +5054,7 @@
     // A pausa do muro por hover é outra coisa e continua valendo junto: as
     // duas mexem em `animation-play-state`, e qualquer uma das duas basta pra
     // segurar a animação.
-    document.querySelectorAll('.marcas-linha, .muro-pista, .rodape-aurora')
+    document.querySelectorAll('.marcas-linha, .muro-pista, .rodape-aurora, .rodape-selos, .dif-visual')
       .forEach(el => obsEsteira.observe(el));
 
     // --- VOLTAR AO TOPO (rodapé) ---
@@ -5754,7 +5517,7 @@ Segmento: ${v.segmento}`;
         '  float plate = 1.0 - smoothstep(-0.004, 0.004, d);',
         '  vec3 plateCol = vec3(0.04, 0.05, 0.055);',
         '  plateCol += vec3(0.014, 0.022, 0.035) * fbm(p * 9.0);',
-        // [MUDOU] era ciano (0, .25, .3); a marca é azul royal (#1E5FE0), sem verde-água
+        // [MUDOU] era ciano (0, .25, .3); a marca é azul royal (#0043DF), sem verde-água
         '  plateCol += vec3(0.02, 0.06, 0.2) * exp(d * 9.0) * (0.25 + hover * 0.6);',
         '  col = mix(col, plateCol, plate);',
         '  float a = atan(p.y, p.x);',
@@ -5768,7 +5531,7 @@ Segmento: ${v.segmento}`;
         '    seg = 0.3 + 0.7 * seg;',
         '    float g = 0.0042 / (abs(d + off) + 0.006);',
         // [MUDOU] arco era ciano puro (0,.75,.9); troquei pro azul royal da
-        // marca (#1E5FE0 ~ .12,.37,.88) com o realce indo pro "céu" do guia
+        // marca (#0043DF ~ .12,.37,.88) com o realce indo pro "céu" do guia
         // de identidade (#6E9BD6), não pro branco-azulado do original
         '    arcCol += (vec3(0.1, 0.35, 0.88) * g + vec3(0.43, 0.61, 0.95) * g * g * 0.55) * w * seg;',
         '  }',
@@ -6306,6 +6069,81 @@ Segmento: ${v.segmento}`;
     // antiga de Trabalhos virou os painéis cinematográficos e esses blocos
     // ficaram órfãos: o querySelectorAll não achava mais nada, mas o ouvinte
     // de scroll continuava sendo chamado em toda a rolagem da página.
+
+    // RIBBON FIELD (mesmo do painel de clientes): campo de faixas ao longo de um
+    // ângulo, com uma onda no eixo cruzado. Pintado em 72x44 e ampliado com
+    // desfoque. Anima só no computador, com o bloco visível e a aba aberta; no
+    // celular e com movimento reduzido fica o primeiro quadro, parado.
+    (function () {
+      const telas = document.querySelectorAll('canvas.fita');
+      if (!telas.length) return;
+      const quieto = matchMedia('(prefers-reduced-motion: reduce), (max-width: 900px), (hover: none) and (pointer: coarse)').matches;
+      const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+      // o branco fica só na ponta, pra não brigar com o texto
+      const S = [[0, '#FAFAFA'], [.06, '#FAFAFA'], [.28, '#0043DF'], [.52, '#0038AE'], [.70, '#021950'], [.88, '#021950'], [1, '#010B26']].map(([p, c]) => [p, hex(c)]);
+      const liso = t => t * t * (3 - 2 * t);
+      const cor = u => {
+        u = Math.max(0, Math.min(1, u));
+        for (let i = 0; i < S.length - 1; i++) if (u <= S[i + 1][0]) {
+          const a = S[i], b = S[i + 1], t = liso((u - a[0]) / (b[0] - a[0] || 1));
+          return [0, 1, 2].map(k => a[1][k] + (b[1][k] - a[1][k]) * t);
+        }
+        return S[S.length - 1][1];
+      };
+      telas.forEach(cv => {
+        const W = 72, H = 44; cv.width = W; cv.height = H;
+        const cx = cv.getContext('2d'), img = cx.createImageData(W, H), px = img.data;
+        const ANG = +(cv.dataset.ang || 44), ONDA = .12, AMP = .20;
+        const desenha = t => {
+          const ph = t * .31;
+          const ang = (ANG + Math.sin(ph * .6) * 28 * AMP) * Math.PI / 180;
+          const relogio = 20.75 + ph * 1.2;
+          const dx = Math.sin(ang), dy = -Math.cos(ang);
+          const ar = cv.clientWidth / (cv.clientHeight || 1);
+          const meia = (Math.abs(dx) * ar + Math.abs(dy)) / 2;
+          for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+            const X = (x / (W - 1) - .5) * ar, Y = y / (H - 1) - .5;
+            const cruz = (-X * dy + Y * dx) / (meia * 2) + .5;
+            let u = (X * dx + Y * dy) / (meia * 2) + .5;
+            const fase = cruz * 2.4 * 2 * Math.PI;
+            u += ONDA * .35 * (Math.sin(fase + relogio) - Math.sin(fase + 20.75)) + ONDA * .35 * Math.sin(fase + 20.75) * .5;
+            const c = cor(u), k = (y * W + x) * 4;
+            px[k] = c[0]; px[k + 1] = c[1]; px[k + 2] = c[2]; px[k + 3] = 255;
+          }
+          cx.putImageData(img, 0, 0);
+        };
+        desenha(0);
+        if (quieto) return;
+        let t0 = null, vivo = false;
+        const quadro = ts => {
+          if (t0 === null) t0 = ts;
+          desenha((ts - t0) / 1000);
+          if (vivo && !document.hidden) requestAnimationFrame(quadro);
+        };
+        new IntersectionObserver(e => {
+          const antes = vivo; vivo = e[0].isIntersecting;
+          if (vivo && !antes) requestAnimationFrame(quadro);
+        }).observe(cv);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && vivo) requestAnimationFrame(quadro); });
+      });
+    })();
+
+    // NAVEGAÇÃO: marca na barra a seção que está no meio da tela
+    (function () {
+      const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+      const alvos = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+      if (!alvos.length || !('IntersectionObserver' in window)) return;
+      const visiveis = new Set();
+      const marca = () => {
+        const atual = alvos.find(el => visiveis.has(el));
+        links.forEach(a => a.setAttribute('aria-current', String(!!atual && a.getAttribute('href') === '#' + atual.id)));
+      };
+      const io = new IntersectionObserver(ents => {
+        ents.forEach(e => e.isIntersecting ? visiveis.add(e.target) : visiveis.delete(e.target));
+        marca();
+      }, { rootMargin: '-45% 0px -50% 0px' });
+      alvos.forEach(el => io.observe(el));
+    })();
   </script>
 </body>
 </html>

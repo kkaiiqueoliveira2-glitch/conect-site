@@ -1,10 +1,20 @@
 /**
  * POST /api/lead — recebe o formulário de diagnóstico do site da Conect+.
  *
- * Destino do lead: Supabase, configurado por variável de ambiente na Vercel.
- * Enquanto as variáveis não existirem, o endpoint responde 501 de propósito.
- * O front-end trata esse 501 abrindo o WhatsApp com os dados já preenchidos,
- * então nenhum lead se perde no período em que o banco ainda não está ligado.
+ * Destinos do lead, cada um ligado por variável de ambiente na Vercel:
+ *   1. E-mail (Resend): aviso na caixa de entrada a cada envio.
+ *   2. Banco (Supabase): histórico consultável.
+ * Pode ligar um, outro ou os dois. Com os dois, basta um dar certo pra o
+ * envio contar como gravado. Sem nenhum, o endpoint responde 501 de propósito
+ * e o front-end cai no WhatsApp com os dados já preenchidos.
+ *
+ * Para ligar o e-mail, defina na Vercel:
+ *   RESEND_API_KEY   chave da conta Resend (marcar como Sensitive)
+ *   LEAD_EMAIL_PARA  quem recebe o aviso. Sem domínio verificado no Resend,
+ *                    só entrega no e-mail DONO da conta Resend.
+ *   LEAD_EMAIL_DE    opcional. Padrão "Site Conect+ <onboarding@resend.dev>";
+ *                    com o conectpluss.com verificado no Resend, trocar por
+ *                    algo como "Site Conect+ <site@conectpluss.com>".
  *
  * Para ligar o banco, defina na Vercel (marcar como Sensitive):
  *   SUPABASE_URL          https://<projeto>.supabase.co
@@ -81,6 +91,70 @@ function emailValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
+// O e-mail é HTML montado com texto que o visitante digitou: sem escapar, um
+// nome como "<a href=...>" viraria link clicável dentro da caixa de entrada.
+function esc(valor) {
+  return String(valor).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function avisaPorEmail(lead, origem) {
+  const quando = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
+  const zap = `https://wa.me/55${lead.whatsapp}`;
+  const fone = lead.whatsapp.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3');
+  const linha = (rotulo, valor) =>
+    `<tr><td style="padding:8px 16px 8px 0;color:#5b6479;white-space:nowrap">${rotulo}</td><td style="padding:8px 0;color:#021950;font-weight:600">${valor}</td></tr>`;
+
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#021950">
+  <p style="margin:0 0 4px;font-size:13px;color:#0043DF;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Novo pedido de orçamento</p>
+  <h1 style="margin:0 0 20px;font-size:22px">${esc(lead.nome)}</h1>
+  <table style="border-collapse:collapse;font-size:15px">
+    ${linha('WhatsApp', `<a href="${zap}" style="color:#0043DF">${esc(fone)}</a>`)}
+    ${linha('E-mail', `<a href="mailto:${esc(lead.email)}" style="color:#0043DF">${esc(lead.email)}</a>`)}
+    ${linha('Segmento', esc(lead.segmento))}
+    ${linha('Recebido', esc(quando))}
+    ${linha('Página', esc(origem))}
+  </table>
+  <p style="margin:24px 0 0"><a href="${zap}" style="display:inline-block;background:#0043DF;color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px">Chamar no WhatsApp</a></p>
+  <p style="margin:24px 0 0;font-size:12px;color:#8a92a6">Enviado pelo formulário do conectpluss.com. Responder este e-mail responde direto pro lead.</p>
+</div>`;
+
+  const texto = `Novo pedido de orçamento\n\nNome: ${lead.nome}\nWhatsApp: ${fone} (${zap})\nE-mail: ${lead.email}\nSegmento: ${lead.segmento}\nRecebido: ${quando}\nPágina: ${origem}`;
+
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: process.env.LEAD_EMAIL_DE || 'Site Conect+ <onboarding@resend.dev>',
+      to: process.env.LEAD_EMAIL_PARA.split(',').map((s) => s.trim()).filter(Boolean),
+      reply_to: lead.email,
+      subject: `Novo lead no site: ${lead.nome} (${lead.segmento})`,
+      html,
+      text: texto
+    })
+  });
+  if (!r.ok) throw new Error(`Resend ${r.status}: ${await r.text()}`);
+}
+
+async function gravaNoBanco(lead, origem, userAgent) {
+  const url = process.env.SUPABASE_URL;
+  const chave = process.env.SUPABASE_SERVICE_KEY;
+  const tabela = process.env.SUPABASE_TABELA || 'leads_site';
+  const r = await fetch(`${url.replace(/\/$/, '')}/rest/v1/${tabela}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: chave,
+      Authorization: `Bearer ${chave}`,
+      Prefer: 'return=minimal'
+    },
+    body: JSON.stringify([{ ...lead, origem, user_agent: userAgent }])
+  });
+  if (!r.ok) throw new Error(`Supabase ${r.status}: ${await r.text()}`);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -120,40 +194,25 @@ export default async function handler(req, res) {
     return res.status(400).json({ erro: 'E-mail inválido' });
   }
 
-  const url = process.env.SUPABASE_URL;
-  const chave = process.env.SUPABASE_SERVICE_KEY;
-  const tabela = process.env.SUPABASE_TABELA || 'leads_site';
+  const temEmail = Boolean(process.env.RESEND_API_KEY && process.env.LEAD_EMAIL_PARA);
+  const temBanco = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
 
   // Ainda sem destino configurado: o front-end cai no WhatsApp com os dados.
-  if (!url || !chave) {
+  if (!temEmail && !temBanco) {
     return res.status(501).json({ erro: 'Destino do lead ainda não configurado' });
   }
 
-  try {
-    const r = await fetch(`${url.replace(/\/$/, '')}/rest/v1/${tabela}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: chave,
-        Authorization: `Bearer ${chave}`,
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify([{
-        ...lead,
-        origem: limpa(req.headers.referer || 'site', 200),
-        user_agent: limpa(req.headers['user-agent'], 300)
-      }])
-    });
+  const origem = limpa(req.headers.referer || 'site', 200);
+  const tarefas = [];
+  if (temEmail) tarefas.push(avisaPorEmail(lead, origem));
+  if (temBanco) tarefas.push(gravaNoBanco(lead, origem, limpa(req.headers['user-agent'], 300)));
 
-    if (!r.ok) {
-      const detalhe = await r.text();
-      console.error('Supabase recusou o lead:', r.status, detalhe);
-      return res.status(502).json({ erro: 'Não foi possível gravar o lead' });
-    }
-
-    return res.status(200).json({ ok: true });
-  } catch (e) {
-    console.error('Falha ao gravar lead:', e);
+  // Os destinos rodam juntos e um não derruba o outro. Se TODOS falharem, 502:
+  // o front-end abre o WhatsApp com os dados e o lead não se perde.
+  const resultados = await Promise.allSettled(tarefas);
+  resultados.filter((r) => r.status === 'rejected').forEach((r) => console.error('Destino do lead falhou:', r.reason));
+  if (!resultados.some((r) => r.status === 'fulfilled')) {
     return res.status(502).json({ erro: 'Não foi possível gravar o lead' });
   }
+  return res.status(200).json({ ok: true });
 }
